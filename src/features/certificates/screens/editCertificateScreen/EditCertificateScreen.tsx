@@ -160,8 +160,7 @@ export default function EditCertificateScreen() {
           <View className="web:flex-row web:items-start web:justify-between gap-4">
             <View className="gap-1 flex-1">
               <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
-                Edit Certificate - ascascascascasc asc asc asc asc asc ascasc
-                asc asc asc asc asc asc asc asc asc asc adsfcdscvsdvsdsd
+                Edit Certificate - {certificate.name}
               </Text>
               <Text className="text-muted text-[14px]">
                 Update certificate details and vessel assignment.
