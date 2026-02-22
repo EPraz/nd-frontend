@@ -8,7 +8,7 @@ import { LoginBackground } from "./LoginBackground";
 export default function LoginScreen() {
   const { signIn, loading } = useSessionContext();
   const [email, setEmail] = useState("admin@navigate.test");
-  const [password, setPassword] = useState("admin123");
+  const [password, setPassword] = useState(""); //admin123
   const [error, setError] = useState<string | null>(null);
   const placeholderColor = usePlaceholderColor();
 
