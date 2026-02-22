@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Navigate Marine — Semantic Tokens (shadcn style)
+  Dark-first: la app corre en .dark por defecto.
+  Tokens escogidos desde customTheme:
+  - background: neutral.black12 (#121212)
+  - card: neutral.black11 (#1F1F1F)
+  - border: neutral.black9  (#4F4F4F) suavizado
+  - primary: primary[500]  (#F46425)
+  - secondary: secondary[900] (#1d2f49)
+*/
+
+/* ---------- Base / Light (fallback) ---------- */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 24 90% 55%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+
+  --primary: 24 90% 55%; /* primary[500] #F46425 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 213 43% 20%; /* secondary[900] #1d2f49 */
+  --secondary-foreground: 0 0% 100%;
+
+  --accent: 213 43% 92%;
+  --accent-foreground: 213 43% 20%;
+
+  --destructive: 0 84% 60%; /* error */
+  --destructive-foreground: 0 0% 100%;
+
+  --success: 145 63% 47%; /* success */
+  --warning: 45 93% 47%; /* pending-ish */
+  --info: 206 100% 53%; /* info[700] cercano */
+
+  --radius: 0.75rem;
+}
+
+/* ---------- Dark (default) ---------- */
+.dark {
+  /* ===== Surfaces ===== */
+  --background: 215 43% 7%; /* #0B111A */
+  --foreground: 210 20% 96%; /* #F1F5F9 */
+
+  --card: 214 44% 12%; /* #111C2B */
+  --card-foreground: 210 20% 96%;
+
+  --popover: 214 44% 12%;
+  --popover-foreground: 210 20% 96%;
+
+  /* ===== Strokes ===== */
+  /* --border: 212 33% 20%; #223246 */
+  --border: 213 30% 26%;
+  --input: 212 33% 20%;
+  --ring: 24 90% 55%; /* #F46425 */
+
+  /* ===== Muted ===== */
+  --muted: 214 40% 11%; /* #0F1824 */
+  --muted-foreground: 215 16% 70%; /* #9AA7B8 */
+
+  /* ===== Brand ===== */
+  --primary: 24 90% 55%; /* #F46425 */
+  --primary-foreground: 0 0% 100%;
+
+  /* Corporate Navy (NO CAMBIAR) */
+  --secondary: 213 43% 20%; /* #1d2f49 */
+  --secondary-foreground: 210 20% 96%;
+
+  /* ===== Accent / Hover ===== */
+  --accent: 213 45% 32%; /* cercano a secondary pero +claro */
+  --accent-foreground: 210 40% 98%;
+
+  /* ===== Semantics ===== */
+  --destructive: 0 84% 60%; /* #EF4444 */
+  --destructive-foreground: 0 0% 100%;
+
+  --success: 142 71% 45%; /* #22C55E */
+  --warning: 38 92% 50%; /* #F59E0B */
+  --info: 217 91% 60%; /* #3B82F6 */
+
+  --radius: 0.75rem;
+}
+
+/* ---------- Base element styling (opcional pero útil) ---------- */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}

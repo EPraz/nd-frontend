@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Navigate Marine — Semantic Tokens (shadcn style)
+  Dark-first: la app corre en .dark por defecto.
+*/
+
+/* ---------- Light (Cold Winter — 70/20/10) ---------- */
+:root {
+  /* Test */
+  /* LIGHT THEME (70-20-10) */
+  --bg-base: #f9f7f7; /* 70% */
+  --bg-surface: #dbe2ef; /* 20% */
+  --accent: #3f72af; /* 10% */
+  --text-main: #112d4e; /* Contraste alto */
+
+  --success: 145 63% 47%;
+  --warning: 38 92% 50%;
+  --info: 206 100% 53%;
+  --destructive: 0 72% 51%;
+  --muted: 214 25% 45%;
+
+  --border: 214 32% 85%;
+  --input: 214 32% 85%;
+
+  --popover: 0 0% 100%;
+  --ring: 214 46% 46%; /* tono medio del accent */
+}
+
+/* ---------- Dark (default) ---------- */
+.dark {
+  /* Test */
+  /* DARK MODE (70-20-10) */
+  /* #27374d */ /* 70 */
+  /* --bg-base: 214 32% 23%; */
+  /* #526d82 */ /* 20 */
+  /* --bg-surface: 207 22% 42%; */
+  /* #9db2bf */ /* 10 */
+  /* --accent: 202 21% 68%; */
+  /* #dde6ed */
+  /* --text-main: 206 32% 90%; */
+
+  --bg-base: 222 47% 11%; /* ~#0B1220  (base) */
+  --bg-surface: 221 39% 16%; /* ~#111B2E  (surface/card) */
+  --accent: 24 95% 60%; /* ~#FF8A3D  (accent) */
+  --text-main: 210 40% 96%; /* ~#F3F4F6  (text) */
+
+  --success: 145 63% 47%;
+  --warning: 38 92% 50%;
+  --info: 206 100% 53%;
+  --destructive: 0 72% 51%;
+  --muted: 215 20% 65%;
+
+  --border: 220 22% 26%;
+  --input: 220 22% 26%;
+
+  --popover: 221 34% 18%;
+  --ring: 24 95% 60%; /* mismo accent */
+}
+
+/* ---------- Base element styling ---------- */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    /* background-color: hsl(var(--background)); */
+    /* color: hsl(var(--foreground)); */
+    background-color: hsl(var(--bg-base));
+    color: hsl(var(--text-main));
+  }
+}
