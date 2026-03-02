@@ -83,7 +83,7 @@ export default function ProjectDashboardScreen() {
                 <View className="web:grid web:grid-cols-1 web:gap-4 web:md:grid-cols-2 web:xl:grid-cols-3">
                   <View className="web:col-span-1 web:md:col-span-2 web:xl:col-span-3 ">
                     <DashboardSlot
-                      flush
+                      // flush
                       pickerPlacement="hidden"
                       slotTitle="Overview"
                       selectedModuleId={slots.hero}
@@ -135,6 +135,7 @@ export default function ProjectDashboardScreen() {
                   </View>
                   <View className="web:col-span-2 web:xl:col-span-1">
                     <DashboardSlot
+                      pickerPlacement="hidden"
                       slotTitle="centerBottomRight"
                       selectedModuleId={slots.centerBottomRight}
                       items={items}
@@ -149,6 +150,8 @@ export default function ProjectDashboardScreen() {
               <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
                 <View className="web:flex-1">
                   <DashboardSlot
+                    // flush
+                    pickerPlacement="header"
                     slotTitle="rightTop"
                     selectedModuleId={slots.rightTop}
                     items={items}
@@ -193,7 +196,7 @@ export default function ProjectDashboardScreen() {
                     selectedModuleId={slots[id]}
                     items={items}
                     onSelect={(moduleId) => setSlot(id, moduleId)}
-                    flush={isHero}
+                    // flush={isHero}
                     pickerPlacement={isHero ? "hidden" : "header"}
                   >
                     {renderModule(slots[id])}

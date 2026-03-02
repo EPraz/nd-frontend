@@ -1,7 +1,7 @@
 import type { AssetType } from "@/src/contracts/assets.contract";
 import type { ProjectKind } from "@/src/contracts/projects.contract";
 import type React from "react";
-import { OverviewKpisModule } from "./overviewKpisModule";
+import { OverviewKpisModule } from "./heroSection";
 import {
   AlertsFeedModule,
   CertificatesSummaryModule,
@@ -9,8 +9,8 @@ import {
   ExpiringCertificatesModule,
   MaintenanceOverviewModule,
   ProjectHealthModule,
-  VesselsListModule,
 } from "./projectDashboard";
+import { VesselsListModule } from "./vesselList";
 
 export type ModuleScope = "PROJECT" | "ASSET";
 
