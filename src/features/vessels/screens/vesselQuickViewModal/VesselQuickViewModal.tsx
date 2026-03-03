@@ -1,6 +1,6 @@
-import { Button, QuickViewModalFrame, Text } from "@/src/components";
+import { Button, MiniPill, QuickViewModalFrame, Text } from "@/src/components";
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import { MiniPill, Stat } from "@/src/helpers";
+import { Stat } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { View } from "react-native";

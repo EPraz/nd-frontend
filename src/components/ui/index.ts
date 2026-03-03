@@ -8,5 +8,7 @@ export { Button } from "./button/Button";
 export * from "./card/Card";
 export { default as ErrorState } from "./errorState/ErrorState";
 export * from "./forms";
+export * from "./miniPill/MiniPill";
 export { default as PageHeader } from "./pageHeader/PageHeader";
 export * from "./table";
+export * from "./toneClasses/ToneClasses";

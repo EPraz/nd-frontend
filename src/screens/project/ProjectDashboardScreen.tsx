@@ -62,6 +62,8 @@ export default function ProjectDashboardScreen() {
     setSlots((prev) => ({ ...prev, [slotId]: moduleId }));
   };
 
+  const LATERAL_HEIGHT = "web:h-[45vh] web:max-h-[520px] web:min-h-[375px]";
+
   return (
     <DashboardScopeProvider
       value={{ scope: "PROJECT", projectId: pid, projectKind }}
@@ -80,7 +82,7 @@ export default function ProjectDashboardScreen() {
           {isWeb ? (
             <View className="web:flex web:flex-col web:gap-4 web:lg:flex-row">
               <View className="web:flex-1">
-                <View className="web:grid web:grid-cols-1 web:gap-4 web:md:grid-cols-2 web:xl:grid-cols-3">
+                <View className="web:grid web:grid-cols-1 web:gap-4 web:md:grid-cols-2 web:xl:grid-cols-3 web:auto-rows-[375px]">
                   <View className="web:col-span-1 web:md:col-span-2 web:xl:col-span-3 ">
                     <DashboardSlot
                       // flush
@@ -148,7 +150,7 @@ export default function ProjectDashboardScreen() {
               </View>
 
               <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
-                <View className="web:flex-1">
+                <View className={LATERAL_HEIGHT}>
                   <DashboardSlot
                     // flush
                     pickerPlacement="header"
@@ -161,7 +163,7 @@ export default function ProjectDashboardScreen() {
                   </DashboardSlot>
                 </View>
 
-                <View className="web:flex-1">
+                <View className={LATERAL_HEIGHT}>
                   <DashboardSlot
                     slotTitle="rightBottom"
                     selectedModuleId={slots.rightBottom}

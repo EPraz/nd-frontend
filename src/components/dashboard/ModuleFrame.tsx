@@ -10,12 +10,16 @@ export function ModuleFrame(props: {
   const { isLoading, error, onRetry, children } = props;
 
   if (isLoading) {
-    return <Text className="text-sm text-muted">Loading…</Text>;
+    return (
+      <View className="flex-1">
+        <Text className="text-sm text-muted">Loading…</Text>
+      </View>
+    );
   }
 
   if (error) {
     return (
-      <View className="gap-2">
+      <View className="gap-2 flex-1">
         <Text className="text-sm text-destructive">{String(error)}</Text>
         <Text className="text-sm underline" onPress={onRetry as any}>
           Retry

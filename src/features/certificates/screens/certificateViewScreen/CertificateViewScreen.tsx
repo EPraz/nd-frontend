@@ -7,10 +7,11 @@ import {
   ErrorState,
   FieldDisplay,
   Loading,
+  MiniPill,
   Text,
 } from "@/src/components";
 
-import { formatDate, MiniPill } from "@/src/helpers";
+import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";

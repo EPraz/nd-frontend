@@ -1,6 +1,6 @@
 import { cn } from "@/src/lib/utils";
 import { View } from "react-native";
-import { Text } from "../components";
+import { Text } from "../..";
 
 type MiniPillProps = {
   children: React.ReactNode;

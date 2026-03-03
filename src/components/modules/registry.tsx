@@ -1,9 +1,10 @@
 import type { AssetType } from "@/src/contracts/assets.contract";
 import type { ProjectKind } from "@/src/contracts/projects.contract";
+import { Ionicons } from "@expo/vector-icons";
 import type React from "react";
+import { AlertsFeedModule } from "./alertsFeedModule";
 import { OverviewKpisModule } from "./heroSection";
 import {
-  AlertsFeedModule,
   CertificatesSummaryModule,
   CrewSummaryModule,
   ExpiringCertificatesModule,
@@ -34,6 +35,20 @@ export type DashboardModuleId =
   | "maintenance_overview"
   | "crew_summary"
   | "project_health";
+
+export const moduleIcons: Record<
+  DashboardModuleId,
+  keyof typeof Ionicons.glyphMap
+> = {
+  certs_expiring: "time-outline",
+  certs_summary: "document-text-outline",
+  overview_kpis: "grid-outline",
+  vessels_list: "boat-outline",
+  alerts_feed: "notifications-outline",
+  maintenance_overview: "construct-outline",
+  crew_summary: "people-outline",
+  project_health: "pulse-outline",
+};
 
 export const MODULES: DashboardModule[] = [
   {

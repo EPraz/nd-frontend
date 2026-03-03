@@ -1,6 +1,8 @@
 import { useProjectData } from "@/src/context";
 import { useMemo } from "react";
 
+export type VesselCertStatus = "CRITICAL" | "WARNING" | "OK";
+
 export type VesselListRow = {
   assetId: string;
   assetName: string;
@@ -8,7 +10,7 @@ export type VesselListRow = {
   expired: number;
   expiringSoon: number;
   crewActive: number;
-  status: "OK" | "WARNING" | "CRITICAL";
+  certStatus: VesselCertStatus;
 };
 
 export function useVesselsListData() {
@@ -26,7 +28,7 @@ export function useVesselsListData() {
           expired: 0,
           expiringSoon: 0,
           crewActive: 0,
-          status: "OK",
+          certStatus: "OK",
         });
       }
 
@@ -46,9 +48,9 @@ export function useVesselsListData() {
     }
 
     for (const row of map.values()) {
-      if (row.expired > 0) row.status = "CRITICAL";
-      else if (row.expiringSoon > 0) row.status = "WARNING";
-      else row.status = "OK";
+      if (row.expired > 0) row.certStatus = "CRITICAL";
+      else if (row.expiringSoon > 0) row.certStatus = "WARNING";
+      else row.certStatus = "OK";
     }
 
     return Array.from(map.values());

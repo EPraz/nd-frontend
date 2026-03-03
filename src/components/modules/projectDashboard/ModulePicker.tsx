@@ -58,7 +58,7 @@ export function ModulePicker(props: {
         // CARD HEADER: enterprise look
         <Pressable
           onPress={() => setOpen(true)}
-          className="flex-row items-start justify-between"
+          className="flex-row items-center justify-between"
         >
           <View className="flex-row items-center gap-2">
             <Ionicons name={iconName} size={16} color="white" />
@@ -72,7 +72,7 @@ export function ModulePicker(props: {
             </View>
           </View>
 
-          <View className="h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface">
+          <View className="h-8 w-8 items-center justify-center rounded-full border border-border bg-surface">
             <Ionicons name="chevron-down" size={18} color="white" />
           </View>
         </Pressable>
