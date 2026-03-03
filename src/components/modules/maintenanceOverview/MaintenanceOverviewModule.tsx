@@ -68,23 +68,12 @@ export default function MaintenanceOverviewModule() {
         <View className="flex-1 gap-3">
           {/* STATS */}
           <View className="flex-row flex-wrap gap-3">
+            <MiniStat label="Total" value={String(data.total)} />
+            <MiniStat label="Open" value={String(data.open)} />
+            <MiniStat label="In Progress" value={String(data.inProgress)} />
             <MiniStat
-              className="text-accent overflow-hidden"
-              label="Total"
-              value={String(data.total)}
-            />
-            <MiniStat
-              className="text-accent"
-              label="Open"
-              value={String(data.open)}
-            />
-            <MiniStat
-              className="text-accent "
-              label="In Progress"
-              value={String(data.inProgress)}
-            />
-            <MiniStat
-              className="text-accent"
+              tone="fail"
+              className="text-destructive"
               label="Overdue"
               value={String(data.overdue)}
             />

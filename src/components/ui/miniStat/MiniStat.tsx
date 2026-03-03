@@ -1,22 +1,66 @@
 import { cn } from "@/src/lib/utils";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { Text } from "../text/Text";
+
+type MiniStatProps = {
+  label: string;
+  value: string;
+  className?: string;
+
+  /** opcional: si quieres que el card tenga un hint visual sin depender de text-* */
+  tone?: "neutral" | "info" | "ok" | "warn" | "fail";
+};
+
+function toneBg(tone?: MiniStatProps["tone"]) {
+  switch (tone) {
+    case "info":
+      return "bg-info/10 border-info/25";
+    case "ok":
+      return "bg-success/10 border-success/25";
+    case "warn":
+      return "bg-warning/10 border-warning/25";
+    case "fail":
+      return "bg-destructive/10 border-destructive/25";
+    default:
+      return "bg-surface border-border";
+  }
+}
 
 export function MiniStat({
   label,
   value,
   className,
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) {
+  tone = "neutral",
+}: MiniStatProps) {
+  const isWeb = Platform.OS === "web";
+
   return (
     <View
-      className={cn("flex-1 rounded-md border border-border p-3", className)}
+      className={cn(
+        "flex-1 min-w-[140px] rounded-xl border p-3",
+        toneBg(tone),
+        className,
+      )}
     >
-      <Text className="text-[11px] text-muted">{label}</Text>
-      <Text className="text-inherit font-semibold">{value}</Text>
+      {/* Label: siempre muted + ellipsis */}
+      <Text
+        className="text-[11px] text-muted"
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        {...(isWeb ? { title: label } : {})}
+      >
+        {label}
+      </Text>
+
+      {/* Value: hereda text-* del container si lo pones en className */}
+      <Text
+        className="text-base font-semibold text-inherit mt-1"
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        {...(isWeb ? { title: label } : {})}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
