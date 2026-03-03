@@ -1,11 +1,22 @@
+import { cn } from "@/src/lib/utils";
 import { View } from "react-native";
-import { Text } from "../components";
+import { Text } from "../text/Text";
 
-export function MiniStat({ label, value }: { label: string; value: string }) {
+export function MiniStat({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <View className="flex-1 rounded-md border border-border p-3">
+    <View
+      className={cn("flex-1 rounded-md border border-border p-3", className)}
+    >
       <Text className="text-[11px] text-muted">{label}</Text>
-      <Text className="text-baseBg font-semibold">{value}</Text>
+      <Text className="text-inherit font-semibold">{value}</Text>
     </View>
   );
 }

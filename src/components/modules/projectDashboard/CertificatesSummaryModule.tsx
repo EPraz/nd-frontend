@@ -1,8 +1,7 @@
-import { MiniStat } from "@/src/helpers";
 import { useCertificatesData } from "@/src/hooks";
 import { View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
-import { Card, Text } from "../../ui";
+import { Card, MiniStat, Text } from "../../ui";
 
 export function CertificatesSummaryModule() {
   const {

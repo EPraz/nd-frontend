@@ -83,7 +83,7 @@ export default function LoginScreen() {
               </Button>
 
               <Text className="text-xs text-muted/70 text-center">
-                Navigate Marine • Secure Access
+                Powered by Navigate Marine • Secure Access
               </Text>
             </View>
           </View>

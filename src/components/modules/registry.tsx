@@ -4,11 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import type React from "react";
 import { AlertsFeedModule } from "./alertsFeedModule";
 import { OverviewKpisModule } from "./heroSection";
+import { MaintenanceOverviewModule } from "./maintenanceOverviewModule";
 import {
   CertificatesSummaryModule,
   CrewSummaryModule,
   ExpiringCertificatesModule,
-  MaintenanceOverviewModule,
   ProjectHealthModule,
 } from "./projectDashboard";
 import { VesselsListModule } from "./vesselList";
