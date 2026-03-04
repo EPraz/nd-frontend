@@ -130,7 +130,7 @@ export default function ProjectShellLayout() {
           <View className="flex-1 flex-row bg-baseBg">
             <ScrollView
               className="flex-1"
-              contentContainerClassName="p-4 gap-4 web:p-6 web:ml-[92px]"
+              contentContainerClassName="p-4 gap-4 web:p-6 web:lg:ml-[92px]"
             >
               <Slot />
             </ScrollView>

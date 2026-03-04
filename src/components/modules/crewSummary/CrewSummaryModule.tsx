@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
-import { Button, MiniPill, MiniStat, Text } from "../../ui";
+import { Button, MiniPill, Text } from "../../ui";
 
 const MAX_VESSELS = 10;
 const COMPACT_HEIGHT_PX = 400;
@@ -40,7 +40,7 @@ export default function CrewSummaryModule() {
       >
         <View className="flex-1 gap-3">
           {/* STATS */}
-          {compact ? (
+          {/* {compact ? (
             <View className="flex-row gap-3">
               <MiniStat
                 tone="info"
@@ -78,7 +78,7 @@ export default function CrewSummaryModule() {
                 value={String(data.vesselsWithoutActiveCrew)}
               />
             </View>
-          )}
+          )} */}
 
           {/* LIST */}
           {!hasList ? (
@@ -87,7 +87,7 @@ export default function CrewSummaryModule() {
             </View>
           ) : (
             <View className="flex-1 gap-2">
-              <View className="flex-row items-center justify-between">
+              {/* <View className="flex-row items-center justify-between">
                 <Text className="text-sm font-semibold text-textMain">
                   Crew by Vessel
                 </Text>
@@ -98,7 +98,7 @@ export default function CrewSummaryModule() {
                     Vessels
                   </Text>
                 </MiniPill>
-              </View>
+              </View> */}
 
               <ScrollView
                 className="flex-1"

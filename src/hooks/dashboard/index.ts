@@ -3,5 +3,5 @@ export * from "./useCertificatesData";
 export * from "./useCrewSummaryData";
 export * from "./useMaintenanceOverviewData";
 export * from "./useOverviewKpisData";
-export * from "./useProjectHealthData";
+export * from "./useVesselsHealthData";
 export * from "./useVesselsListData";

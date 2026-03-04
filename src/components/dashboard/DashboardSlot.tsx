@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { View } from "react-native";
-import { ModulePicker } from "../modules/projectDashboard/ModulePicker";
+import { ModulePicker } from "../modules/modulePicker/ModulePicker";
 import { moduleIcons, type DashboardModuleId } from "../modules/registry";
 import { Card, Text } from "../ui";
 
