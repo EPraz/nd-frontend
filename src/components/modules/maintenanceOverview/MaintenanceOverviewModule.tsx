@@ -8,7 +8,7 @@ import {
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, MiniStat, Text, Tone, toneClasses } from "../../ui";
@@ -36,8 +36,12 @@ export default function MaintenanceOverviewModule() {
   const { projectId } = useDashboardScope();
   const { data, isLoading, error, refetch } = useMaintenanceOverviewData();
   const router = useRouter();
-  const [slotH, setSlotH] = useState<number>(9999);
-  const compact = slotH <= COMPACT_HEIGHT_PX;
+  const [slotH, setSlotH] = useState<number | null>(null);
+
+  const compact = useMemo(() => {
+    if (slotH == null) return true;
+    return slotH <= COMPACT_HEIGHT_PX;
+  }, [slotH]);
 
   const upcoming = (data as MaintenanceOverviewData)?.upcoming as
     | Array<{
@@ -73,7 +77,10 @@ export default function MaintenanceOverviewModule() {
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
       <View
         className="flex-1 p-3 border border-border"
-        onLayout={(e) => setSlotH(e.nativeEvent.layout.height)}
+        onLayout={(e) => {
+          const h = Math.round(e.nativeEvent.layout.height);
+          setSlotH((prev) => (prev === h ? prev : h)); // ✅ evita renders extra
+        }}
       >
         <View className="flex-1 gap-3">
           {/* STATS */}

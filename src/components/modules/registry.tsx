@@ -3,12 +3,12 @@ import type { ProjectKind } from "@/src/contracts/projects.contract";
 import { Ionicons } from "@expo/vector-icons";
 import type React from "react";
 import { AlertsFeedModule } from "./alertsFeedModule";
+import { CrewSummaryModule } from "./crewSummary";
 import { ExpiringCertificatesModule } from "./expiringCertificates";
 import { OverviewKpisModule } from "./heroSection";
 import { MaintenanceOverviewModule } from "./maintenanceOverview";
 import {
   CertificatesSummaryModule,
-  CrewSummaryModule,
   ProjectHealthModule,
 } from "./projectDashboard";
 import { VesselsListModule } from "./vesselList";
