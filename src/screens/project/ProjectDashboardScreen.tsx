@@ -62,14 +62,14 @@ export default function ProjectDashboardScreen() {
     setSlots((prev) => ({ ...prev, [slotId]: moduleId }));
   };
 
-  const LATERAL_HEIGHT = "web:h-[45vh] web:max-h-[520px] web:min-h-[375px]";
+  const LATERAL_HEIGHT = "web:h-[45vh] web:max-h-[520px] web:min-h-[520px]";
 
   return (
     <DashboardScopeProvider
       value={{ scope: "PROJECT", projectId: pid, projectKind }}
     >
       <ScrollView className="flex-1 bg-baseBg">
-        <View className="p-4 web:p-6 gap-4">
+        <View className="p-4 web:p-0 gap-4">
           <View className="gap-1">
             <Text className="text-2xl font-semibold">
               {projectName} Dashboard
@@ -82,8 +82,8 @@ export default function ProjectDashboardScreen() {
           {isWeb ? (
             <View className="web:flex web:flex-col web:gap-4 web:lg:flex-row">
               <View className="web:flex-1">
-                <View className="web:grid web:grid-cols-1 web:gap-4 web:md:grid-cols-2 web:xl:grid-cols-3 web:auto-rows-[375px]">
-                  <View className="web:col-span-1 web:md:col-span-2 web:xl:col-span-3 ">
+                <View className="web:grid web:grid-cols-1 web:gap-4 web:md:grid-cols-2 web:2xl:grid-cols-3 web:auto-rows-[375px]">
+                  <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3 ">
                     <DashboardSlot
                       // flush
                       pickerPlacement="hidden"
@@ -95,7 +95,7 @@ export default function ProjectDashboardScreen() {
                       {renderModule(slots.hero)}
                     </DashboardSlot>
                   </View>
-                  <View className="web:col-span-2 web:xl:col-span-1">
+                  <View className="web:col-span-2 web:2xl:col-span-1">
                     <DashboardSlot
                       slotTitle="leftCenter"
                       selectedModuleId={slots.leftCenter}
@@ -105,7 +105,7 @@ export default function ProjectDashboardScreen() {
                       {renderModule(slots.leftCenter)}
                     </DashboardSlot>
                   </View>
-                  <View className="web:col-span-1 web:md:col-span-2 web:xl:col-span-2">
+                  <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-2">
                     <DashboardSlot
                       slotTitle="centerMid"
                       selectedModuleId={slots.centerMid}
@@ -115,7 +115,7 @@ export default function ProjectDashboardScreen() {
                       {renderModule(slots.centerMid)}
                     </DashboardSlot>
                   </View>
-                  <View className="web:col-span-2 web:xl:col-span-1">
+                  <View className="web:col-span-2 web:2xl:col-span-1">
                     <DashboardSlot
                       slotTitle="leftBottom"
                       selectedModuleId={slots.leftBottom}
@@ -125,7 +125,7 @@ export default function ProjectDashboardScreen() {
                       {renderModule(slots.leftBottom)}
                     </DashboardSlot>
                   </View>
-                  <View className="web:col-span-2 web:xl:col-span-1">
+                  <View className="web:col-span-2 web:2xl:col-span-1">
                     <DashboardSlot
                       slotTitle="centerBottomLeft"
                       selectedModuleId={slots.centerBottomLeft}
@@ -135,7 +135,7 @@ export default function ProjectDashboardScreen() {
                       {renderModule(slots.centerBottomLeft)}
                     </DashboardSlot>
                   </View>
-                  <View className="web:col-span-2 web:xl:col-span-1">
+                  <View className="web:col-span-2 web:2xl:col-span-1">
                     <DashboardSlot
                       pickerPlacement="hidden"
                       slotTitle="centerBottomRight"

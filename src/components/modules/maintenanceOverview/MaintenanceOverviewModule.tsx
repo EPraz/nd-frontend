@@ -1,15 +1,20 @@
 import { useDashboardScope } from "@/src/context";
 import { MaintenanceStatus } from "@/src/features/maintenance";
 import { formatDate } from "@/src/helpers";
-import { useMaintenanceOverviewData } from "@/src/hooks";
+import {
+  MaintenanceOverviewData,
+  useMaintenanceOverviewData,
+} from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, MiniStat, Text, Tone, toneClasses } from "../../ui";
 
-const MAX_NEXT = 6;
+const MAX_NEXT = 10;
+const COMPACT_HEIGHT_PX = 400;
 
 function maintenanceTone(s: MaintenanceStatus): Tone {
   // ajusta a tus statuses reales
@@ -31,8 +36,10 @@ export default function MaintenanceOverviewModule() {
   const { projectId } = useDashboardScope();
   const { data, isLoading, error, refetch } = useMaintenanceOverviewData();
   const router = useRouter();
+  const [slotH, setSlotH] = useState<number>(9999);
+  const compact = slotH <= COMPACT_HEIGHT_PX;
 
-  const upcoming = (data as any)?.upcoming as
+  const upcoming = (data as MaintenanceOverviewData)?.upcoming as
     | Array<{
         id: string;
         title: string;
@@ -64,20 +71,41 @@ export default function MaintenanceOverviewModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
-      <View className="flex-1 p-3 border border-border">
+      <View
+        className="flex-1 p-3 border border-border"
+        onLayout={(e) => setSlotH(e.nativeEvent.layout.height)}
+      >
         <View className="flex-1 gap-3">
           {/* STATS */}
-          <View className="flex-row flex-wrap gap-3">
-            <MiniStat label="Total" value={String(data.total)} />
-            <MiniStat label="Open" value={String(data.open)} />
-            <MiniStat label="In Progress" value={String(data.inProgress)} />
-            <MiniStat
-              tone="fail"
-              className="text-destructive"
-              label="Overdue"
-              value={String(data.overdue)}
-            />
-          </View>
+          {compact ? (
+            // ✅ compacto: 2 stats, 1 fila, sin wrap
+            <View className="flex-row gap-3">
+              <MiniStat
+                tone="info"
+                className="text-info"
+                label="Open"
+                value={String(data.open)}
+              />
+              <MiniStat
+                tone="fail"
+                className="text-destructive"
+                label="Overdue"
+                value={String(data.overdue)}
+              />
+            </View>
+          ) : (
+            // ✅ normal: 4 stats
+            <View className="flex-row flex-wrap gap-3">
+              <MiniStat label="Total" value={String(data.total)} />
+              <MiniStat label="Open" value={String(data.open)} />
+              <MiniStat label="In Progress" value={String(data.inProgress)} />
+              <MiniStat
+                className="text-destructive"
+                label="Overdue"
+                value={String(data.overdue)}
+              />
+            </View>
+          )}
 
           {/* LIST / NEXT */}
           {!hasList ? (
@@ -158,7 +186,7 @@ export default function MaintenanceOverviewModule() {
             </View>
           ) : (
             <View className="flex-1 gap-2">
-              <View className="flex-row items-center justify-between">
+              {/* <View className="flex-row items-center justify-between">
                 <Text className="text-sm font-semibold text-textMain">
                   Upcoming Maintenance
                 </Text>
@@ -168,7 +196,7 @@ export default function MaintenanceOverviewModule() {
                     Top {Math.min(MAX_NEXT, upcoming?.length ?? MAX_NEXT)}
                   </Text>
                 </MiniPill>
-              </View>
+              </View> */}
 
               <ScrollView
                 className="flex-1"
