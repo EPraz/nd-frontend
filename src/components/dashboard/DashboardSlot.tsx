@@ -1,8 +1,7 @@
-import { cn } from "@/src/lib/utils";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { View } from "react-native";
-import { ModulePicker } from "../modules/projectDashboard/ModulePicket";
-import type { DashboardModuleId } from "../modules/registry";
+import { ModulePicker } from "../modules/modulePicker/ModulePicker";
+import { moduleIcons, type DashboardModuleId } from "../modules/registry";
 import { Card, Text } from "../ui";
 
 type Item = { id: DashboardModuleId; label: string };
@@ -14,8 +13,8 @@ export function DashboardSlot(props: {
   onSelect: (moduleId: DashboardModuleId) => void;
   children: ReactNode;
 
-  flush?: boolean;
-  pickerPlacement?: "header" | "overlay" | "hidden"; // ✅ nuevo
+  // flush?: boolean;
+  pickerPlacement?: "header" | "hidden";
 }) {
   const {
     slotTitle,
@@ -23,48 +22,32 @@ export function DashboardSlot(props: {
     items,
     onSelect,
     children,
-    flush = false,
+    // flush = false,
     pickerPlacement = "header",
   } = props;
 
-  const [open, setOpen] = useState(false);
-
   return (
     <Card
-      className={cn(flush ? "p-0 gap-0 overflow-hidden relative" : "p-4 gap-3")}
+      // className={cn(flush ? "p-0 gap-0 overflow-hidden relative" : "p-4 gap-3")}
+      className={"flex-1 h-full p-0 gap-0 overflow-hidden relative"}
     >
-      {/* HEADER */}
-      {pickerPlacement === "header" && (
-        <View className={cn(flush ? "px-4 pt-4 pb-3" : null)}>
+      {/* HEADER (card style) */}
+      {pickerPlacement === "header" ? (
+        // <View className={cn(flush ? "px-4 pt-4 pb-3" : null)}>
+        <View className={"px-4 pt-4 pb-3"}>
           <ModulePicker
             title={slotTitle}
             value={selectedModuleId}
             items={items}
             onChange={onSelect}
+            variant="inline"
+            iconName={moduleIcons[selectedModuleId]}
           />
         </View>
-      )}
-
-      {/* OVERLAY BUTTON + PICKER */}
-      {pickerPlacement === "overlay" && (
-        <View
-          pointerEvents="box-none"
-          className="absolute top-3 left-3 z-20 w-fit self-end"
-        >
-          <View className="overflow-hidden rounded-md border border-white/10 bg-black/50">
-            <ModulePicker
-              title={slotTitle}
-              value={selectedModuleId}
-              items={items}
-              onChange={onSelect}
-              variant="overlay"
-            />
-          </View>
-        </View>
-      )}
+      ) : null}
 
       {/* BODY */}
-      {flush ? (
+      {/* {flush ? (
         <View>
           {children ?? (
             <Text className="text-muted text-sm px-4 pb-4">No content</Text>
@@ -74,7 +57,12 @@ export function DashboardSlot(props: {
         <View className="rounded-md border border-border p-3">
           {children ?? <Text className="text-muted text-sm">No content</Text>}
         </View>
-      )}
+      )} */}
+      <View className="flex-1">
+        {children ?? (
+          <Text className="text-muted text-sm px-4 pb-4">No content</Text>
+        )}
+      </View>
     </Card>
   );
 }

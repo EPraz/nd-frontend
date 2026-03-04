@@ -51,12 +51,12 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
           {/* Right */}
           <View className="flex-row items-center gap-3">
             {/* mobile search */}
-            <Button variant="icon" size="icon" className="lg:hidden">
+            <Button variant="icon" size="icon" className="lg:hidden" disabled>
               <Ionicons name="search" size={16} color={ICON_MUTED} />
             </Button>
 
             {/* chat */}
-            <Button variant="icon" size="icon">
+            <Button variant="icon" size="icon" disabled>
               <Ionicons
                 name="chatbubble-ellipses-outline"
                 size={16}
@@ -65,7 +65,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
             </Button>
 
             {/* notifications */}
-            <Button variant="icon" size="icon">
+            <Button variant="icon" size="icon" disabled>
               <Ionicons
                 name="notifications-outline"
                 size={16}
@@ -104,7 +104,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
             <Button
               variant="icon"
               size="icon"
-              className="lg:hidden bg-accent/15 border border-accent/25"
+              className="lg:hidden bg-accent border border-accent"
               onPress={() => handleSetCollapse(!collapsed)}
             >
               <Ionicons name="menu" size={16} color={ICON_ACCENT} />

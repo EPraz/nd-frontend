@@ -7,9 +7,9 @@ import {
   ErrorState,
   FieldDisplay,
   Loading,
+  MiniPill,
   Text,
 } from "@/src/components";
-import { MiniPill } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";

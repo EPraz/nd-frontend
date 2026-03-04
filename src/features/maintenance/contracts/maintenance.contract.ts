@@ -1,6 +1,6 @@
 import { AssetDto } from "@/src/contracts/assets.contract";
 
-export type MaintenanceStatus = "OPEN" | "IN_PROGRESS" | "DONE";
+export type MaintenanceStatus = "OPEN" | "IN_PROGRESS" | "DONE" | "OVERDUE";
 export type MaintenancePriority = "LOW" | "MEDIUM" | "HIGH";
 
 export type MaintenanceDto = {

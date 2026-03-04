@@ -34,7 +34,7 @@ export function HeroBanner({
     <View className="w-full overflow-hidden rounded-xl border border-border">
       {isWeb ? (
         <View
-          className="w-full h-[320px]"
+          className="w-full h-[375px]"
           style={
             {
               backgroundImage: `url(${webUri})`,
@@ -56,7 +56,7 @@ export function HeroBanner({
         <ImageBackground
           source={source}
           resizeMode="cover"
-          className="w-full h-[340px]"
+          className="w-full h-[375px]"
         >
           <OverlayContent
             title={title}

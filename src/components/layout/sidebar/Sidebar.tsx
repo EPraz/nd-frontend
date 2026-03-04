@@ -124,7 +124,7 @@ export default function Sidebar({
             label="Switch Theme"
             iconBase="moon"
             onPress={onToggleTheme}
-            enabled
+            enabled={false}
           />
         </GroupSidebarMenu>
 

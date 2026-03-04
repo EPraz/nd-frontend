@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { CrewDto } from "../contracts/crew.contract";
-import { MaintenanceDto } from "../contracts/maintenance.contract";
 import { CertificateDto } from "../features/certificates/contracts/certificates.contract";
 import { useCertificatesByProject } from "../features/certificates/hooks/useCertificatesByProject";
+import { CrewDto } from "../features/crew";
 import { useCrewByProject } from "../features/crew/hooks/useCrewByProject";
 import { FuelDto } from "../features/fuel/contracts/fuel.contract";
 import { useFuelByProject } from "../features/fuel/hooks/useFuelByProject";
+import { MaintenanceDto } from "../features/maintenance";
 import { useMaintenanceByProject } from "../features/maintenance/hooks/useMaintenanceByProject";
 import { useProjectContext } from "./ProjectProvider";
 

@@ -1,16 +1,14 @@
 import type { AssetType } from "@/src/contracts/assets.contract";
 import type { ProjectKind } from "@/src/contracts/projects.contract";
+import { Ionicons } from "@expo/vector-icons";
 import type React from "react";
-import { OverviewKpisModule } from "./overviewKpisModule";
-import {
-  AlertsFeedModule,
-  CertificatesSummaryModule,
-  CrewSummaryModule,
-  ExpiringCertificatesModule,
-  MaintenanceOverviewModule,
-  ProjectHealthModule,
-  VesselsListModule,
-} from "./projectDashboard";
+import { AlertsFeedModule } from "./alertsFeedModule";
+import { CrewSummaryModule } from "./crewSummary";
+import { ExpiringCertificatesModule } from "./expiringCertificates";
+import { OverviewKpisModule } from "./heroSection";
+import { MaintenanceOverviewModule } from "./maintenanceOverview";
+import { VesselsListModule } from "./vesselList";
+import { VesselsHealthModule } from "./vesselsHealth";
 
 export type ModuleScope = "PROJECT" | "ASSET";
 
@@ -27,13 +25,25 @@ export type DashboardModule = {
 
 export type DashboardModuleId =
   | "certs_expiring"
-  | "certs_summary"
   | "overview_kpis"
   | "vessels_list"
   | "alerts_feed"
   | "maintenance_overview"
   | "crew_summary"
-  | "project_health";
+  | "vessels_health";
+
+export const moduleIcons: Record<
+  DashboardModuleId,
+  keyof typeof Ionicons.glyphMap
+> = {
+  certs_expiring: "time-outline",
+  overview_kpis: "grid-outline",
+  vessels_list: "boat-outline",
+  alerts_feed: "notifications-outline",
+  maintenance_overview: "construct-outline",
+  crew_summary: "people-outline",
+  vessels_health: "pulse-outline",
+};
 
 export const MODULES: DashboardModule[] = [
   {
@@ -43,13 +53,7 @@ export const MODULES: DashboardModule[] = [
     supported: { projectKind: ["MARITIME"] },
     Component: ExpiringCertificatesModule,
   },
-  {
-    id: "certs_summary",
-    label: "Certificates Summary",
-    scope: "PROJECT",
-    supported: { projectKind: ["MARITIME"] },
-    Component: CertificatesSummaryModule,
-  },
+
   {
     id: "overview_kpis",
     label: "Overview KPIs",
@@ -86,11 +90,11 @@ export const MODULES: DashboardModule[] = [
     Component: CrewSummaryModule,
   },
   {
-    id: "project_health",
-    label: "Project Health",
+    id: "vessels_health",
+    label: "Vessels Health",
     scope: "PROJECT",
     supported: { projectKind: ["MARITIME"] },
-    Component: ProjectHealthModule,
+    Component: VesselsHealthModule,
   },
 ];
 

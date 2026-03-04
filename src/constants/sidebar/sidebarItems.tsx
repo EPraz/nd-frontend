@@ -43,7 +43,7 @@ export function sidebarItems(kind: ProjectKind): {
           key: "fuel",
           label: "Fuel",
           iconBase: "flame",
-          enabled: true,
+          enabled: false,
         },
       ],
       secondary: [
