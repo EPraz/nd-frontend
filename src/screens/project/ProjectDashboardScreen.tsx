@@ -66,32 +66,19 @@ export default function ProjectDashboardScreen() {
     "web:grid web:gap-4 web:grid-cols-1 web:md:grid-cols-2 web:2xl:grid-cols-6";
   const GRID_ROWS = "web:auto-rows-[375px]"; // opcional
 
-  type SlotWidth = 1 | 1.5 | 2 | 2.5 | 3;
-
-  function toColSpan6(w: SlotWidth) {
-    const map: Record<SlotWidth, 2 | 3 | 4 | 5 | 6> = {
-      1: 2,
-      1.5: 3,
-      2: 4,
-      2.5: 5,
-      3: 6,
-    };
-    return map[w];
-  }
-
-  const SLOT_WIDTH_2XL: Record<SlotId, SlotWidth> = {
-    hero: 3,
-    leftCenter: 1,
-    centerMid: 2,
-    leftBottom: 1.5,
-    centerBottomLeft: 1.5,
-    rightTop: 1,
-    rightBottom: 1,
+  const SLOT_CLASS_2XL: Record<SlotId, string> = {
+    hero: "web:col-span-1 web:md:col-span-2 web:2xl:col-span-6",
+    leftCenter: "web:col-span-1 web:md:col-span-2 web:2xl:col-span-2",
+    centerMid: "web:col-span-1 web:md:col-span-2 web:2xl:col-span-4",
+    leftBottom: "web:col-span-1 web:md:col-span-2 web:2xl:col-span-3",
+    centerBottomLeft: "web:col-span-1 web:md:col-span-2 web:2xl:col-span-3",
+    // estos no se usan en el grid, están en la columna derecha:
+    rightTop: "web:col-span-1",
+    rightBottom: "web:col-span-1",
   };
 
   function slotClass2(id: SlotId) {
-    const span = toColSpan6(SLOT_WIDTH_2XL[id]);
-    return `web:col-span-1 web:md:col-span-2 web:2xl:col-span-${span}`;
+    return SLOT_CLASS_2XL[id];
   }
 
   return (
