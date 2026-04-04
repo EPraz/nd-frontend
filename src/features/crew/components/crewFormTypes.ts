@@ -1,22 +1,53 @@
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import { CreateCrewInput, CrewDto, CrewStatus } from "../contracts";
+import {
+  CreateCrewInput,
+  CrewDepartment,
+  CrewDto,
+  CrewStatus,
+} from "../contracts";
+
+function toDateOnly(value?: string | null): string {
+  return value ? value.slice(0, 10) : "";
+}
+
+function toOptionalNumber(value: string): number | undefined {
+  if (!value.trim()) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
 export type CrewFormValues = {
-  assetId: string | null; // vessel selected
+  assetId: string | null;
   selectedVessel: AssetDto | null;
-
   fullName: string;
-  rank: string;
   nationality: string;
-  documentId: string;
-
-  status: CrewStatus; // SOURCE OF TRUTH
-
-  documents: Array<{
-    id: string;
-    name: string;
-    type: "PASSPORT" | "SEAMAN_BOOK" | "OTHER";
-  }>;
+  dateOfBirth: string;
+  passportNumber: string;
+  seafarerId: string;
+  personalEmail: string;
+  rank: string;
+  department: CrewDepartment | null;
+  photoUrl: string;
+  status: CrewStatus;
+  dateOfEmbarkation: string;
+  portOfEmbarkation: string;
+  expectedDateOfDisembarkation: string;
+  contractType: string;
+  operatingCompany: string;
+  crewManagementAgency: string;
+  totalSeaExperienceYears: string;
+  yearsInCurrentRank: string;
+  vesselTypeExperience: string;
+  previousVessels: string;
+  timeWithCurrentCompanyMonths: string;
+  onboardFamiliarizationDate: string;
+  familiarizationChecklistCompleted: boolean;
+  crewDigitalSignatureUrl: string;
+  responsibleOfficer: string;
+  medicalCertificateValid: boolean | null;
+  medicalCertificateExpirationDate: string;
+  medicalRestrictions: string;
+  notes: string;
 };
 
 export function emptyCrewFormValues(): CrewFormValues {
@@ -24,36 +55,122 @@ export function emptyCrewFormValues(): CrewFormValues {
     assetId: null,
     selectedVessel: null,
     fullName: "",
-    rank: "",
     nationality: "",
-    documentId: "",
+    dateOfBirth: "",
+    passportNumber: "",
+    seafarerId: "",
+    personalEmail: "",
+    rank: "",
+    department: null,
+    photoUrl: "",
     status: "ACTIVE",
-    documents: [],
+    dateOfEmbarkation: "",
+    portOfEmbarkation: "",
+    expectedDateOfDisembarkation: "",
+    contractType: "",
+    operatingCompany: "",
+    crewManagementAgency: "",
+    totalSeaExperienceYears: "",
+    yearsInCurrentRank: "",
+    vesselTypeExperience: "",
+    previousVessels: "",
+    timeWithCurrentCompanyMonths: "",
+    onboardFamiliarizationDate: "",
+    familiarizationChecklistCompleted: false,
+    crewDigitalSignatureUrl: "",
+    responsibleOfficer: "",
+    medicalCertificateValid: null,
+    medicalCertificateExpirationDate: "",
+    medicalRestrictions: "",
+    notes: "",
   };
 }
 
 export function crewFormFromDto(dto: CrewDto): CrewFormValues {
   return {
     assetId: dto.assetId,
-    selectedVessel: dto.asset ?? null, // backend: asset siempre viene
+    selectedVessel: dto.asset ?? null,
     fullName: dto.fullName ?? "",
-    rank: dto.rank ?? "",
     nationality: dto.nationality ?? "",
-    documentId: dto.documentId ?? "",
+    dateOfBirth: toDateOnly(dto.dateOfBirth),
+    passportNumber: dto.passportNumber ?? "",
+    seafarerId: dto.seafarerId ?? "",
+    personalEmail: dto.personalEmail ?? "",
+    rank: dto.rank ?? "",
+    department: dto.department ?? null,
+    photoUrl: dto.photoUrl ?? "",
     status: dto.status,
-    documents: [],
+    dateOfEmbarkation: toDateOnly(dto.dateOfEmbarkation),
+    portOfEmbarkation: dto.portOfEmbarkation ?? "",
+    expectedDateOfDisembarkation: toDateOnly(
+      dto.expectedDateOfDisembarkation,
+    ),
+    contractType: dto.contractType ?? "",
+    operatingCompany: dto.operatingCompany ?? "",
+    crewManagementAgency: dto.crewManagementAgency ?? "",
+    totalSeaExperienceYears:
+      dto.totalSeaExperienceYears === null
+        ? ""
+        : String(dto.totalSeaExperienceYears),
+    yearsInCurrentRank:
+      dto.yearsInCurrentRank === null ? "" : String(dto.yearsInCurrentRank),
+    vesselTypeExperience: dto.vesselTypeExperience ?? "",
+    previousVessels: dto.previousVessels ?? "",
+    timeWithCurrentCompanyMonths:
+      dto.timeWithCurrentCompanyMonths === null
+        ? ""
+        : String(dto.timeWithCurrentCompanyMonths),
+    onboardFamiliarizationDate: toDateOnly(dto.onboardFamiliarizationDate),
+    familiarizationChecklistCompleted: dto.familiarizationChecklistCompleted,
+    crewDigitalSignatureUrl: dto.crewDigitalSignatureUrl ?? "",
+    responsibleOfficer: dto.responsibleOfficer ?? "",
+    medicalCertificateValid: dto.medicalCertificateValid,
+    medicalCertificateExpirationDate: toDateOnly(
+      dto.medicalCertificateExpirationDate,
+    ),
+    medicalRestrictions: dto.medicalRestrictions ?? "",
+    notes: dto.notes ?? "",
   };
 }
 
 export function toCreateCrewInput(v: CrewFormValues): CreateCrewInput {
   if (!v.assetId) throw new Error("Missing assetId");
+
   return {
     assetId: v.assetId,
     fullName: v.fullName.trim(),
-    rank: v.rank.trim() || undefined,
     nationality: v.nationality.trim() || undefined,
-    documentId: v.documentId.trim() || undefined,
+    dateOfBirth: v.dateOfBirth.trim() || undefined,
+    passportNumber: v.passportNumber.trim() || undefined,
+    seafarerId: v.seafarerId.trim() || undefined,
+    personalEmail: v.personalEmail.trim() || undefined,
+    rank: v.rank.trim() || undefined,
+    department: v.department ?? undefined,
+    photoUrl: v.photoUrl.trim() || undefined,
     status: v.status,
+    dateOfEmbarkation: v.dateOfEmbarkation.trim() || undefined,
+    portOfEmbarkation: v.portOfEmbarkation.trim() || undefined,
+    expectedDateOfDisembarkation:
+      v.expectedDateOfDisembarkation.trim() || undefined,
+    contractType: v.contractType.trim() || undefined,
+    operatingCompany: v.operatingCompany.trim() || undefined,
+    crewManagementAgency: v.crewManagementAgency.trim() || undefined,
+    totalSeaExperienceYears: toOptionalNumber(v.totalSeaExperienceYears),
+    yearsInCurrentRank: toOptionalNumber(v.yearsInCurrentRank),
+    vesselTypeExperience: v.vesselTypeExperience.trim() || undefined,
+    previousVessels: v.previousVessels.trim() || undefined,
+    timeWithCurrentCompanyMonths: toOptionalNumber(v.timeWithCurrentCompanyMonths),
+    onboardFamiliarizationDate:
+      v.onboardFamiliarizationDate.trim() || undefined,
+    familiarizationChecklistCompleted: v.familiarizationChecklistCompleted,
+    crewDigitalSignatureUrl: v.crewDigitalSignatureUrl.trim() || undefined,
+    responsibleOfficer: v.responsibleOfficer.trim() || undefined,
+    medicalCertificateValid:
+      v.medicalCertificateValid === null ? undefined : v.medicalCertificateValid,
+    medicalCertificateExpirationDate:
+      v.medicalCertificateExpirationDate.trim() || undefined,
+    medicalRestrictions: v.medicalRestrictions.trim() || undefined,
+    notes: v.notes.trim() || undefined,
   };
 }
 
@@ -66,21 +183,10 @@ export function toUpdateCrewInput({
   values,
   fixedAssetId = null,
 }: ToUpdateCrewInputArgs): Partial<CreateCrewInput> {
-  const assetId = fixedAssetId ?? values.assetId ?? undefined;
-
   return {
-    assetId,
-
-    // requerido en UI: lo mandas siempre
-    fullName: values.fullName.trim(),
-
-    // opcionales: si vacío -> undefined (no sobre-escribe con "")
-    rank: values.rank.trim() ? values.rank.trim() : undefined,
-    nationality: values.nationality.trim()
-      ? values.nationality.trim()
-      : undefined,
-    documentId: values.documentId.trim() ? values.documentId.trim() : undefined,
-
-    status: values.status,
+    ...toCreateCrewInput({
+      ...values,
+      assetId: fixedAssetId ?? values.assetId,
+    } as CrewFormValues),
   };
 }

@@ -44,3 +44,13 @@ export async function updateCrew(
     input,
   );
 }
+
+export async function deleteCrew(
+  projectId: string,
+  assetId: string,
+  crewId: string,
+): Promise<CrewDto> {
+  return apiClient.delete<CrewDto>(
+    `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
+  );
+}

@@ -23,12 +23,14 @@ export function MaintenanceStatusPill(props: {
     OPEN: "bg-destructive/15",
     IN_PROGRESS: "bg-warning/15",
     DONE: "bg-success/15",
+    OVERDUE: "bg-destructive/15",
   };
 
   const pillText: Record<MaintenanceStatus, string> = {
     OPEN: "text-destructive",
     IN_PROGRESS: "text-warning",
     DONE: "text-success",
+    OVERDUE: "text-destructive",
   };
 
   return (

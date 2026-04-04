@@ -3,25 +3,17 @@ import { useCrewSummaryData } from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text } from "../../ui";
 
 const MAX_VESSELS = 10;
-const COMPACT_HEIGHT_PX = 400;
 
 export default function CrewSummaryModule() {
   const { projectId } = useDashboardScope();
   const { data, isLoading, error, refetch } = useCrewSummaryData();
   const router = useRouter();
-
-  const [slotH, setSlotH] = useState<number | null>(null);
-
-  const compact = useMemo(() => {
-    if (slotH == null) return true; // default safe
-    return slotH <= COMPACT_HEIGHT_PX;
-  }, [slotH]);
 
   const top = useMemo(() => {
     return data.crewByVessel.slice(0, MAX_VESSELS);
@@ -31,13 +23,7 @@ export default function CrewSummaryModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
-      <View
-        className="flex-1 p-3 border border-border"
-        onLayout={(e) => {
-          const h = Math.round(e.nativeEvent.layout.height);
-          setSlotH((prev) => (prev === h ? prev : h));
-        }}
-      >
+      <View className="flex-1 p-3 border border-border">
         <View className="flex-1 gap-3">
           {/* STATS */}
           {/* {compact ? (

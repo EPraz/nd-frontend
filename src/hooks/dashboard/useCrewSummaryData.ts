@@ -28,7 +28,7 @@ export function useCrewSummaryData() {
     for (const member of crew) {
       if (!vesselMap.has(member.assetId)) {
         vesselMap.set(member.assetId, {
-          assetName: member.asset.name,
+          assetName: member.asset?.name ?? member.assetName ?? member.assetId,
           activeCount: 0,
         });
       }

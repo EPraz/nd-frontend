@@ -150,7 +150,3 @@ export default function Sidebar({
     </SidebarContainer>
   );
 }
-
-// helper local (igual que en tus otros files)
-const cx = (...classes: (string | undefined)[]) =>
-  classes.filter(Boolean).join(" ");

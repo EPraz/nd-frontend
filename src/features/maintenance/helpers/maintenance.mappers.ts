@@ -34,7 +34,7 @@ export function toCreateMaintenanceInput(args: {
   assetId: string; // final (effective)
   allowDefaults?: boolean; // si true no manda status/priority
 }): CreateMaintenanceInput {
-  const { values, assetId, allowDefaults = true } = args;
+  const { values, allowDefaults = true } = args;
 
   const dueDate = values.dueDate.trim()
     ? isoFromDateOnly(values.dueDate.trim())

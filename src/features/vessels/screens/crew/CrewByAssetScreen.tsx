@@ -50,7 +50,7 @@ export default function CrewByAssetScreen() {
 
           <Pressable
             onPress={() =>
-              router.push(`/projects/${pid}/vessels/${aid}/crew/create`)
+              router.push(`/projects/${pid}/vessels/${aid}/crew/new`)
             }
             className="rounded-full px-4 py-2 bg-primary"
           >

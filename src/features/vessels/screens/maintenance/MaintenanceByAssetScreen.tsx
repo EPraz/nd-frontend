@@ -1,4 +1,5 @@
-import { MaintenanceTable, PageHeader, StatCard, Text } from "@/src/components";
+import { PageHeader, StatCard, Text } from "@/src/components";
+import { MaintenanceTable } from "@/src/features/maintenance/components";
 import { useMaintenanceByAsset } from "@/src/hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
@@ -68,7 +69,7 @@ export default function MaintenanceByAssetScreen() {
 
           <Pressable
             onPress={() =>
-              router.push(`/projects/${pid}/vessels/${aid}/maintenance/create`)
+              router.push(`/projects/${pid}/vessels/${aid}/maintenance/new`)
             }
             className="rounded-full px-4 py-2 bg-primary"
           >

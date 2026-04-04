@@ -1,4 +1,3 @@
-// features/crew/components/CrewPreviewCard.tsx
 import {
   Card,
   CardContent,
@@ -16,13 +15,21 @@ export default function CrewPreviewCard({
   values: CrewFormValues;
 }) {
   const vesselName = values.selectedVessel?.name ?? "—";
+  const medicalStatus =
+    values.medicalCertificateValid === null
+      ? "Unknown"
+      : values.medicalCertificateValid
+        ? "Valid"
+        : "Not valid";
 
   return (
     <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
       <CardHeaderRow>
         <View className="gap-1">
           <CardTitle className="text-[16px] text-textMain">Preview</CardTitle>
-          <Text className="text-muted text-[13px]">Summary before saving.</Text>
+          <Text className="text-muted text-[13px]">
+            Quick summary before saving.
+          </Text>
         </View>
       </CardHeaderRow>
 
@@ -31,21 +38,24 @@ export default function CrewPreviewCard({
           <RowInfo label="Name" value={values.fullName.trim() || "—"} />
           <RowInfo label="Rank" value={values.rank.trim() || "—"} />
           <RowInfo
-            label="Nationality"
-            value={values.nationality.trim() || "—"}
+            label="Department"
+            value={values.department ? values.department : "—"}
           />
-          <RowInfo
-            label="Primary Document ID"
-            value={values.documentId.trim() || "—"}
-          />
-          <RowInfo label="Status" value={values.status} />
           <RowInfo label="Vessel" value={vesselName} />
+          <RowInfo label="Embarkation" value={values.dateOfEmbarkation || "—"} />
+          <RowInfo
+            label="Disembarkation"
+            value={values.expectedDateOfDisembarkation || "—"}
+          />
+          <RowInfo label="Medical" value={medicalStatus} />
+          <RowInfo label="Status" value={values.status} />
         </View>
 
-        <View className="mt-4 rounded-[18px] border border-border bg-baseBg/35 p-4">
+        <View className="mt-4 rounded-[18px] border border-border bg-baseBg/35 p-4 gap-2">
           <Text className="text-muted text-[12px] leading-[16px]">
-            Tip: Keep Rank and Nationality consistent for reports and crew
-            lists.
+            Crew core now captures identity, contract, experience,
+            familiarization, and medical status. Certificates and training come
+            next.
           </Text>
         </View>
       </CardContent>

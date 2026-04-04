@@ -6,6 +6,7 @@ type FieldProps = {
   placeholder?: string;
   value: string;
   onChangeText: (v: string) => void;
+  editable?: boolean;
   keyboardType?: TextInputProps["keyboardType"];
   autoCapitalize?: TextInputProps["autoCapitalize"];
   secureTextEntry?: boolean;
@@ -18,6 +19,7 @@ export function Field({
   placeholder,
   value,
   onChangeText,
+  editable = true,
   keyboardType,
   autoCapitalize,
   secureTextEntry = false,
@@ -34,6 +36,7 @@ export function Field({
         placeholderTextColor={placeholderTextColor}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize ?? "none"}
+        editable={editable}
         className="h-12 rounded-2xl bg-baseBg/40 border border-white/15 px-4 text-textMain  focus:border-accent"
         // OK en dark; si quieres perfecto cross-theme, luego lo llevamos a helper
         secureTextEntry={secureTextEntry}

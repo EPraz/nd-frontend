@@ -36,12 +36,14 @@ export function HeroBanner({
         <View
           className="w-full h-[375px]"
           style={
-            {
-              backgroundImage: `url(${webUri})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            } as unknown as React.CSSProperties
+            Platform.OS === "web"
+              ? ({
+                  backgroundImage: `url(${webUri})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                } as any)
+              : undefined
           }
         >
           <OverlayContent

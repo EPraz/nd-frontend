@@ -89,25 +89,10 @@ export function ProjectDataProvider({
       },
     }),
     [
-      certs.certificates,
-      certs.loading,
-      certs.error,
-      certs.refresh,
-
-      crew.crew,
-      crew.loading,
-      crew.error,
-      crew.refresh,
-
-      fuel.fuelLogs,
-      fuel.loading,
-      fuel.error,
-      fuel.refresh,
-
-      maintenance.maintenance,
-      maintenance.loading,
-      maintenance.error,
-      maintenance.refresh,
+      certs,
+      crew,
+      fuel,
+      maintenance,
     ],
   );
 

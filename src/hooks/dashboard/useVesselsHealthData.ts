@@ -71,8 +71,7 @@ export function useVesselsHealthData() {
 
     // CREW
     for (const m of crew) {
-      // tu CrewDto trae assetId y asset.name
-      const row = ensure(m.assetId, m.asset.name);
+      const row = ensure(m.assetId, m.asset?.name ?? m.assetName ?? m.assetId);
       if (m.status === "ACTIVE") row.activeCrew += 1;
     }
 

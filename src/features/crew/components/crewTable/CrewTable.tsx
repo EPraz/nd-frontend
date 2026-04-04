@@ -7,26 +7,20 @@ import { CrewStatusPill } from "./crew.ui";
 type Props = {
   title: string;
   subtitleRight?: string;
-
   data: CrewDto[];
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
-
   minWidth?: number;
   onRowPress?: (row: CrewDto) => void;
-
   showVesselColumn?: boolean;
   sortByName?: boolean;
-
-  // ✅ selection support
   selectedRowId?: string | null;
 };
 
 export function CrewTable(props: Props) {
   const router = useRouter();
   const { projectId } = useLocalSearchParams();
-
   const pid = String(projectId);
 
   const rows = useMemo(() => {
@@ -45,14 +39,14 @@ export function CrewTable(props: Props) {
         key: "name",
         header: "Crew Member",
         flex: 2,
-        render: (r) => (
+        render: (row) => (
           <TableLink
             tooltip="View crew profile"
             onPress={() =>
-              router.push(`/projects/${pid}/vessels/${r.assetId}/crew/${r.id}`)
+              router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`)
             }
           >
-            {r.fullName}
+            {row.fullName}
           </TableLink>
         ),
       },
@@ -63,12 +57,12 @@ export function CrewTable(props: Props) {
         key: "vessel",
         header: "Vessel",
         flex: 2,
-        render: (r) => (
+        render: (row) => (
           <TableLink
-            tooltip="View crew profile"
-            onPress={() => router.push(`/projects/${pid}/vessels/${r.assetId}`)}
+            tooltip="Open vessel"
+            onPress={() => router.push(`/projects/${pid}/vessels/${row.assetId}`)}
           >
-            {r.assetName ?? r.assetId}
+            {row.assetName ?? row.assetId}
           </TableLink>
         ),
       });
@@ -78,26 +72,34 @@ export function CrewTable(props: Props) {
       {
         key: "rank",
         header: "Rank",
+        flex: 1.5,
+        render: (row) => <Text>{row.rank ?? "—"}</Text>,
+      },
+      {
+        key: "department",
+        header: "Department",
         flex: 1,
-        render: (r) => <Text>{r.rank ?? "—"}</Text>,
+        render: (row) => <Text>{row.department ?? "—"}</Text>,
       },
       {
         key: "status",
         header: "Status",
         flex: 1,
-        render: (r) => <CrewStatusPill status={r.status} />,
+        render: (row) => <CrewStatusPill status={row.status} />,
       },
       {
-        key: "nationality",
-        header: "Nationality",
+        key: "medical",
+        header: "Medical",
         flex: 1,
-        render: (r) => <Text>{r.nationality ?? "—"}</Text>,
-      },
-      {
-        key: "documentId",
-        header: "Document",
-        flex: 1,
-        render: (r) => <Text>{r.documentId ?? "—"}</Text>,
+        render: (row) => (
+          <Text>
+            {row.medicalCertificateValid === null
+              ? "Unknown"
+              : row.medicalCertificateValid
+                ? "Valid"
+                : "Not valid"}
+          </Text>
+        ),
       },
     );
 
@@ -113,11 +115,10 @@ export function CrewTable(props: Props) {
       error={props.error}
       onRetry={props.onRetry}
       columns={columns}
-      minWidth={props.minWidth ?? (props.showVesselColumn ? 980 : 820)}
-      getRowId={(r) => r.id}
+      minWidth={props.minWidth ?? (props.showVesselColumn ? 1080 : 900)}
+      getRowId={(row) => row.id}
       onRowPress={props.onRowPress}
       emptyText="No crew members found."
-      // ✅ IMPORTANT
       selectedRowId={props.selectedRowId ?? null}
     />
   );

@@ -44,13 +44,13 @@ export default function MaintenanceOverviewModule() {
   }, [slotH]);
 
   const upcoming = (data as MaintenanceOverviewData)?.upcoming as
-    | Array<{
+    | {
         id: string;
         title: string;
         assetName: string;
         dueDate: string;
         status?: MaintenanceStatus;
-      }>
+      }[]
     | undefined;
 
   const list =

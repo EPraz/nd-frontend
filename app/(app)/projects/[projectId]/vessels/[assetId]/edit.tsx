@@ -6,7 +6,7 @@ import { useVessel } from "@/src/features/vessels/hooks/useVessel"; // ya lo tie
 import { useVesselProfile } from "@/src/features/vessels/hooks/useVesselProfile";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Switch, View } from "react-native";
 
 type FormState = {
@@ -80,9 +80,8 @@ export default function EditVesselScreen() {
   const [form, setForm] = useState<FormState>(initial);
 
   // Re-sincroniza cuando llega data (primera carga)
-  useMemo(() => {
+  useEffect(() => {
     setForm(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial]);
 
   const useLicense = form.identifierType === "LICENSE";

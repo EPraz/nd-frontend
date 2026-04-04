@@ -1,9 +1,11 @@
 import { Button, MiniPill, QuickViewModalFrame, Text } from "@/src/components";
+import { useToast } from "@/src/context";
 import { formatDate, Stat } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Alert, Platform, Pressable, View } from "react-native";
 import type { CrewDto, CrewStatus } from "../../contracts";
+import { useDeleteCrew } from "../../hooks";
 
 type Props = {
   crew: CrewDto;
@@ -21,14 +23,24 @@ function statusTone(status: CrewStatus) {
   }
 }
 
+function medicalLabel(crew: CrewDto): string {
+  if (crew.medicalCertificateValid === null) return "Unknown";
+  return crew.medicalCertificateValid ? "Valid" : "Not valid";
+}
+
 export default function CrewQuickViewModal({
   crew,
   projectId,
   onClose,
 }: Props) {
   const router = useRouter();
-
+  const { show } = useToast();
   const tone = statusTone(crew.status);
+  const { submit: deleteCrew, loading: deleting } = useDeleteCrew(
+    projectId,
+    crew.assetId,
+    crew.id,
+  );
 
   const handleOpenVesselCrew = () => {
     onClose();
@@ -40,9 +52,41 @@ export default function CrewQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${crew.assetId}`);
   };
 
-  // Placeholder: luego conectas DELETE real
-  const handleDelete = () => {
-    // TODO: confirm dialog + delete endpoint
+  async function confirmDelete(): Promise<boolean> {
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      return window.confirm(
+        "Delete this crew member? This is intended for cleanup and cannot be undone.",
+      );
+    }
+
+    return new Promise((resolve) => {
+      Alert.alert(
+        "Delete crew member",
+        "This is intended for cleanup and cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => resolve(true),
+          },
+        ],
+      );
+    });
+  }
+
+  const handleDelete = async () => {
+    const confirmed = await confirmDelete();
+    if (!confirmed) return;
+
+    try {
+      await deleteCrew();
+      show("Crew member deleted", "success");
+      onClose();
+      router.replace(`/projects/${projectId}/crew`);
+    } catch {
+      show("Failed to delete crew member", "error");
+    }
   };
 
   const handleEdit = () => {
@@ -58,22 +102,14 @@ export default function CrewQuickViewModal({
       open
       onClose={onClose}
       title="Crew Member"
-      subtitle="Quick crew snapshot. Open vessel crew page for full management."
+      subtitle="Quick crew snapshot. Open the full profile to manage contract, familiarization, and medical details."
       headerActions={
         <>
-          {/* Optional edit (deja comentado hasta que exista ruta) */}
-          {/* <Pressable
-            onPress={handleEdit}
-            className="flex-row items-center gap-2 rounded-full border border-accent/35 bg-accent/12 px-4 py-2 active:opacity-80"
-          >
-            <Ionicons name="create-outline" size={16} className="text-accent" />
-            <Text className="text-accent font-semibold">Edit</Text>
-          </Pressable> */}
-
           <Button
             variant="softDestructive"
             size="pillSm"
             onPress={handleDelete}
+            disabled={deleting}
             leftIcon={
               <Ionicons
                 name="trash-outline"
@@ -97,7 +133,7 @@ export default function CrewQuickViewModal({
               />
             }
           >
-            Edit Vessel
+            Edit
           </Button>
 
           <Button
@@ -128,9 +164,7 @@ export default function CrewQuickViewModal({
       scroll
       maxWidth={980}
     >
-      {/* Top content */}
       <View className="mt-1 gap-5 web:flex-row">
-        {/* Left info */}
         <View className="flex-1 gap-2">
           <Text className="text-textMain text-[22px] font-semibold">
             {crew.fullName}
@@ -143,18 +177,16 @@ export default function CrewQuickViewModal({
               </Text>
             </View>
 
-            <MiniPill>{`Crew ID: ${crew.id}`}</MiniPill>
-
-            <MiniPill>
-              {`Vessel: ${crew.assetName ?? crew.asset?.name ?? crew.assetId}`}
-            </MiniPill>
-
+            <MiniPill>{`Vessel: ${crew.assetName ?? crew.asset?.name ?? "—"}`}</MiniPill>
             {crew.rank ? <MiniPill>{`Rank: ${crew.rank}`}</MiniPill> : null}
+            {crew.department ? (
+              <MiniPill>{`Department: ${crew.department}`}</MiniPill>
+            ) : null}
           </View>
 
           <Text className="text-textMain/55 text-[13px] leading-[18px]">
-            View crew details quickly. Use the vessel crew module to assign,
-            update status, or manage documents.
+            Use this view for a quick operational snapshot before opening the
+            full crew profile.
           </Text>
 
           <View className="mt-2 flex-row gap-2">
@@ -172,40 +204,50 @@ export default function CrewQuickViewModal({
           </View>
         </View>
 
-        {/* Right image placeholder */}
         <View className="w-full web:w-[360px] shrink-0">
           <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-border bg-baseBg/35 items-center justify-center">
             <Text className="text-textMain text-[20px] font-semibold">
-              Image Here
+              Crew Photo
             </Text>
-            <Text className="text-muted text-[12px] mt-1">(upload later)</Text>
+            <Text className="text-muted text-[12px] mt-1">
+              {crew.photoUrl ? "URL available" : "Photo upload comes later"}
+            </Text>
           </View>
         </View>
       </View>
 
-      {/* Main stats */}
       <View className="mt-2 gap-4 flex-col web:flex-row">
         <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
           <Text className="text-textMain font-semibold mb-3">Identity</Text>
 
           <View className="gap-4 web:flex-row">
             <Stat label="Nationality" value={crew.nationality ?? "—"} />
-            <Stat label="Document ID" value={crew.documentId ?? "—"} />
-            <Stat label="Created" value={formatDate(crew.createdAt)} />
+            <Stat label="Passport" value={crew.passportNumber ?? "—"} />
+            <Stat label="Seafarer ID" value={crew.seafarerId ?? "—"} />
           </View>
         </View>
 
         <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
-          <Text className="text-textMain font-semibold mb-3">Assignment</Text>
+          <Text className="text-textMain font-semibold mb-3">Operational</Text>
 
           <View className="gap-4 web:flex-row">
-            <Stat label="Status" value={tone.label} />
-            <Stat label="Rank" value={crew.rank ?? "—"} />
+            <Stat label="Medical" value={medicalLabel(crew)} />
+            <Stat label="Embarkation" value={formatDate(crew.dateOfEmbarkation)} />
             <Stat
-              label="Vessel"
-              value={crew.assetName ?? crew.asset?.name ?? "—"}
+              label="Disembarkation"
+              value={formatDate(crew.expectedDateOfDisembarkation)}
             />
           </View>
+        </View>
+      </View>
+
+      <View className="mt-4 rounded-[22px] border border-border bg-baseBg/35 p-4">
+        <Text className="text-textMain font-semibold mb-3">Contract Snapshot</Text>
+        <View className="gap-4 web:flex-row">
+          <Stat label="Contract" value={crew.contractType ?? "—"} />
+          <Stat label="Company" value={crew.operatingCompany ?? "—"} />
+          <Stat label="Agency" value={crew.crewManagementAgency ?? "—"} />
+          <Stat label="Created" value={formatDate(crew.createdAt)} />
         </View>
       </View>
     </QuickViewModalFrame>

@@ -1,4 +1,5 @@
-import { FuelTable, PageHeader, StatCard, Text } from "@/src/components";
+import { PageHeader, StatCard, Text } from "@/src/components";
+import { FuelTable } from "@/src/features/fuel/components";
 import { useFuelByAsset } from "@/src/hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
@@ -102,7 +103,7 @@ export default function FuelByAssetScreen() {
 
           <Pressable
             onPress={() =>
-              router.push(`/projects/${pid}/vessels/${aid}/fuel/create`)
+              router.push(`/projects/${pid}/vessels/${aid}/fuel/new`)
             }
             className="rounded-full px-4 py-2 bg-primary"
           >
