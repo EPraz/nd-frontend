@@ -1,9 +1,13 @@
 import { Header, Loading, Sidebar } from "@/src/components";
 
 import { sidebarItems, SidebarKey, sidebarRoutes } from "@/src/constants";
-import { ProjectDataProvider, ProjectProvider } from "@/src/context";
+import {
+  ProjectDataProvider,
+  ProjectProvider,
+  useSessionContext,
+} from "@/src/context";
 import { useTheme } from "@/src/context/ThemeProvider";
-import { useProject, useSession } from "@/src/hooks";
+import { useProject } from "@/src/hooks";
 
 import { BlurView } from "expo-blur";
 import {
@@ -35,7 +39,7 @@ export default function ProjectShellLayout() {
   const { width } = useWindowDimensions();
 
   const [collapsed, setCollapsed] = useState(true);
-  const { signOut } = useSession();
+  const { signOut } = useSessionContext();
 
   const isDesktop = Platform.OS === "web" && width >= 1024;
   const showOverlay = !collapsed && !isDesktop;

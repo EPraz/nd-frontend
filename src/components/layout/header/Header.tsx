@@ -1,134 +1,332 @@
+import { useProjectContext, useSessionContext, useToast } from "@/src/context";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { TextInput, View, useWindowDimensions } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Modal,
+  Pressable,
+  TextInput,
+  View,
+  useWindowDimensions,
+  type View as RNView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, Text } from "../../ui";
+import { Button, MiniPill, Text } from "../../ui";
 
 type Props = {
   collapsed: boolean;
   handleSetCollapse: (value: boolean) => void;
 };
 
-export default function Header({ collapsed, handleSetCollapse }: Props) {
-  const { width: screenWidth } = useWindowDimensions();
-  const CONTENT_MAX_WIDTH = 1200;
-  const contentWidth = Math.min(screenWidth, CONTENT_MAX_WIDTH);
+function getInitials(name: string | null | undefined) {
+  if (!name) return "U";
 
-  const ICON_MUTED = "hsl(var(--muted))";
-  const ICON_ACCENT = "hsl(var(--accent))";
+  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
+
+  if (parts.length === 0) return "U";
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+}
+
+export default function Header({ collapsed, handleSetCollapse }: Props) {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const { projectName, projectStatus, projectKind } = useProjectContext();
+  const { session, loading, signOut, refresh } = useSessionContext();
+  const { show } = useToast();
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [profileAnchor, setProfileAnchor] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+  const profileTriggerRef = useRef<RNView | null>(null);
+
+  const iconMuted = "hsl(var(--muted))";
+  const userName = session?.name ?? (loading ? "Loading user" : "Signed in");
+  const userMeta = session?.company?.name
+    ? `${humanizeTechnicalLabel(session.role)} - ${session.company.name}`
+    : humanizeTechnicalLabel(session?.role ?? "viewer");
+  const initials = getInitials(session?.name);
+  const leftInset = isDesktop ? (collapsed ? 112 : 340) : 16;
+
+  function handleHeaderSearch() {
+    const query = searchValue.trim();
+
+    show(
+      query
+        ? `Search for "${query}" will be connected in a future iteration.`
+        : "Global search will be connected in a future iteration.",
+      "info",
+    );
+  }
+
+  function handleSoon(label: string) {
+    show(`${label} is not wired yet in this workspace.`, "info");
+  }
+
+  async function handleRefreshSession() {
+    await refresh();
+    show("Session refreshed.", "success");
+  }
+
+  async function handleSignOut() {
+    setProfileOpen(false);
+    await signOut();
+  }
+
+  function openProfileMenu() {
+    if (!isDesktop) return;
+
+    profileTriggerRef.current?.measureInWindow(
+      (x, y, measuredWidth, measuredHeight) => {
+        const menuWidth = 320;
+        const viewportPadding = 16;
+        const anchoredLeft = x + measuredWidth - menuWidth;
+        const safeLeft = Math.max(
+          viewportPadding,
+          Math.min(anchoredLeft, width - menuWidth - viewportPadding),
+        );
+
+        setProfileAnchor({
+          top: y + measuredHeight + 10,
+          left: safeLeft,
+          width: menuWidth,
+        });
+        setProfileOpen(true);
+      },
+    );
+  }
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="bg-baseBg">
-      <View className="w-full items-center">
+    <>
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        className="border-b border-border/60 bg-baseBg"
+      >
         <View
-          style={{ maxWidth: contentWidth, width: "100%" }}
-          className="md:h-[72px] lg:h-[84px] flex-col md:flex-row items-center justify-between px-4 lg:px-6"
+          className="w-full flex-row items-center gap-4 px-4 py-3 lg:px-6"
+          style={{ paddingLeft: leftInset }}
         >
-          {/* Left */}
-          <View className="flex-row items-center gap-3">
-            <View className="lg:hidden" />
-            <View className="hidden lg:flex flex-row items-center gap-3" />
+          <View className="hidden lg:flex min-w-[220px] max-w-[320px] gap-1">
+            <Text className="text-[11px] uppercase tracking-[0.16em] text-textMain/45">
+              Current Workspace
+            </Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-[20px] font-semibold text-textMain">
+                {projectName}
+              </Text>
+              <MiniPill className="rounded-full border-white/10 bg-white/5 px-2.5 py-1">
+                <Text className="text-[10px] font-semibold text-textMain/70">
+                  {humanizeTechnicalLabel(projectKind)}
+                </Text>
+              </MiniPill>
+            </View>
+            <Text className="text-[12px] text-textMain/58">
+              Status: {humanizeTechnicalLabel(projectStatus)}
+            </Text>
           </View>
 
-          {/* Center: Search (web/desktop) */}
-          {/* <Button
-            variant="ghost"
-            className="hidden lg:flex flex-1 px-6 ml-3 items-stretch justify-center"
-            onPress={() => Keyboard.dismiss()}
-          >
-            <View className="flex-row items-center w-full max-w-[520px] h-[52px] gap-3 px-5 rounded-full border border-border/70 bg-surface/70 web:backdrop-blur-md">
-              <Ionicons name="search" size={20} color={ICON_MUTED} />
+          <View className="flex-1 items-stretch justify-center">
+            <View className="h-[52px] w-full max-w-[720px] flex-row items-center gap-3 self-center rounded-full border border-border/70 bg-surface/72 px-5 web:backdrop-blur-md">
+              <Ionicons name="search" size={18} color={iconMuted} />
               <TextInput
                 disableFullscreenUI
-                placeholder="Search anything…"
-                placeholderTextColor={ICON_MUTED}
+                placeholder="Search anything..."
+                placeholderTextColor={iconMuted}
                 className="flex-1 text-[14px] text-textMain web:outline-none"
                 returnKeyType="search"
-                submitBehavior="blurAndSubmit"
+                submitBehavior="submit"
+                value={searchValue}
+                onChangeText={setSearchValue}
+                onSubmitEditing={handleHeaderSearch}
               />
-            </View>
-          </Button> */}
-
-          <View className="hidden lg:flex flex-1 px-6 ml-3 items-stretch justify-center">
-            <View className="flex-row items-center max-w-[520px] h-[52px] gap-3 px-5 rounded-full border border-border/70 bg-surface/70 web:backdrop-blur-md">
-              <Ionicons name="search" size={20} color={ICON_MUTED} />
-              <TextInput
-                disableFullscreenUI
-                placeholder="Search anything…"
-                placeholderTextColor={ICON_MUTED}
-                className="flex-1 text-[14px] text-textMain web:outline-none"
-                returnKeyType="search"
-                submitBehavior="blurAndSubmit"
-                disableKeyboardShortcuts
-                aria-disabled
-              />
+              <Button
+                variant="soft"
+                size="pillSm"
+                className="h-9 px-3"
+                onPress={handleHeaderSearch}
+              >
+                Search
+              </Button>
             </View>
           </View>
 
-          {/* Right */}
           <View className="flex-row items-center gap-3">
-            {/* mobile search */}
-            <Button variant="icon" size="icon" className="lg:hidden" disabled>
-              <Ionicons name="search" size={16} color={ICON_MUTED} />
+            <Button
+              variant="icon"
+              size="icon"
+              className="lg:hidden"
+              onPress={() => handleSoon("Global search")}
+            >
+              <Ionicons name="search" size={16} color={iconMuted} />
             </Button>
 
-            {/* chat */}
-            <Button variant="icon" size="icon" disabled>
+            <Button
+              variant="icon"
+              size="icon"
+              onPress={() => handleSoon("Messages")}
+            >
               <Ionicons
                 name="chatbubble-ellipses-outline"
                 size={16}
-                color={ICON_MUTED}
+                color={iconMuted}
               />
             </Button>
 
-            {/* notifications */}
-            <Button variant="icon" size="icon" disabled>
+            <Button
+              variant="icon"
+              size="icon"
+              onPress={() => handleSoon("Notifications")}
+            >
               <Ionicons
                 name="notifications-outline"
                 size={16}
-                color={ICON_MUTED}
+                color={iconMuted}
               />
             </Button>
 
             <View className="hidden lg:flex h-6 w-px bg-border/60 mx-1" />
 
-            {/* profile dropdown button (desktop) */}
-            <Button
-              variant="outline"
-              className="hidden lg:flex flex-row items-center rounded-full px-2.5 h-11 gap-2 border-border/70 bg-surface/70 web:backdrop-blur-md"
-            >
-              <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&auto=format&fit=crop",
-                }}
-                className="h-8 w-8 rounded-full"
-                contentFit="cover"
-              />
+            <Pressable
+              ref={profileTriggerRef}
+              onPress={() => {
+                if (profileOpen) {
+                  setProfileOpen(false);
+                  return;
+                }
 
-              <View className="pr-1">
-                <Text className="text-[13px] leading-4 font-semibold text-textMain">
-                  Hanna Calzoni
-                </Text>
-                <Text className="text-[12px] leading-4 text-muted/70">
-                  Admin Store
+                openProfileMenu();
+              }}
+              className="hidden lg:flex flex-row items-center gap-3 rounded-full border border-border/70 bg-surface/72 px-2.5 py-1.5 web:backdrop-blur-md"
+            >
+              <View className="h-9 w-9 items-center justify-center rounded-full border border-accent/30 bg-accent/18">
+                <Text className="text-[12px] font-semibold text-accent">
+                  {initials}
                 </Text>
               </View>
 
-              <Ionicons name="chevron-down" size={18} color={ICON_MUTED} />
-            </Button>
+              <View className="pr-1">
+                <Text className="text-[13px] leading-4 font-semibold text-textMain">
+                  {userName}
+                </Text>
+                <Text className="text-[10px] leading-4 text-textMain/80">
+                  {userMeta}
+                </Text>
+              </View>
 
-            {/* mobile menu */}
+              <Ionicons name="chevron-down" size={18} color={iconMuted} />
+            </Pressable>
+
             <Button
-              variant="icon"
+              variant="iconAccent"
               size="icon"
-              className="lg:hidden bg-accent border border-accent"
+              className="lg:hidden"
               onPress={() => handleSetCollapse(!collapsed)}
             >
-              <Ionicons name="menu" size={16} color={ICON_ACCENT} />
+              <Ionicons name="menu" size={16} color="hsl(var(--accent))" />
             </Button>
           </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+
+      <Modal
+        visible={profileOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProfileOpen(false)}
+      >
+        <View className="flex-1">
+          <Pressable
+            className="absolute inset-0 bg-black/35"
+            onPress={() => setProfileOpen(false)}
+          />
+
+          <View
+            className="absolute rounded-[24px] border border-border bg-surface p-5 gap-4 shadow-2xl"
+            style={{
+              top: profileAnchor?.top ?? 88,
+              left:
+                profileAnchor?.left ??
+                Math.max(16, width - (profileAnchor?.width ?? 320) - 24),
+              width: profileAnchor?.width ?? 320,
+            }}
+          >
+            <View className="flex-row items-start gap-4">
+              <View className="h-12 w-12 items-center justify-center rounded-full border border-accent/30 bg-accent/18">
+                <Text className="text-[14px] font-semibold text-accent">
+                  {initials}
+                </Text>
+              </View>
+
+              <View className="flex-1 gap-1">
+                <Text className="text-[18px] font-semibold text-textMain">
+                  {userName}
+                </Text>
+                <Text className="text-[13px] text-textMain/60">
+                  {session?.email ?? "No session email"}
+                </Text>
+                {/* <MiniPill className="mt-1 self-start rounded-full border-white/10 bg-white/5 px-2.5 py-1">
+                  <Text className="text-[10px] font-semibold text-textMain/80">
+                    {userMeta}
+                  </Text>
+                </MiniPill> */}
+              </View>
+            </View>
+
+            <View className="mt-5 gap-2">
+              <Button
+                variant="soft"
+                size="sm"
+                className="justify-between rounded-[16px] px-4"
+                onPress={handleRefreshSession}
+                leftIcon={
+                  <Ionicons
+                    name="refresh-outline"
+                    size={16}
+                    color="rgba(255,255,255,0.72)"
+                  />
+                }
+                rightIcon={
+                  <Ionicons
+                    name="arrow-forward"
+                    size={15}
+                    color="rgba(255,255,255,0.42)"
+                  />
+                }
+              >
+                <Text className="flex-1 text-left">Refresh session</Text>
+              </Button>
+
+              <Button
+                variant="softDestructive"
+                size="default"
+                className="justify-between rounded-[16px] px-4"
+                onPress={handleSignOut}
+                leftIcon={
+                  <Ionicons
+                    name="log-out-outline"
+                    size={16}
+                    color="rgba(255,255,255,0.72)"
+                  />
+                }
+                rightIcon={
+                  <Ionicons
+                    name="arrow-forward"
+                    size={15}
+                    color="rgba(255,255,255,0.72)"
+                  />
+                }
+              >
+                <Text className="flex-1 text-left text-destructive">
+                  Sign out
+                </Text>
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }

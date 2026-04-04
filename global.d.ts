@@ -1,4 +1,9 @@
 /// <reference types="nativewind/types" />
+
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
 declare module "*.svg" {
   import * as React from "react";
   import type { SvgProps } from "react-native-svg";
