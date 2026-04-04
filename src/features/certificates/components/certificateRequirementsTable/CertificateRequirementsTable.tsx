@@ -1,4 +1,4 @@
-import { Column, DataTable, TableLink, Text } from "@/src/components";
+import { Column, DataTable, TableActionIcon, TableLink, Text } from "@/src/components";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { View } from "react-native";
@@ -117,9 +117,10 @@ export function CertificateRequirementsTable(props: Props) {
         header: "Action",
         flex: 1.6,
         render: (row) => (
-          <View className="gap-2">
+          <View className="flex-row items-center flex-wrap gap-2">
             {row.pendingIngestionId ? (
-              <TableLink
+              <TableActionIcon
+                icon="sparkles-outline"
                 tooltip="Review uploaded document"
                 onPress={() =>
                   router.push({
@@ -131,28 +132,25 @@ export function CertificateRequirementsTable(props: Props) {
                     },
                   })
                 }
-              >
-                Review upload
-              </TableLink>
+              />
             ) : row.structuredCertificateId ? (
-              <TableLink
+              <TableActionIcon
+                icon="document-text-outline"
                 tooltip="Open certificate record"
                 onPress={() =>
                   router.push(
                     `/projects/${projectId}/vessels/${row.assetId}/certificates/${row.structuredCertificateId}`,
                   )
                 }
-              >
-                Open certificate
-              </TableLink>
+              />
             ) : null}
 
-            <TableLink
+            <TableActionIcon
+              icon="cloud-upload-outline"
+              tone="accent"
               tooltip="Upload certificate document"
               onPress={() => onUpload(row)}
-            >
-              {row.hasStructuredCertificate ? "Upload new version" : "Upload certificate"}
-            </TableLink>
+            />
           </View>
         ),
       },

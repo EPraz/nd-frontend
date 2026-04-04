@@ -7,10 +7,14 @@ const RightPanel = ({
   left,
   right,
   title,
+  leftTitle,
+  rightTitle,
 }: {
   left: SpecItem[];
   right: SpecItem[];
   title?: string;
+  leftTitle?: string;
+  rightTitle?: string;
 }) => {
   return (
     <View className="flex-1">
@@ -31,7 +35,7 @@ const RightPanel = ({
         {/* Columna A */}
         <View className="flex-1 px-4 py-4">
           <Text className="text-textMain/60 text-[11px] uppercase tracking-wider mb-3">
-            General
+            {leftTitle ?? "General"}
           </Text>
 
           <View className="gap-3">
@@ -46,7 +50,7 @@ const RightPanel = ({
         {/* Columna B */}
         <View className="flex-1 px-4 py-4">
           <Text className="text-textMain/60 text-[11px] uppercase tracking-wider mb-3">
-            Certificates
+            {rightTitle ?? "Certificates"}
           </Text>
 
           <View className="gap-3">

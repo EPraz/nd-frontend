@@ -4,6 +4,8 @@ import {
   CardContent,
   CardHeaderRow,
   CardTitle,
+  ConfirmModal,
+  DocumentPreview,
   ErrorState,
   FieldDisplay,
   Loading,
@@ -11,14 +13,18 @@ import {
   Text,
 } from "@/src/components";
 import { useToast } from "@/src/context";
+import { getBaseUrl } from "@/src/api/baseUrl";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Alert, Platform, Pressable, View } from "react-native";
+import { Linking, Pressable, View } from "react-native";
+import { useMemo, useState } from "react";
 import { CrewStatusPill } from "../../components";
 import { useCrewById, useDeleteCrew } from "../../hooks";
+import { useCrewCertificatesByCrew } from "@/src/features/crew-certificates/hooks";
+import { CertificateStatusPill, WorkflowStatusPill } from "@/src/features/certificates/components";
 
 function formatDate(value?: string | null): string {
-  return value ? value.slice(0, 10) : "—";
+  return value ? value.slice(0, 10) : "-";
 }
 
 function formatMedical(value: boolean | null): string {
@@ -41,10 +47,20 @@ export default function CrewViewScreen() {
 
   const { crew, loading, error, refresh } = useCrewById(pid, vid, cid);
   const {
+    certificates,
+    loading: certificatesLoading,
+    error: certificatesError,
+    refresh: refreshCertificates,
+  } = useCrewCertificatesByCrew(pid, vid, cid);
+  const {
     submit: deleteCrew,
     loading: deleting,
     error: deleteError,
   } = useDeleteCrew(pid, vid, cid);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedCertificateId, setSelectedCertificateId] = useState<string | null>(
+    null,
+  );
 
   const goBack = () => router.back();
   const goVessel = () => router.push(`/projects/${pid}/vessels/${vid}`);
@@ -53,40 +69,33 @@ export default function CrewViewScreen() {
   const goCertificates = () =>
     router.push(`/projects/${pid}/vessels/${vid}/crew/${cid}/certificates`);
 
-  async function confirmDelete(): Promise<boolean> {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      return window.confirm(
-        "Delete this crew member? This is intended for cleanup and cannot be undone.",
-      );
-    }
-
-    return new Promise((resolve) => {
-      Alert.alert(
-        "Delete crew member",
-        "This is intended for cleanup and cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => resolve(true),
-          },
-        ],
-      );
-    });
-  }
-
   async function handleDelete() {
-    const confirmed = await confirmDelete();
-    if (!confirmed) return;
-
     try {
       await deleteCrew();
+      setIsDeleteOpen(false);
       show("Crew member deleted", "success");
       router.replace(`/projects/${pid}/vessels/${vid}/crew`);
     } catch {
       show("Failed to delete crew member", "error");
     }
+  }
+  const assignedVesselName = crew?.assetName ?? crew?.asset?.name ?? "-";
+  const selectedCertificate = useMemo(
+    () =>
+      certificates.find((item) => item.id === selectedCertificateId) ??
+      certificates[0] ??
+      null,
+    [certificates, selectedCertificateId],
+  );
+  const selectedAttachment = selectedCertificate?.attachments[0] ?? null;
+
+  function toAbsoluteUrl(url: string) {
+    return url.startsWith("http") ? url : `${getBaseUrl()}${url}`;
+  }
+
+  async function openAttachment(url: string) {
+    const absoluteUrl = toAbsoluteUrl(url);
+    await Linking.openURL(absoluteUrl);
   }
 
   if (loading) return <Loading fullScreen />;
@@ -130,7 +139,7 @@ export default function CrewViewScreen() {
             <Button
               variant="destructive"
               size="lg"
-              onPress={handleDelete}
+              onPress={() => setIsDeleteOpen(true)}
               className="rounded-full"
               disabled={deleting}
               rightIcon={
@@ -190,18 +199,6 @@ export default function CrewViewScreen() {
                   </Text>
 
                   <View className="flex-row flex-wrap gap-2">
-                    <Pressable
-                      onPress={goVessel}
-                      className="web:rounded-full web:hover:bg-accent/10"
-                    >
-                      <MiniPill>
-                        Vessel:{" "}
-                        <Text className="text-textMain font-semibold">
-                          {crew.assetName ?? crew.asset?.name ?? "—"}
-                        </Text>
-                      </MiniPill>
-                    </Pressable>
-
                     {crew.rank ? (
                       <MiniPill>
                         Rank:{" "}
@@ -224,37 +221,47 @@ export default function CrewViewScreen() {
 
                 <View className="gap-4 web:flex-row">
                   <View className="flex-1 gap-4">
-                    <FieldDisplay label="Nationality" value={crew.nationality ?? "—"} />
+                    <FieldDisplay label="Nationality" value={crew.nationality ?? "-"} />
                     <FieldDisplay
                       label="Date of Birth"
                       value={formatDate(crew.dateOfBirth)}
                     />
                     <FieldDisplay
                       label="Passport Number"
-                      value={crew.passportNumber ?? "—"}
+                      value={crew.passportNumber ?? "-"}
                     />
                     <FieldDisplay
                       label="Seafarer ID"
-                      value={crew.seafarerId ?? "—"}
+                      value={crew.seafarerId ?? "-"}
                     />
                     <FieldDisplay
                       label="Personal Email"
-                      value={crew.personalEmail ?? "—"}
+                      value={crew.personalEmail ?? "-"}
+                    />
+                    <FieldDisplay
+                      label="Assigned Vessel"
+                      value={
+                        <Pressable onPress={goVessel}>
+                          <Text className="text-accent font-semibold">
+                            {assignedVesselName}
+                          </Text>
+                        </Pressable>
+                      }
                     />
                   </View>
 
                   <View className="flex-1 gap-4">
                     <FieldDisplay
                       label="Contract Type"
-                      value={crew.contractType ?? "—"}
+                      value={crew.contractType ?? "-"}
                     />
                     <FieldDisplay
                       label="Operating Company"
-                      value={crew.operatingCompany ?? "—"}
+                      value={crew.operatingCompany ?? "-"}
                     />
                     <FieldDisplay
                       label="Crew Agency"
-                      value={crew.crewManagementAgency ?? "—"}
+                      value={crew.crewManagementAgency ?? "-"}
                     />
                     <FieldDisplay
                       label="Embarkation"
@@ -284,7 +291,7 @@ export default function CrewViewScreen() {
                     label="Total Sea Experience"
                     value={
                       crew.totalSeaExperienceYears === null
-                        ? "—"
+                        ? "-"
                         : `${crew.totalSeaExperienceYears} years`
                     }
                   />
@@ -292,17 +299,17 @@ export default function CrewViewScreen() {
                     label="Years in Current Rank"
                     value={
                       crew.yearsInCurrentRank === null
-                        ? "—"
+                        ? "-"
                         : `${crew.yearsInCurrentRank} years`
                     }
                   />
                   <FieldDisplay
                     label="Vessel Type Experience"
-                    value={crew.vesselTypeExperience ?? "—"}
+                    value={crew.vesselTypeExperience ?? "-"}
                   />
                   <FieldDisplay
                     label="Previous Vessels"
-                    value={crew.previousVessels ?? "—"}
+                    value={crew.previousVessels ?? "-"}
                   />
                 </View>
 
@@ -311,7 +318,7 @@ export default function CrewViewScreen() {
                     label="Time with Current Company"
                     value={
                       crew.timeWithCurrentCompanyMonths === null
-                        ? "—"
+                        ? "-"
                         : `${crew.timeWithCurrentCompanyMonths} months`
                     }
                   />
@@ -327,7 +334,7 @@ export default function CrewViewScreen() {
                   />
                   <FieldDisplay
                     label="Responsible Officer"
-                    value={crew.responsibleOfficer ?? "—"}
+                    value={crew.responsibleOfficer ?? "-"}
                   />
                 </View>
               </View>
@@ -357,7 +364,7 @@ export default function CrewViewScreen() {
 
                 <FieldDisplay
                   label="Medical Restrictions"
-                  value={crew.medicalRestrictions ?? "—"}
+                  value={crew.medicalRestrictions ?? "-"}
                 />
               </View>
             </CardContent>
@@ -366,26 +373,78 @@ export default function CrewViewScreen() {
           <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
             <CardHeaderRow>
               <CardTitle className="text-[16px] text-textMain">
-                Compliance Next
+                Crew Certificates
               </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onPress={goCertificates}
+                className="rounded-full"
+              >
+                Open Crew Certificates
+              </Button>
             </CardHeaderRow>
 
             <CardContent className="px-6">
-              <View className="gap-4">
-                <Text className="text-textMain text-[13px] leading-[20px]">
-                  Crew certificates are managed separately so compliance by rank
-                  can stay grounded in uploaded evidence and approval state.
-                </Text>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onPress={goCertificates}
-                  className="rounded-full self-start"
-                >
-                  Open Crew Certificates
-                </Button>
+              <View className="gap-3">
+                {certificatesLoading ? (
+                  <Text className="text-muted text-[13px]">Loading certificates…</Text>
+                ) : certificatesError ? (
+                  <View className="gap-3 rounded-[18px] border border-border bg-baseBg/35 p-4">
+                    <Text className="text-[13px] text-destructive">
+                      {certificatesError}
+                    </Text>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={refreshCertificates}
+                      className="rounded-full self-start"
+                    >
+                      Retry
+                    </Button>
+                  </View>
+                ) : certificates.length === 0 ? (
+                  <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-3">
+                    <Text className="text-[13px] text-textMain">
+                      No crew certificates uploaded yet for this crew member.
+                    </Text>
+                    <Text className="text-[12px] text-muted">
+                      Start from the crew certificates module to upload evidence or review requirements.
+                    </Text>
+                  </View>
+                ) : (
+                  certificates.map((item) => (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => setSelectedCertificateId(item.id)}
+                      className={[
+                        "rounded-[18px] border p-4 gap-3",
+                        selectedCertificate?.id === item.id
+                          ? "border-accent bg-accent/10"
+                          : "border-border bg-baseBg/35",
+                      ].join(" ")}
+                    >
+                      <View className="gap-2">
+                        <Text className="text-textMain font-semibold text-[13px]">
+                          {item.certificateName}
+                        </Text>
+                        <Text className="text-muted text-[12px]">
+                          {item.number ?? item.certificateCode}
+                        </Text>
+                      </View>
+
+                      <View className="flex-row flex-wrap gap-2">
+                        <CertificateStatusPill status={item.status} />
+                        <WorkflowStatusPill status={item.workflowStatus} />
+                      </View>
+                    </Pressable>
+                  ))
+                )}
+
                 <View className="rounded-[18px] border border-border bg-baseBg/35 p-4">
-                  <Text className="text-[12px] text-muted">Notes</Text>
+                  <Text className="text-[12px] text-muted">
+                    Operational Notes
+                  </Text>
                   <Text className="text-textMain text-[13px] leading-[20px] mt-1">
                     {crew.notes ?? "No operational notes recorded yet."}
                   </Text>
@@ -393,12 +452,78 @@ export default function CrewViewScreen() {
               </View>
             </CardContent>
           </Card>
+
+          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <CardTitle className="text-[16px] text-textMain">
+                Certificate Preview
+              </CardTitle>
+            </CardHeaderRow>
+
+            <CardContent className="px-6">
+              {selectedCertificate && selectedAttachment ? (
+                <View className="gap-4">
+                  <View className="gap-2">
+                    <Text className="text-textMain font-semibold text-[14px]">
+                      {selectedCertificate.certificateName}
+                    </Text>
+                    <View className="flex-row flex-wrap gap-2">
+                      <MiniPill>{selectedAttachment.fileName}</MiniPill>
+                      <MiniPill>{selectedAttachment.mimeType}</MiniPill>
+                    </View>
+                  </View>
+
+                  <DocumentPreview
+                    attachmentUrl={toAbsoluteUrl(selectedAttachment.url)}
+                    mimeType={selectedAttachment.mimeType}
+                  />
+
+                  <View className="flex-row flex-wrap gap-2">
+                    <Button
+                      variant="softAccent"
+                      size="sm"
+                      onPress={() => openAttachment(selectedAttachment.url)}
+                      className="rounded-full"
+                    >
+                      Open original
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={() =>
+                        router.push(
+                          `/projects/${pid}/vessels/${vid}/crew/${cid}/certificates/${selectedCertificate.id}`,
+                        )
+                      }
+                      className="rounded-full"
+                    >
+                      Open certificate
+                    </Button>
+                  </View>
+                </View>
+              ) : (
+                <Text className="text-[13px] text-textMain">
+                  Select a crew certificate with an uploaded file to preview it here.
+                </Text>
+              )}
+            </CardContent>
+          </Card>
         </View>
       </View>
 
-      {deleteError ? (
-        <Text className="text-destructive">{deleteError}</Text>
-      ) : null}
+      {deleteError ? <Text className="text-destructive">{deleteError}</Text> : null}
+
+      <ConfirmModal
+        visible={isDeleteOpen}
+        title="Delete crew member"
+        message={`Are you sure you want to delete ${crew.fullName}?`}
+        confirmLabel="Delete crew member"
+        cancelLabel="Keep crew member"
+        variant="destructive"
+        loading={deleting}
+        onCancel={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+      />
     </View>
   );
 }

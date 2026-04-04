@@ -46,10 +46,6 @@ export default function FuelViewScreen() {
   const goEdit = () =>
     router.push(`/projects/${pid}/vessels/${vid}/fuel/${fid}/edit`);
 
-  const handleDelete = () => {
-    // TODO: confirm dialog + delete endpoint
-  };
-
   if (loading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={refresh} />;
   if (!fuel)
@@ -89,23 +85,6 @@ export default function FuelViewScreen() {
               }
               accessibilityLabel="Refresh"
             />
-
-            <Button
-              variant="destructive"
-              size="lg"
-              onPress={handleDelete}
-              className="rounded-full"
-              disabled
-              rightIcon={
-                <Ionicons
-                  name="trash-outline"
-                  size={16}
-                  className="text-textMain"
-                />
-              }
-            >
-              Delete
-            </Button>
 
             <Button
               variant="default"

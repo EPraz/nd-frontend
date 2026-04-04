@@ -34,7 +34,7 @@ const DEFAULT_SLOTS: DashboardSlots = {
 export default function ProjectDashboardScreen() {
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const pid = String(projectId);
-  const { projectKind, projectName } = useProjectContext();
+  const { projectKind } = useProjectContext();
 
   const available = useMemo(
     () => getAvailableModules({ scope: "PROJECT", projectKind }),
@@ -89,7 +89,8 @@ export default function ProjectDashboardScreen() {
         <View className="p-4 web:p-0 gap-4">
           <View className="gap-1">
             <Text className="text-2xl font-semibold">
-              {projectName} Dashboard
+              {/* {projectName} Arxis Dashboard */}
+              ARXIS Dashboard
             </Text>
             <Text className="text-sm text-muted">
               Vista agregada de todos los assets del proyecto.
@@ -102,7 +103,7 @@ export default function ProjectDashboardScreen() {
               <View className="web:flex-1">
                 <View className={[GRID_BASE, GRID_ROWS].join(" ")}>
                   {/* HERO: full width */}
-                  <View className={slotClass2("hero")}>
+                  {/* <View className={slotClass2("hero")}>
                     <DashboardSlot
                       pickerPlacement="hidden"
                       slotTitle="Overview"
@@ -112,7 +113,7 @@ export default function ProjectDashboardScreen() {
                     >
                       {renderModule(slots.hero)}
                     </DashboardSlot>
-                  </View>
+                  </View> */}
 
                   {/* leftCenter: 1 slot (2/6) en 2xl */}
                   <View className={slotClass2("leftCenter")}>

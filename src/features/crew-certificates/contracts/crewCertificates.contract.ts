@@ -57,6 +57,10 @@ export type CrewCertificateDto = {
   approvedAt: string | null;
   approvedByUserId: string | null;
   approvedByUserName: string | null;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  deletedByUserId: string | null;
+  deletedByUserName: string | null;
   notes: string | null;
   attachmentCount: number;
   attachments: CrewCertificateAttachmentDto[];

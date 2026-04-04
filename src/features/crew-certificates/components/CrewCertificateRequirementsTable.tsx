@@ -1,4 +1,4 @@
-import { Column, DataTable, TableLink, Text } from "@/src/components";
+import { Column, DataTable, TableActionIcon, Text } from "@/src/components";
 import { RequirementStatusPill } from "@/src/features/certificates/components";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
@@ -109,20 +109,20 @@ export function CrewCertificateRequirementsTable({
         header: "Action",
         flex: 1.4,
         render: (row) => (
-          <View className="gap-2">
-            <TableLink
+          <View className="flex-row items-center flex-wrap gap-2">
+            <TableActionIcon
+              icon="person-outline"
               tooltip="Open crew profile"
               onPress={() =>
                 router.push(
                   `/projects/${projectId}/vessels/${row.assetId}/crew/${row.crewMemberId}`,
                 )
               }
-            >
-              Open crew
-            </TableLink>
+            />
 
             {row.pendingIngestionId ? (
-              <TableLink
+              <TableActionIcon
+                icon="sparkles-outline"
                 tooltip="Review uploaded document"
                 onPress={() =>
                   router.push({
@@ -135,28 +135,25 @@ export function CrewCertificateRequirementsTable({
                     },
                   })
                 }
-              >
-                Review upload
-              </TableLink>
+              />
             ) : row.structuredCertificateId ? (
-              <TableLink
+              <TableActionIcon
+                icon="document-text-outline"
                 tooltip="Open certificate"
                 onPress={() =>
                   router.push(
                     `/projects/${projectId}/vessels/${row.assetId}/crew/${row.crewMemberId}/certificates/${row.structuredCertificateId}`,
                   )
                 }
-              >
-                Open certificate
-              </TableLink>
+              />
             ) : null}
 
-            <TableLink
+            <TableActionIcon
+              icon="cloud-upload-outline"
+              tone="accent"
               tooltip="Upload certificate document"
               onPress={() => onUpload(row)}
-            >
-              {row.hasStructuredCertificate ? "Upload new version" : "Upload certificate"}
-            </TableLink>
+            />
           </View>
         ),
       },

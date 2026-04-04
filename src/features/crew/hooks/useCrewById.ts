@@ -24,8 +24,12 @@ export function useCrewById(
 
     try {
       const data = await fetchCrewById(projectId, assetId, crewId);
-      setCrew(data ?? null);
-      if (!data) setError("Crew member not found.");
+      if (!data || data.isDeleted) {
+        setCrew(null);
+        setError("Crew member not found.");
+      } else {
+        setCrew(data);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setCrew(null);

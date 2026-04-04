@@ -13,7 +13,7 @@ export function useCertificatesByAsset(projectId: string, assetId: string) {
     setError(null);
     try {
       const data = await fetchCertificatesByAsset(projectId, assetId);
-      setCertificates(data);
+      setCertificates(data.filter((certificate) => !certificate.isDeleted));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setCertificates([]);

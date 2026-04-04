@@ -13,7 +13,7 @@ export function useVessels(projectId: string) {
     setError(null);
     try {
       const data = await fetchAssets(projectId, "VESSEL");
-      setVessels(data);
+      setVessels(data.filter((item) => !item.isDeleted));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setVessels([]);

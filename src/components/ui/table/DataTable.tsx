@@ -163,9 +163,10 @@ function RowItem<Row>(props: {
       <TextClassContext.Provider value={textClass}>
         <View
           className={[
-            "flex-row items-center w-full h-[65px] border-b border-border transition-colors",
+            "relative flex-row items-center w-full h-[65px] border-b border-border transition-colors",
             zebraBg,
             hovered ? "bg-accent/40" : "",
+            hovered ? "web:z-[300]" : "web:z-[1]",
             pressed ? "opacity-95" : "",
             props.selected
               ? "bg-accent/12 border-l-2 border-accent"

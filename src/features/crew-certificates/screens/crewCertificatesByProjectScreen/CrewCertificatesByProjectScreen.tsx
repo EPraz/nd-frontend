@@ -25,6 +25,50 @@ export default function CrewCertificatesByProjectScreen() {
     error: generationError,
   } = useGenerateCrewCertificateRequirements(pid);
 
+  const headerActions = (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+        onPress={onGenerate}
+        loading={generating}
+        className="rounded-full"
+        rightIcon={
+          <Ionicons
+            name="refresh-outline"
+            size={16}
+            className="text-textMain"
+          />
+        }
+      >
+        Refresh requirements
+      </Button>
+
+      <Button
+        variant="icon"
+        size="iconLg"
+        onPress={refresh}
+        leftIcon={
+          <Ionicons
+            name="refresh-outline"
+            size={18}
+            className="text-textMain"
+          />
+        }
+        accessibilityLabel="Reload current data"
+      />
+
+      <Button
+        variant="outline"
+        size="sm"
+        onPress={() => router.push(`/projects/${pid}/crew`)}
+        className="rounded-full"
+      >
+        Open crew module
+      </Button>
+    </>
+  );
+
   const stats = useMemo(() => {
     let missing = 0;
     let underReview = 0;
@@ -82,6 +126,7 @@ export default function CrewCertificatesByProjectScreen() {
         title="Crew Certificate Compliance"
         subTitle="Track crew requirements by rank and upload real evidence from each missing or outdated row."
         onRefresh={refresh}
+        actions={headerActions}
       />
 
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
@@ -143,34 +188,6 @@ export default function CrewCertificatesByProjectScreen() {
           row when the system expects a certificate for a specific rank, and use
           the crew member profile for extra certificates outside the current rule set.
         </Text>
-
-        <View className="flex-row flex-wrap gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onPress={onGenerate}
-            loading={generating}
-            className="rounded-full"
-            rightIcon={
-              <Ionicons
-                name="refresh-outline"
-                size={16}
-                className="text-textMain"
-              />
-            }
-          >
-            Refresh requirements
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onPress={() => router.push(`/projects/${pid}/crew`)}
-            className="rounded-full"
-          >
-            Open crew module
-          </Button>
-        </View>
 
         {generationError ? (
           <Text className="text-[12px] text-destructive">{generationError}</Text>

@@ -1,9 +1,18 @@
-import { Button, MiniPill, QuickViewModalFrame, Text } from "@/src/components";
+import {
+  Button,
+  ConfirmModal,
+  MiniPill,
+  QuickViewModalFrame,
+  Text,
+} from "@/src/components";
+import { useToast } from "@/src/context";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { Stat } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { View } from "react-native";
+import { useDeleteVessel } from "../../hooks";
 import { useVesselSummary } from "../../hooks/useVesselSummary";
 
 type Props = {
@@ -18,6 +27,12 @@ export default function VesselQuickViewModal({
   onClose,
 }: Props) {
   const router = useRouter();
+  const { show } = useToast();
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const { submit: deleteVessel, loading: deleting } = useDeleteVessel(
+    projectId,
+    vessel.id,
+  );
 
   const {
     data: summary,
@@ -35,9 +50,16 @@ export default function VesselQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${vessel.id}/edit`);
   };
 
-  // Placeholder: luego conectas DELETE real
-  const handleDelete = () => {
-    // TODO: confirm dialog + delete endpoint
+  const handleDelete = async () => {
+    try {
+      await deleteVessel();
+      setIsDeleteOpen(false);
+      show("Vessel deleted", "success");
+      onClose();
+      router.replace(`/projects/${projectId}/vessels`);
+    } catch {
+      show("Failed to delete vessel", "error");
+    }
   };
 
   const profile = vessel.vessel;
@@ -100,7 +122,8 @@ export default function VesselQuickViewModal({
           <Button
             variant="softDestructive"
             size="pillSm"
-            onPress={handleDelete}
+            onPress={() => setIsDeleteOpen(true)}
+            disabled={deleting}
             leftIcon={
               <Ionicons
                 name="trash-outline"
@@ -241,6 +264,18 @@ export default function VesselQuickViewModal({
       {summaryError ? (
         <Text className="text-destructive">{summaryError}</Text>
       ) : null}
+
+      <ConfirmModal
+        visible={isDeleteOpen}
+        title="Delete vessel"
+        message={`Are you sure you want to delete ${vessel.name}?`}
+        confirmLabel="Delete vessel"
+        cancelLabel="Keep vessel"
+        variant="destructive"
+        loading={deleting}
+        onCancel={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+      />
     </QuickViewModalFrame>
   );
 }

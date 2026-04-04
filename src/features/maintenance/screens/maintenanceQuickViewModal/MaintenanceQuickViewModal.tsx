@@ -107,11 +107,6 @@ export default function MaintenanceQuickViewModal({
     );
   };
 
-  // Placeholder: luego conectas DELETE real
-  const handleDelete = () => {
-    // TODO: confirm dialog + delete endpoint
-  };
-
   return (
     <QuickViewModalFrame
       portalName={task.title}
@@ -121,21 +116,6 @@ export default function MaintenanceQuickViewModal({
       subtitle="Quick maintenance snapshot. Open the task page for full details and updates."
       headerActions={
         <>
-          <Button
-            variant="softDestructive"
-            size="pillSm"
-            onPress={handleDelete}
-            leftIcon={
-              <Ionicons
-                name="trash-outline"
-                size={16}
-                className="text-destructive"
-              />
-            }
-          >
-            Delete
-          </Button>
-
           <Button
             variant="softAccent"
             size="pillSm"

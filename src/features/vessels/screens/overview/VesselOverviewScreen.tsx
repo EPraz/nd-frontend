@@ -1,4 +1,7 @@
+import vesselBanner from "@/src/assets/ship-banner-2.jpg";
 import { Button, Card, Text } from "@/src/components";
+import { HeroBanner } from "@/src/components/modules/heroSection";
+import type { SpecItem } from "@/src/components/modules/heroSection/hero.ui";
 import { useProjectContext } from "@/src/context";
 import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
 import { useRouter } from "expo-router";
@@ -7,7 +10,7 @@ import { useVesselShell } from "../../context/VesselShellProvider";
 
 const LATERAL_HEIGHT = "web:h-[45vh] web:max-h-[520px] web:min-h-[375px]";
 const GRID_BASE =
-  "web:grid web:gap-4 web:grid-cols-1 web:md:grid-cols-2 web:2xl:grid-cols-6";
+  "web:grid web:gap-4 web:grid-cols-1 web:md:grid-cols-2 web:2xl:grid-cols-6 web:auto-rows-[375px]";
 
 export default function VesselOverviewScreen() {
   const router = useRouter();
@@ -31,87 +34,110 @@ export default function VesselOverviewScreen() {
   ]
     .filter(Boolean)
     .join(" | ");
-  const fuelLabel = summary.fuel.lastEventType
-    ? humanizeTechnicalLabel(summary.fuel.lastEventType)
-    : "No events";
 
-  const moduleCards = [
-    {
-      title: "Certificates",
-      subtitle: "Requirements and uploaded records for this vessel.",
-      rows: [
-        { label: "Provided", value: String(summary.certificates.valid) },
-        { label: "Under review", value: String(summary.certificates.pending) },
-        { label: "At risk", value: String(certificatesAtRisk) },
-      ],
-      cta: "Open certificates",
-      href: `/projects/${projectId}/vessels/${assetId}/certificates`,
-    },
-    {
-      title: "Crew",
-      subtitle: "Assigned people, activity status, and readiness context.",
-      rows: [
-        { label: "Active", value: String(summary.crew.active) },
-        { label: "Inactive", value: String(summary.crew.inactive) },
-        {
-          label: "Readiness",
-          value: summary.crew.active > 0 ? "Crew onboard" : "Needs assignment",
-        },
-      ],
-      cta: "Open crew",
-      href: `/projects/${projectId}/vessels/${assetId}/crew`,
-    },
-    {
-      title: "Maintenance",
-      subtitle: "Task load and due-date pressure around this vessel.",
-      rows: [
-        { label: "Open", value: String(summary.maintenance.open) },
-        { label: "In progress", value: String(summary.maintenance.inProgress) },
-        { label: "Overdue", value: String(summary.maintenance.overdue) },
-      ],
-      cta: "Open maintenance",
-      href: `/projects/${projectId}/vessels/${assetId}/maintenance`,
-    },
-  ];
+  const certificatesCard = {
+    title: "Certificates",
+    subtitle: "Requirements and uploaded records for this vessel.",
+    rows: [
+      { label: "Provided", value: String(summary.certificates.valid) },
+      { label: "Under review", value: String(summary.certificates.pending) },
+      { label: "At risk", value: String(certificatesAtRisk) },
+    ],
+    cta: "Open certificates",
+    href: `/projects/${projectId}/vessels/${assetId}/certificates`,
+  };
 
-  const heroRows = [
-    { label: "Project", value: projectName },
-    { label: "Identifier", value: identifier },
-    { label: "Flag", value: vessel.vessel?.flag ?? "Pending" },
-    { label: "Type", value: humanizeTechnicalLabel(vessel.vessel?.vesselType) },
-    { label: "Class society", value: vessel.vessel?.classSociety ?? "Not set" },
-    { label: "Dimensions", value: dimensions || "Not set" },
-  ];
+  const crewCard = {
+    title: "Crew",
+    subtitle: "Assigned people, activity status, and readiness context.",
+    rows: [
+      { label: "Active", value: String(summary.crew.active) },
+      { label: "Inactive", value: String(summary.crew.inactive) },
+      {
+        label: "Readiness",
+        value: summary.crew.active > 0 ? "Crew onboard" : "Needs assignment",
+      },
+    ],
+    cta: "Open crew",
+    href: `/projects/${projectId}/vessels/${assetId}/crew`,
+  };
+
+  const maintenanceCard = {
+    title: "Maintenance",
+    subtitle: "Task load and due-date pressure around this vessel.",
+    rows: [
+      { label: "Open", value: String(summary.maintenance.open) },
+      { label: "In progress", value: String(summary.maintenance.inProgress) },
+      { label: "Overdue", value: String(summary.maintenance.overdue) },
+    ],
+    cta: "Open maintenance",
+    href: `/projects/${projectId}/vessels/${assetId}/maintenance`,
+  };
 
   const profileRows = [
+    { label: "Flag", value: vessel.vessel?.flag ?? "Pending" },
+    {
+      label: "Type",
+      value: humanizeTechnicalLabel(vessel.vessel?.vesselType),
+    },
+    {
+      label: "Class society",
+      value: vessel.vessel?.classSociety ?? "Not set",
+    },
     {
       label: "Home port",
       value: vessel.vessel?.homePort ?? "Not set",
     },
     {
-      label: "Builder",
-      value: vessel.vessel?.builder ?? "Not set",
+      label: "Dimensions",
+      value: dimensions || "Not set",
     },
     {
-      label: "Year built",
-      value: vessel.vessel?.yearBuilt
-        ? String(vessel.vessel.yearBuilt)
-        : "Not set",
-    },
-    {
-      label: "Call sign / MMSI",
+      label: "Builder / Year",
       value:
-        [vessel.vessel?.callSign, vessel.vessel?.mmsi]
+        [vessel.vessel?.builder, vessel.vessel?.yearBuilt]
           .filter(Boolean)
           .join(" | ") || "Not set",
     },
+  ];
+
+  const heroLeft: SpecItem[] = [
+    { label: "Project", value: projectName },
+    { label: "Identifier", value: identifier },
+  ];
+
+  const heroRight: SpecItem[] = [
     {
-      label: "Propulsion",
-      value: humanizeTechnicalLabel(vessel.vessel?.propulsionType),
+      label: "Certificates at risk",
+      value: String(certificatesAtRisk),
+      kind: "status" as const,
+      statusTone:
+        certificatesAtRisk === 0
+          ? "ok"
+          : certificatesAtRisk <= 2
+            ? "warn"
+            : "fail",
     },
     {
-      label: "Main engine",
-      value: vessel.vessel?.mainEngineModel ?? "Not set",
+      label: "Crew active",
+      value: `${summary.crew.active}/${summary.crew.total}`,
+      kind: "status" as const,
+      statusTone: summary.crew.active > 0 ? "ok" : "warn",
+    },
+    {
+      label: "Maintenance attention",
+      value: String(summary.maintenance.overdue + summary.maintenance.open),
+      kind: "status" as const,
+      statusTone:
+        summary.maintenance.overdue > 0
+          ? "fail"
+          : summary.maintenance.open > 0
+            ? "warn"
+            : "ok",
+    },
+    {
+      label: "Updated",
+      value: formatDate(summary.updatedAt),
     },
   ];
 
@@ -121,116 +147,44 @@ export default function VesselOverviewScreen() {
         <View className="web:flex-1">
           <View className={GRID_BASE}>
             <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-6">
-              <OverviewPanel
-                title="Vessel overview"
-                description="Single-asset operational snapshot aligned with the same dashboard language used at project level."
-                flush
-              >
-                <View className="gap-5 px-6 pb-6">
-                  <View className="gap-4 web:grid web:grid-cols-1 web:xl:grid-cols-3">
-                    <View className="web:xl:col-span-2">
-                      <View className="gap-3 web:grid web:grid-cols-1 web:md:grid-cols-2">
-                        {heroRows.map((row) => (
-                          <DetailMetric
-                            key={`hero-${row.label}`}
-                            label={row.label}
-                            value={row.value}
-                          />
-                        ))}
-                      </View>
-                    </View>
-
-                    <View className="rounded-xl border border-border bg-baseBg/30 p-4 gap-3">
-                      <Text className="text-sm font-semibold text-textMain">
-                        Operational pulse
-                      </Text>
-                      <PulseMetric
-                        label="Certificates at risk"
-                        value={String(certificatesAtRisk)}
-                        tone={certificatesAtRisk > 0 ? "fail" : "success"}
-                      />
-                      <PulseMetric
-                        label="Crew active"
-                        value={`${summary.crew.active}/${summary.crew.total}`}
-                        tone={summary.crew.active > 0 ? "success" : "neutral"}
-                      />
-                      <PulseMetric
-                        label="Maintenance attention"
-                        value={String(
-                          summary.maintenance.overdue +
-                            summary.maintenance.open,
-                        )}
-                        tone={
-                          summary.maintenance.overdue > 0
-                            ? "fail"
-                            : summary.maintenance.open > 0
-                              ? "warn"
-                              : "success"
-                        }
-                      />
-                      <PulseMetric
-                        label="Last fuel event"
-                        value={fuelLabel}
-                        tone={summary.fuel.total > 0 ? "success" : "neutral"}
-                      />
-                    </View>
-                  </View>
-                </View>
-              </OverviewPanel>
-            </View>
-
-            <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-2">
-              <OverviewPanel
-                title={moduleCards[0].title}
-                description={moduleCards[0].subtitle}
-              >
-                <ModuleSummary
-                  rows={moduleCards[0].rows}
-                  actionLabel={moduleCards[0].cta}
-                  onPress={() => router.push(moduleCards[0].href)}
+              <Card className="gap-0 overflow-hidden p-0">
+                <HeroBanner
+                  title={vessel.name}
+                  subtitle="Single-vessel operational snapshot with the same dashboard language used at project level."
+                  source={vesselBanner}
+                  rightTitle="Operational Highlights"
+                  leftSectionTitle="Overview"
+                  rightSectionTitle="Readiness"
+                  left={heroLeft}
+                  right={heroRight}
                 />
-              </OverviewPanel>
-            </View>
-
-            <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-4">
-              <OverviewPanel
-                title="Vessel profile snapshot"
-                description="Client-friendly vessel details surfaced in one place."
-              >
-                <View className="gap-3 web:grid web:grid-cols-1 web:md:grid-cols-2">
-                  {profileRows.map((row) => (
-                    <DetailMetric
-                      key={`profile-${row.label}`}
-                      label={row.label}
-                      value={row.value}
-                    />
-                  ))}
-                </View>
-              </OverviewPanel>
+              </Card>
             </View>
 
             <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
               <OverviewPanel
-                title={moduleCards[1].title}
-                description={moduleCards[1].subtitle}
+                title={crewCard.title}
+                description={crewCard.subtitle}
+                fullHeight
               >
                 <ModuleSummary
-                  rows={moduleCards[1].rows}
-                  actionLabel={moduleCards[1].cta}
-                  onPress={() => router.push(moduleCards[1].href)}
+                  rows={crewCard.rows}
+                  actionLabel={crewCard.cta}
+                  onPress={() => router.push(crewCard.href)}
                 />
               </OverviewPanel>
             </View>
 
             <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
               <OverviewPanel
-                title={moduleCards[2].title}
-                description={moduleCards[2].subtitle}
+                title={maintenanceCard.title}
+                description={maintenanceCard.subtitle}
+                fullHeight
               >
                 <ModuleSummary
-                  rows={moduleCards[2].rows}
-                  actionLabel={moduleCards[2].cta}
-                  onPress={() => router.push(moduleCards[2].href)}
+                  rows={maintenanceCard.rows}
+                  actionLabel={maintenanceCard.cta}
+                  onPress={() => router.push(maintenanceCard.href)}
                 />
               </OverviewPanel>
             </View>
@@ -240,71 +194,35 @@ export default function VesselOverviewScreen() {
         <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
           <View className={LATERAL_HEIGHT}>
             <OverviewPanel
-              title="Fuel"
-              description="Latest event and basic fuel context for this vessel."
+              title={certificatesCard.title}
+              description={certificatesCard.subtitle}
               fullHeight
             >
               <ModuleSummary
-                rows={[
-                  { label: "Events", value: String(summary.fuel.total) },
-                  { label: "Last event type", value: fuelLabel },
-                  {
-                    label: "Last event date",
-                    value: formatDate(summary.fuel.lastEventAt),
-                  },
-                ]}
-                actionLabel="Open fuel"
-                onPress={() =>
-                  router.push(`/projects/${projectId}/vessels/${assetId}/fuel`)
-                }
+                rows={certificatesCard.rows}
+                actionLabel={certificatesCard.cta}
+                onPress={() => router.push(certificatesCard.href)}
               />
             </OverviewPanel>
           </View>
 
-          <View className={LATERAL_HEIGHT}>
+          {/* <View className={LATERAL_HEIGHT}>
             <OverviewPanel
-              title="Vessel context"
-              description="Actions and timestamps anchored to this asset."
+              title="Vessel profile snapshot"
+              description="Client-friendly vessel details surfaced in one place."
               fullHeight
             >
-              <View className="flex-1 justify-between gap-4">
-                <View className="gap-3">
-                  <DetailMetric label="Project" value={projectName} />
+              <View className="gap-3">
+                {profileRows.map((row) => (
                   <DetailMetric
-                    label="Status"
-                    value={humanizeTechnicalLabel(vessel.status)}
+                    key={`profile-${row.label}`}
+                    label={row.label}
+                    value={row.value}
                   />
-                  <DetailMetric
-                    label="Summary refreshed"
-                    value={formatDate(summary.updatedAt)}
-                  />
-                </View>
-
-                <View className="gap-2">
-                  <Button
-                    variant="softAccent"
-                    size="sm"
-                    onPress={() =>
-                      router.push(
-                        `/projects/${projectId}/vessels/${assetId}/edit`,
-                      )
-                    }
-                  >
-                    Edit vessel profile
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onPress={() =>
-                      router.push(`/projects/${projectId}/dashboard`)
-                    }
-                  >
-                    Back to project dashboard
-                  </Button>
-                </View>
+                ))}
               </View>
             </OverviewPanel>
-          </View>
+          </View> */}
         </View>
       </View>
     );
@@ -312,85 +230,46 @@ export default function VesselOverviewScreen() {
 
   return (
     <View className="gap-4">
-      <OverviewPanel
-        title="Vessel overview"
-        description="Single-asset operational snapshot aligned with the same dashboard language used at project level."
-      >
-        <View className="gap-3">
-          {heroRows.map((row) => (
-            <DetailMetric
-              key={`mobile-hero-${row.label}`}
-              label={row.label}
-              value={row.value}
-            />
-          ))}
-        </View>
-      </OverviewPanel>
-
-      <OverviewPanel title="Operational pulse">
-        <View className="gap-3">
-          <PulseMetric
-            label="Certificates at risk"
-            value={String(certificatesAtRisk)}
-            tone={certificatesAtRisk > 0 ? "fail" : "success"}
-          />
-          <PulseMetric
-            label="Crew active"
-            value={`${summary.crew.active}/${summary.crew.total}`}
-            tone={summary.crew.active > 0 ? "success" : "neutral"}
-          />
-          <PulseMetric
-            label="Maintenance attention"
-            value={String(
-              summary.maintenance.overdue + summary.maintenance.open,
-            )}
-            tone={
-              summary.maintenance.overdue > 0
-                ? "fail"
-                : summary.maintenance.open > 0
-                  ? "warn"
-                  : "success"
-            }
-          />
-          <PulseMetric
-            label="Last fuel event"
-            value={fuelLabel}
-            tone={summary.fuel.total > 0 ? "success" : "neutral"}
-          />
-        </View>
-      </OverviewPanel>
-
-      {moduleCards.map((card) => (
-        <OverviewPanel
-          key={card.title}
-          title={card.title}
-          description={card.subtitle}
-        >
-          <ModuleSummary
-            rows={card.rows}
-            actionLabel={card.cta}
-            onPress={() => router.push(card.href)}
-          />
-        </OverviewPanel>
-      ))}
+      <Card className="gap-0 overflow-hidden p-0">
+        <HeroBanner
+          title={vessel.name}
+          subtitle="Single-vessel operational snapshot with the same dashboard language used at project level."
+          source={vesselBanner}
+          rightTitle="Operational Highlights"
+          leftSectionTitle="Overview"
+          rightSectionTitle="Readiness"
+          left={heroLeft}
+          right={heroRight}
+        />
+      </Card>
 
       <OverviewPanel
-        title="Fuel"
-        description="Latest event and basic fuel context for this vessel."
+        title={certificatesCard.title}
+        description={certificatesCard.subtitle}
       >
         <ModuleSummary
-          rows={[
-            { label: "Events", value: String(summary.fuel.total) },
-            { label: "Last event type", value: fuelLabel },
-            {
-              label: "Last event date",
-              value: formatDate(summary.fuel.lastEventAt),
-            },
-          ]}
-          actionLabel="Open fuel"
-          onPress={() =>
-            router.push(`/projects/${projectId}/vessels/${assetId}/fuel`)
-          }
+          rows={certificatesCard.rows}
+          actionLabel={certificatesCard.cta}
+          onPress={() => router.push(certificatesCard.href)}
+        />
+      </OverviewPanel>
+
+      <OverviewPanel title={crewCard.title} description={crewCard.subtitle}>
+        <ModuleSummary
+          rows={crewCard.rows}
+          actionLabel={crewCard.cta}
+          onPress={() => router.push(crewCard.href)}
+        />
+      </OverviewPanel>
+
+      <OverviewPanel
+        title={maintenanceCard.title}
+        description={maintenanceCard.subtitle}
+      >
+        <ModuleSummary
+          rows={maintenanceCard.rows}
+          actionLabel={maintenanceCard.cta}
+          onPress={() => router.push(maintenanceCard.href)}
         />
       </OverviewPanel>
 
@@ -416,7 +295,6 @@ function OverviewPanel(props: {
   title: string;
   description?: string;
   children: React.ReactNode;
-  flush?: boolean;
   fullHeight?: boolean;
 }) {
   return (
@@ -438,10 +316,9 @@ function OverviewPanel(props: {
       </View>
 
       <View
-        className={[
-          props.flush ? "flex-1" : "flex-1 px-4 py-4",
-          props.fullHeight ? "h-full" : "",
-        ].join(" ")}
+        className={["flex-1 px-4 py-4", props.fullHeight ? "h-full" : ""].join(
+          " ",
+        )}
       >
         {props.children}
       </View>
@@ -484,37 +361,4 @@ function DetailMetric({ label, value }: { label: string; value: string }) {
       <Text className="text-[13px] font-semibold text-textMain">{value}</Text>
     </View>
   );
-}
-
-function PulseMetric(props: {
-  label: string;
-  value: string;
-  tone: "success" | "warn" | "fail" | "neutral";
-}) {
-  return (
-    <View className="rounded-xl border border-border bg-baseBg/25 px-4 py-3 gap-1">
-      <Text className="text-[12px] text-muted">{props.label}</Text>
-      <Text
-        className={["text-[18px] font-semibold", toneClasses(props.tone)].join(
-          " ",
-        )}
-      >
-        {props.value}
-      </Text>
-    </View>
-  );
-}
-
-function toneClasses(tone: "success" | "warn" | "fail" | "neutral") {
-  switch (tone) {
-    case "success":
-      return "text-success";
-    case "warn":
-      return "text-warning";
-    case "fail":
-      return "text-destructive";
-    case "neutral":
-    default:
-      return "text-textMain";
-  }
 }

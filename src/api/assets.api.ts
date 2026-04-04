@@ -26,3 +26,10 @@ export async function createAsset(
 ): Promise<AssetDto> {
   return apiClient.post<AssetDto>(`/projects/${projectId}/assets`, input);
 }
+
+export async function deleteAsset(
+  projectId: string,
+  assetId: string,
+): Promise<AssetDto> {
+  return apiClient.delete<AssetDto>(`/projects/${projectId}/assets/${assetId}`);
+}

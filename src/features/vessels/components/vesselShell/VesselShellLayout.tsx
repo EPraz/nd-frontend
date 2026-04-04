@@ -1,4 +1,4 @@
-import { Button, Card, ErrorState, Loading, Text } from "@/src/components";
+import { Button, ErrorState, Loading, Text } from "@/src/components";
 import { useProjectContext } from "@/src/context";
 import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
 import { usePathname, useRouter } from "expo-router";
@@ -48,16 +48,13 @@ export function VesselShellLayout({
     summary.certificates.expired + summary.certificates.expiringSoon;
   const maintenanceAttention =
     summary.maintenance.overdue + summary.maintenance.open;
-  const lastFuelEvent = summary.fuel.lastEventType
-    ? humanizeTechnicalLabel(summary.fuel.lastEventType)
-    : "No fuel events";
 
   const navItems = [
     {
       key: "overview",
       label: "Overview",
       href: basePath,
-      helper: "Asset-level operational snapshot",
+      helper: "Dashboard",
       tone: "neutral" as const,
     },
     {
@@ -67,14 +64,14 @@ export function VesselShellLayout({
       helper:
         certificatesAtRisk > 0
           ? `${certificatesAtRisk} at risk`
-          : `${summary.certificates.total} records on file`,
+          : `${summary.certificates.total} total`,
       tone: certificatesAtRisk > 0 ? ("fail" as const) : ("success" as const),
     },
     {
       key: "crew",
       label: "Crew",
       href: `${basePath}/crew`,
-      helper: `${summary.crew.active} active of ${summary.crew.total}`,
+      helper: `${summary.crew.active}/${summary.crew.total} active`,
       tone:
         summary.crew.active > 0 ? ("success" as const) : ("neutral" as const),
     },
@@ -85,11 +82,11 @@ export function VesselShellLayout({
       helper:
         summary.maintenance.overdue > 0
           ? `${summary.maintenance.overdue} overdue`
-          : `${summary.maintenance.open} open tasks`,
+          : `${maintenanceAttention} attention`,
       tone:
         summary.maintenance.overdue > 0
           ? ("fail" as const)
-          : summary.maintenance.open > 0
+          : maintenanceAttention > 0
             ? ("warn" as const)
             : ("success" as const),
     },
@@ -98,9 +95,7 @@ export function VesselShellLayout({
       label: "Fuel",
       href: `${basePath}/fuel`,
       helper:
-        summary.fuel.total > 0
-          ? `${summary.fuel.total} events | ${lastFuelEvent}`
-          : "No fuel history yet",
+        summary.fuel.total > 0 ? `${summary.fuel.total} records` : "No records",
       tone:
         summary.fuel.total > 0 ? ("success" as const) : ("neutral" as const),
     },
@@ -110,55 +105,28 @@ export function VesselShellLayout({
     .filter((item) => item.key !== "overview")
     .some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
 
-  const shellStats = [
-    {
-      label: "Certificates at risk",
-      value: String(certificatesAtRisk),
-      tone: certificatesAtRisk > 0 ? ("fail" as const) : ("success" as const),
-    },
-    {
-      label: "Crew active",
-      value: `${summary.crew.active}/${summary.crew.total}`,
-      tone: summary.crew.active > 0 ? ("success" as const) : ("neutral" as const),
-    },
-    {
-      label: "Maintenance attention",
-      value: String(maintenanceAttention),
-      tone:
-        summary.maintenance.overdue > 0
-          ? ("fail" as const)
-          : maintenanceAttention > 0
-            ? ("warn" as const)
-            : ("success" as const),
-    },
-    {
-      label: "Last fuel event",
-      value: lastFuelEvent,
-      tone: summary.fuel.total > 0 ? ("success" as const) : ("neutral" as const),
-    },
-  ];
-
   return (
-    <View className="gap-4">
-      <View className="gap-1">
-        <Text className="text-2xl font-semibold">{vessel.name} Dashboard</Text>
-        <Text className="text-sm text-muted">
-          Vessel-specific operational context inside {projectName}. Use this
-          page the same way the project dashboard aggregates the fleet, but
-          focused on one asset.
-        </Text>
-      </View>
+    <View className="gap-5">
+      <View className="flex-row flex-wrap items-start justify-between gap-4">
+        <View className="min-w-[260px] flex-1 gap-2">
+          <View className="gap-1">
+            <Text className="text-2xl font-semibold">{vessel.name}</Text>
+            <Text className="text-sm text-muted">
+              {identifier} • {humanizeTechnicalLabel(vessel.status)} • {projectName}
+            </Text>
+          </View>
 
-      <View className="flex-row flex-wrap items-center justify-between gap-3">
-        <View className="flex-row flex-wrap gap-2">
-          <MetaChip label="Status" value={humanizeTechnicalLabel(vessel.status)} />
-          <MetaChip label="Identifier" value={identifier} />
-          <MetaChip label="Flag" value={vessel.vessel?.flag ?? "Flag pending"} />
-          <MetaChip
-            label="Type"
-            value={humanizeTechnicalLabel(vessel.vessel?.vesselType)}
-          />
-          <MetaChip label="Summary refreshed" value={formatDate(summary.updatedAt)} />
+          <View className="flex-row flex-wrap gap-2">
+            <MetaChip label="Flag" value={vessel.vessel?.flag ?? "Pending"} />
+            <MetaChip
+              label="Type"
+              value={humanizeTechnicalLabel(vessel.vessel?.vesselType)}
+            />
+            <MetaChip
+              label="Summary refreshed"
+              value={formatDate(summary.updatedAt)}
+            />
+          </View>
         </View>
 
         <View className="flex-row flex-wrap gap-2">
@@ -189,101 +157,61 @@ export function VesselShellLayout({
         </View>
       </View>
 
-      <Card className="gap-0 p-0 overflow-hidden">
-        <View className="gap-1 border-b border-border px-4 py-4">
-          <Text className="text-sm font-semibold text-textMain">
-            Vessel modules
-          </Text>
-          <Text className="text-xs leading-[18px] text-muted">
-            Move between overview, certificates, crew, maintenance, and fuel
-            without leaving this vessel context.
-          </Text>
-        </View>
+      <View className="flex-row flex-wrap gap-2">
+        {navItems.map((item) => {
+          const isActive =
+            item.key === "overview"
+              ? !hasDedicatedActiveSection &&
+                (pathname === item.href ||
+                  pathname === `${item.href}/` ||
+                  pathname.startsWith(`${item.href}/edit`))
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-        <View className="gap-4 px-4 py-4">
-          <View className="flex-row flex-wrap gap-2">
-            {navItems.map((item) => {
-              const isActive =
-                item.key === "overview"
-                  ? !hasDedicatedActiveSection &&
-                    (pathname === item.href ||
-                      pathname === `${item.href}/` ||
-                      pathname.startsWith(`${item.href}/edit`))
-                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const tone = toneClasses(item.tone);
 
-              return (
-                <Pressable
-                  key={item.key}
-                  onPress={() => router.push(item.href)}
-                  className={[
-                    "min-w-[180px] flex-1 rounded-xl border px-4 py-3",
-                    isActive
-                      ? "border-accent/45 bg-accent/10"
-                      : "border-border bg-baseBg/25",
-                  ].join(" ")}
-                >
-                  <View className="gap-2">
-                    <View className="flex-row items-center justify-between gap-3">
-                      <Text
-                        className={[
-                          "text-[14px] font-semibold",
-                          isActive ? "text-accent" : "text-textMain",
-                        ].join(" ")}
-                      >
-                        {item.label}
-                      </Text>
+          return (
+            <Pressable
+              key={item.key}
+              onPress={() => router.push(item.href)}
+              className={[
+                "min-w-[180px] flex-1 rounded-[20px] border px-4 py-3",
+                isActive
+                  ? "border-accent/45 bg-accent/10"
+                  : "border-border bg-baseBg/20",
+              ].join(" ")}
+            >
+              <View className="gap-2">
+                <View className="flex-row items-center justify-between gap-3">
+                  <Text
+                    className={[
+                      "text-[14px] font-semibold",
+                      isActive ? "text-accent" : "text-textMain",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Text>
 
-                      <View
-                        className={[
-                          "rounded-full px-2.5 py-1",
-                          toneClasses(item.tone).bg,
-                        ].join(" ")}
-                      >
-                        <Text
-                          className={[
-                            "text-[10px] font-semibold",
-                            toneClasses(item.tone).text,
-                          ].join(" ")}
-                        >
-                          {isActive ? "Open" : item.label}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <Text className="text-[12px] leading-[18px] text-muted">
+                  <View className={["rounded-full px-2.5 py-1", tone.bg].join(" ")}>
+                    <Text
+                      className={[
+                        "text-[10px] font-semibold uppercase tracking-wide",
+                        tone.text,
+                      ].join(" ")}
+                    >
                       {item.helper}
                     </Text>
                   </View>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View className="flex-row flex-wrap gap-3">
-            {shellStats.map((item) => (
-              <View
-                key={item.label}
-                className="min-w-[180px] flex-1 rounded-xl border border-border bg-baseBg/25 px-4 py-3"
-              >
-                <Text className="text-[12px] text-muted">{item.label}</Text>
-                <Text
-                  className={[
-                    "mt-1 text-[18px] font-semibold",
-                    toneClasses(item.tone).text,
-                  ].join(" ")}
-                >
-                  {item.value}
-                </Text>
+                </View>
               </View>
-            ))}
-          </View>
-        </View>
-      </Card>
+            </Pressable>
+          );
+        })}
+      </View>
 
       {summaryError ? (
         <Text className="text-[12px] text-warning">
-          Operational summary is temporarily unavailable. The vessel shell
-          remains usable while summary data retries.
+          Operational summary is temporarily unavailable. The vessel shell stays
+          usable while summary data retries.
         </Text>
       ) : null}
 

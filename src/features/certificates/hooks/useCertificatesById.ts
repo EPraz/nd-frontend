@@ -29,7 +29,7 @@ export function useCertificatesById(
         certificateId,
       );
 
-      if (!data) {
+      if (!data || data.isDeleted) {
         setCertificate(null);
         setError("Certificate not found.");
       } else {

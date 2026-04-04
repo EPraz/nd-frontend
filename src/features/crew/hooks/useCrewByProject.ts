@@ -13,7 +13,7 @@ export function useCrewByProject(projectId: string) {
     setError(null);
     try {
       const data = await fetchCrewByProject(projectId);
-      setCrew(data);
+      setCrew(data.filter((item) => !item.isDeleted));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setCrew([]);

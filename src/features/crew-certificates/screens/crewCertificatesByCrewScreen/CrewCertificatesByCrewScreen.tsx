@@ -89,6 +89,59 @@ export default function CrewCertificatesByCrewScreen() {
     }
   }
 
+  const headerActions = (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+        onPress={onGenerate}
+        loading={generating}
+        className="rounded-full"
+        rightIcon={
+          <Ionicons
+            name="refresh-outline"
+            size={16}
+            className="text-textMain"
+          />
+        }
+      >
+        Refresh requirements
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onPress={() =>
+          router.push({
+            pathname: "/projects/[projectId]/crew-certificates/upload",
+            params: {
+              projectId: pid,
+              assetId: aid,
+              crewId: cid,
+            },
+          })
+        }
+        className="rounded-full"
+      >
+        Add extra certificate
+      </Button>
+
+      <Button
+        variant="icon"
+        size="iconLg"
+        onPress={refreshAll}
+        leftIcon={
+          <Ionicons
+            name="refresh-outline"
+            size={18}
+            className="text-textMain"
+          />
+        }
+        accessibilityLabel="Reload current data"
+      />
+    </>
+  );
+
   function openUpload(row: CrewCertificateRequirementDto) {
     router.push({
       pathname: "/projects/[projectId]/crew-certificates/upload",
@@ -111,6 +164,7 @@ export default function CrewCertificatesByCrewScreen() {
         title={`Crew Certificates - ${crew.fullName}`}
         subTitle="Manage rank-based requirements, uploaded evidence, and approval state for this crew member."
         onRefresh={refreshAll}
+        actions={headerActions}
       />
 
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
@@ -173,51 +227,14 @@ export default function CrewCertificatesByCrewScreen() {
           the current rule set.
         </Text>
 
-        <View className="flex-row flex-wrap gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onPress={onGenerate}
-            loading={generating}
-            className="rounded-full"
-            rightIcon={
-              <Ionicons
-                name="refresh-outline"
-                size={16}
-                className="text-textMain"
-              />
-            }
-          >
-            Refresh requirements
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onPress={() =>
-              router.push({
-                pathname: "/projects/[projectId]/crew-certificates/upload",
-                params: {
-                  projectId: pid,
-                  assetId: aid,
-                  crewId: cid,
-                },
-              })
-            }
-            className="rounded-full"
-          >
-            Add extra certificate
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onPress={() => router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`)}
-            className="rounded-full"
-          >
-            Back to crew profile
-          </Button>
-        </View>
+        <Button
+          variant="outline"
+          size="sm"
+          onPress={() => router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`)}
+          className="rounded-full self-start"
+        >
+          Back to crew profile
+        </Button>
 
         {generationError ? (
           <Text className="text-[12px] text-destructive">{generationError}</Text>

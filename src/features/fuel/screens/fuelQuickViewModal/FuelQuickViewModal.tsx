@@ -44,10 +44,6 @@ export default function FuelQuickViewModal({
     );
   };
 
-  const handleDelete = () => {
-    // TODO confirm + delete endpoint
-  };
-
   return (
     <QuickViewModalFrame
       portalName={`Fuel-${fuel.id}`}
@@ -57,22 +53,6 @@ export default function FuelQuickViewModal({
       subtitle="Quick snapshot. Open the view page for full details."
       headerActions={
         <>
-          <Button
-            variant="softDestructive"
-            size="pillSm"
-            onPress={handleDelete}
-            leftIcon={
-              <Ionicons
-                name="trash-outline"
-                size={16}
-                className="text-destructive"
-              />
-            }
-            disabled
-          >
-            Delete
-          </Button>
-
           <Button
             variant="softAccent"
             size="pillSm"

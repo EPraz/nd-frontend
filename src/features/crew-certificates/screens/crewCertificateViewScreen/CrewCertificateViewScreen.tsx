@@ -5,6 +5,8 @@ import {
   CardContent,
   CardHeaderRow,
   CardTitle,
+  ConfirmModal,
+  DocumentPreview,
   ErrorState,
   FieldDisplay,
   Loading,
@@ -20,7 +22,8 @@ import {
 import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Alert, Linking, Platform, Pressable, View } from "react-native";
+import { Linking, Pressable, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
 import {
   useCrewCertificatesById,
   useCrewCertificateWorkflowActions,
@@ -40,6 +43,14 @@ export default function CrewCertificateViewScreen() {
   const aid = String(assetId);
   const cid = String(crewId);
   const certId = String(certificateId);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<{
+    id: string;
+    fileName: string;
+  } | null>(null);
+  const [selectedAttachmentId, setSelectedAttachmentId] = useState<string | null>(
+    null,
+  );
 
   const { certificate, loading, error, refresh } = useCrewCertificatesById(
     pid,
@@ -55,6 +66,33 @@ export default function CrewCertificateViewScreen() {
     loading: workflowLoading,
   } = useCrewCertificateWorkflowActions(pid, aid, cid, certId);
 
+  const attachments = useMemo(() => certificate?.attachments ?? [], [certificate]);
+
+  useEffect(() => {
+    if (!certificate) return;
+
+    if (certificate.attachments.length === 0) {
+      setSelectedAttachmentId(null);
+      return;
+    }
+
+    setSelectedAttachmentId((current) => {
+      if (current && certificate.attachments.some((item) => item.id === current)) {
+        return current;
+      }
+
+      return certificate.attachments[0]?.id ?? null;
+    });
+  }, [certificate]);
+
+  const selectedAttachment = useMemo(
+    () =>
+      attachments.find((attachment) => attachment.id === selectedAttachmentId) ??
+      attachments[0] ??
+      null,
+    [attachments, selectedAttachmentId],
+  );
+
   const goBack = () => router.back();
   const goCrew = () => router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`);
 
@@ -63,27 +101,8 @@ export default function CrewCertificateViewScreen() {
     await Linking.openURL(absoluteUrl);
   }
 
-  async function confirmDeleteCertificate(): Promise<boolean> {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      return window.confirm(
-        "Delete this crew certificate? This removes the record and its stored attachments.",
-      );
-    }
-
-    return new Promise((resolve) => {
-      Alert.alert(
-        "Delete crew certificate",
-        "This removes the record and its stored attachments.",
-        [
-          { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => resolve(true),
-          },
-        ],
-      );
-    });
+  function toAbsoluteUrl(url: string) {
+    return url.startsWith("http") ? url : `${getBaseUrl()}${url}`;
   }
 
   async function onApprove() {
@@ -109,6 +128,7 @@ export default function CrewCertificateViewScreen() {
   async function onDeleteAttachment(attachmentId: string) {
     try {
       await deleteAttachment(attachmentId);
+      setAttachmentToDelete(null);
       show("Attachment deleted", "success");
       refresh();
     } catch {
@@ -117,11 +137,9 @@ export default function CrewCertificateViewScreen() {
   }
 
   async function onDeleteCertificate() {
-    const confirmed = await confirmDeleteCertificate();
-    if (!confirmed) return;
-
     try {
       await deleteCertificate();
+      setIsDeleteOpen(false);
       show("Crew certificate deleted", "success");
       router.replace(`/projects/${pid}/vessels/${aid}/crew/${cid}/certificates`);
     } catch {
@@ -171,7 +189,7 @@ export default function CrewCertificateViewScreen() {
             <Button
               variant="destructive"
               size="lg"
-              onPress={onDeleteCertificate}
+              onPress={() => setIsDeleteOpen(true)}
               loading={workflowLoading}
               className="rounded-full"
             >
@@ -310,6 +328,18 @@ export default function CrewCertificateViewScreen() {
                           Uploaded {formatDate(attachment.uploadedAt)}
                         </Text>
                         <Button
+                          variant={
+                            selectedAttachment?.id === attachment.id
+                              ? "default"
+                              : "outline"
+                          }
+                          size="sm"
+                          onPress={() => setSelectedAttachmentId(attachment.id)}
+                          className="rounded-full self-start"
+                        >
+                          Preview
+                        </Button>
+                        <Button
                           variant="softAccent"
                           size="sm"
                           onPress={() => openAttachment(attachment.url)}
@@ -320,7 +350,12 @@ export default function CrewCertificateViewScreen() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onPress={() => onDeleteAttachment(attachment.id)}
+                          onPress={() =>
+                            setAttachmentToDelete({
+                              id: attachment.id,
+                              fileName: attachment.fileName,
+                            })
+                          }
                           loading={workflowLoading}
                           className="rounded-full self-start"
                         >
@@ -395,8 +430,73 @@ export default function CrewCertificateViewScreen() {
               </View>
             </CardContent>
           </Card>
+
+          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <CardTitle className="text-[16px] text-textMain">
+                Certificate Preview
+              </CardTitle>
+            </CardHeaderRow>
+            <CardContent className="px-6">
+              {selectedAttachment ? (
+                <View className="gap-4">
+                  <View className="flex-row flex-wrap gap-2">
+                    <MiniPill>{selectedAttachment.fileName}</MiniPill>
+                    <MiniPill>{selectedAttachment.mimeType}</MiniPill>
+                    <MiniPill>{`Version ${selectedAttachment.version}`}</MiniPill>
+                  </View>
+
+                  <DocumentPreview
+                    attachmentUrl={toAbsoluteUrl(selectedAttachment.url)}
+                    mimeType={selectedAttachment.mimeType}
+                  />
+
+                  <Button
+                    variant="softAccent"
+                    size="sm"
+                    onPress={() => openAttachment(selectedAttachment.url)}
+                    className="rounded-full self-start"
+                  >
+                    Open original
+                  </Button>
+                </View>
+              ) : (
+                <Text className="text-[13px] text-textMain">
+                  Upload at least one file to preview the certificate here.
+                </Text>
+              )}
+            </CardContent>
+          </Card>
         </View>
       </View>
+
+      <ConfirmModal
+        visible={isDeleteOpen}
+        title="Delete crew certificate"
+        message={`Are you sure you want to delete ${certificate.certificateName}?`}
+        confirmLabel="Delete certificate"
+        cancelLabel="Keep certificate"
+        variant="destructive"
+        loading={workflowLoading}
+        onCancel={() => setIsDeleteOpen(false)}
+        onConfirm={onDeleteCertificate}
+      />
+
+      <ConfirmModal
+        visible={Boolean(attachmentToDelete)}
+        title="Delete file"
+        message={`Are you sure you want to delete ${attachmentToDelete?.fileName ?? "this file"}?`}
+        confirmLabel="Delete file"
+        cancelLabel="Keep file"
+        variant="destructive"
+        loading={workflowLoading}
+        onCancel={() => setAttachmentToDelete(null)}
+        onConfirm={() =>
+          attachmentToDelete
+            ? onDeleteAttachment(attachmentToDelete.id)
+            : undefined
+        }
+      />
     </View>
   );
 }

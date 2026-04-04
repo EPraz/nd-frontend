@@ -201,6 +201,16 @@ export async function rejectCertificate(
   );
 }
 
+export async function deleteCertificate(
+  projectId: string,
+  assetId: string,
+  certificateId: string,
+): Promise<CertificateDto> {
+  return apiClient.delete<CertificateDto>(
+    `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}`,
+  );
+}
+
 export async function deleteCertificateAttachment(
   projectId: string,
   assetId: string,

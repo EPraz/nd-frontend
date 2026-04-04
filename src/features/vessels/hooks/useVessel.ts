@@ -13,7 +13,12 @@ export function useVessel(projectId: string, assetId: string) {
     setError(null);
     try {
       const data = await fetchAssetById(projectId, assetId);
-      setVessel(data);
+      if (!data || data.isDeleted) {
+        setVessel(null);
+        setError("Vessel not found.");
+      } else {
+        setVessel(data);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setVessel(null);

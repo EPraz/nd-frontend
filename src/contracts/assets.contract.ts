@@ -8,6 +8,10 @@ export type AssetDto = {
   type: AssetType;
   name: string;
   status: string;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  deletedByUserId: string | null;
+  deletedByUserName: string | null;
   createdAt: string;
   vessel?: VesselProfileDto;
 };

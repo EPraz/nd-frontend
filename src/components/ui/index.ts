@@ -1,4 +1,5 @@
 export { Badge } from "../ui/badge/Badge";
+export { DocumentPreview } from "../ui/documentPreview/DocumentPreview";
 export { default as Loading } from "../ui/loading/Loading";
 export { default as SafeScreen } from "../ui/safeScreen/SafeScreen";
 export { Separator } from "../ui/separator/Separator";
@@ -10,6 +11,7 @@ export { default as ErrorState } from "./errorState/ErrorState";
 export * from "./forms";
 export * from "./miniPill/MiniPill";
 export * from "./miniStat/MiniStat";
+export { ConfirmModal } from "./modal/ConfirmModal";
 export { default as PageHeader } from "./pageHeader/PageHeader";
 export * from "./table";
 export * from "./toneClasses/ToneClasses";

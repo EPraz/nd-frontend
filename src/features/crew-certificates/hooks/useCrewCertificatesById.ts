@@ -24,8 +24,12 @@ export function useCrewCertificatesById(
     setError(null);
     try {
       const data = await fetchCrewCertificateById(projectId, assetId, crewId, certificateId);
-      setCertificate(data ?? null);
-      if (!data) setError("Crew certificate not found.");
+      if (!data || data.isDeleted) {
+        setCertificate(null);
+        setError("Crew certificate not found.");
+      } else {
+        setCertificate(data);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setCertificate(null);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   approveCertificate,
   cancelCertificateIngestion,
+  deleteCertificate,
   deleteCertificateAttachment,
   rejectCertificate,
 } from "../api/certificates.api";
@@ -77,5 +78,27 @@ export function useCertificateWorkflowActions(
     }
   }
 
-  return { approve, reject, cancelIngestion, removeAttachment, loading, error };
+  async function removeCertificate(): Promise<CertificateDto> {
+    if (!certificateId) throw new Error("Missing certificate id");
+    setLoading(true);
+    setError(null);
+    try {
+      return await deleteCertificate(projectId, assetId, certificateId);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return {
+    approve,
+    reject,
+    cancelIngestion,
+    removeAttachment,
+    removeCertificate,
+    loading,
+    error,
+  };
 }

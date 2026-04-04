@@ -17,6 +17,9 @@ type Props = {
   right: SpecItem[];
   blur?: boolean;
   rightTitle?: string;
+  subtitle?: string;
+  leftSectionTitle?: string;
+  rightSectionTitle?: string;
 };
 
 export function HeroBanner({
@@ -26,6 +29,9 @@ export function HeroBanner({
   right,
   blur = true,
   rightTitle,
+  subtitle,
+  leftSectionTitle,
+  rightSectionTitle,
 }: Props) {
   const isWeb = Platform.OS === "web";
   const webUri = isWeb ? toWebUri(source as any) : "";
@@ -48,10 +54,13 @@ export function HeroBanner({
         >
           <OverlayContent
             title={title}
+            subtitle={subtitle}
             left={left}
             right={right}
             blur={blur}
             rightTitle={rightTitle}
+            leftSectionTitle={leftSectionTitle}
+            rightSectionTitle={rightSectionTitle}
           />
         </View>
       ) : (
@@ -62,10 +71,13 @@ export function HeroBanner({
         >
           <OverlayContent
             title={title}
+            subtitle={subtitle}
             left={left}
             right={right}
             blur={blur}
             rightTitle={rightTitle}
+            leftSectionTitle={leftSectionTitle}
+            rightSectionTitle={rightSectionTitle}
           />
         </ImageBackground>
       )}
@@ -75,48 +87,67 @@ export function HeroBanner({
 
 function OverlayContent(props: {
   title: string;
+  subtitle?: string;
   left: SpecItem[];
   right: SpecItem[];
   blur: boolean;
   rightTitle?: string;
+  leftSectionTitle?: string;
+  rightSectionTitle?: string;
 }) {
-  const { title, left, right, blur, rightTitle } = props;
+  const {
+    title,
+    subtitle,
+    left,
+    right,
+    blur,
+    rightTitle,
+    leftSectionTitle,
+    rightSectionTitle,
+  } = props;
 
   return (
     <>
-      {/* overlays */}
       <View className="absolute inset-0 bg-black/20" />
       <View className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/15 to-transparent" />
 
       <View className="flex-1 flex-row items-stretch">
-        {/* LEFT: title zone */}
         <View className="flex-1 px-8 py-7 justify-between">
           <View className="gap-2">
             <Text className="text-textMain text-[28px] font-semibold">
               {title}
             </Text>
 
-            {/* opcional: subtitle contextual */}
             <Text className="text-textMain/70 text-[13px] max-w-[520px]">
-              Project overview — fleet, crew and certificates status.
+              {subtitle ?? "Project overview - fleet, crew and certificates status."}
             </Text>
           </View>
         </View>
 
-        {/* RIGHT: glass panel */}
         <View className="w-[420px] p-4">
           {blur ? (
             <BlurView
-              // intensity={22}
               intensity={42}
               tint="dark"
               className="flex-1 overflow-hidden rounded-xl border border-white/10"
             >
-              <RightPanel left={left} right={right} title={rightTitle} />
+              <RightPanel
+                left={left}
+                right={right}
+                title={rightTitle}
+                leftTitle={leftSectionTitle}
+                rightTitle={rightSectionTitle}
+              />
             </BlurView>
           ) : (
             <View className="flex-1 overflow-hidden rounded-xl border border-white/10 bg-black/55">
-              <RightPanel left={left} right={right} title={rightTitle} />
+              <RightPanel
+                left={left}
+                right={right}
+                title={rightTitle}
+                leftTitle={leftSectionTitle}
+                rightTitle={rightSectionTitle}
+              />
             </View>
           )}
         </View>

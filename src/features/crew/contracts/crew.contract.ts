@@ -35,6 +35,10 @@ export type CrewDto = {
   medicalCertificateValid: boolean | null;
   medicalCertificateExpirationDate: string | null;
   medicalRestrictions: string | null;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  deletedByUserId: string | null;
+  deletedByUserName: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;

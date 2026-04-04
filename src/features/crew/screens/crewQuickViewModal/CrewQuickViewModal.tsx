@@ -1,9 +1,16 @@
-import { Button, MiniPill, QuickViewModalFrame, Text } from "@/src/components";
+import {
+  Button,
+  ConfirmModal,
+  MiniPill,
+  QuickViewModalFrame,
+  Text,
+} from "@/src/components";
 import { useToast } from "@/src/context";
 import { formatDate, Stat } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Alert, Platform, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { useState } from "react";
 import type { CrewDto, CrewStatus } from "../../contracts";
 import { useDeleteCrew } from "../../hooks";
 
@@ -36,6 +43,7 @@ export default function CrewQuickViewModal({
   const router = useRouter();
   const { show } = useToast();
   const tone = statusTone(crew.status);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { submit: deleteCrew, loading: deleting } = useDeleteCrew(
     projectId,
     crew.assetId,
@@ -57,35 +65,10 @@ export default function CrewQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${crew.assetId}/crew/${crew.id}/certificates`);
   };
 
-  async function confirmDelete(): Promise<boolean> {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      return window.confirm(
-        "Delete this crew member? This is intended for cleanup and cannot be undone.",
-      );
-    }
-
-    return new Promise((resolve) => {
-      Alert.alert(
-        "Delete crew member",
-        "This is intended for cleanup and cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => resolve(true),
-          },
-        ],
-      );
-    });
-  }
-
   const handleDelete = async () => {
-    const confirmed = await confirmDelete();
-    if (!confirmed) return;
-
     try {
       await deleteCrew();
+      setIsDeleteOpen(false);
       show("Crew member deleted", "success");
       onClose();
       router.replace(`/projects/${projectId}/crew`);
@@ -113,7 +96,7 @@ export default function CrewQuickViewModal({
           <Button
             variant="softDestructive"
             size="pillSm"
-            onPress={handleDelete}
+            onPress={() => setIsDeleteOpen(true)}
             disabled={deleting}
             leftIcon={
               <Ionicons
@@ -259,6 +242,18 @@ export default function CrewQuickViewModal({
           <Stat label="Created" value={formatDate(crew.createdAt)} />
         </View>
       </View>
+
+      <ConfirmModal
+        visible={isDeleteOpen}
+        title="Delete crew member"
+        message={`Are you sure you want to delete ${crew.fullName}?`}
+        confirmLabel="Delete crew member"
+        cancelLabel="Keep crew member"
+        variant="destructive"
+        loading={deleting}
+        onCancel={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+      />
     </QuickViewModalFrame>
   );
 }

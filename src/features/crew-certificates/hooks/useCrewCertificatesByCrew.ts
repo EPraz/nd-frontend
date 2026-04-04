@@ -24,7 +24,7 @@ export function useCrewCertificatesByCrew(
 
     try {
       const data = await fetchCrewCertificatesByCrew(projectId, assetId, crewId);
-      setCertificates(data);
+      setCertificates(data.filter((item) => !item.isDeleted));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setCertificates([]);

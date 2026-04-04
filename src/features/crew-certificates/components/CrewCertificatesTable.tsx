@@ -1,4 +1,4 @@
-import { Column, DataTable, TableLink, Text } from "@/src/components";
+import { Column, DataTable, TableActionIcon, Text } from "@/src/components";
 import {
   CertificateStatusPill,
   WorkflowStatusPill,
@@ -89,16 +89,15 @@ export function CrewCertificatesTable({
         header: "Action",
         flex: 1.2,
         render: (row) => (
-          <TableLink
+          <TableActionIcon
+            icon="document-text-outline"
             tooltip="Open certificate"
             onPress={() =>
               router.push(
                 `/projects/${projectId}/vessels/${row.assetId}/crew/${row.crewMemberId}/certificates/${row.id}`,
               )
             }
-          >
-            Open certificate
-          </TableLink>
+          />
         ),
       },
     ];
