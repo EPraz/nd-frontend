@@ -52,6 +52,11 @@ export default function CrewQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${crew.assetId}`);
   };
 
+  const handleOpenCertificates = () => {
+    onClose();
+    router.push(`/projects/${projectId}/vessels/${crew.assetId}/crew/${crew.id}/certificates`);
+  };
+
   async function confirmDelete(): Promise<boolean> {
     if (Platform.OS === "web" && typeof window !== "undefined") {
       return window.confirm(
@@ -151,6 +156,10 @@ export default function CrewQuickViewModal({
         <>
           <Button variant="outline" size="pillSm" onPress={onClose}>
             Close
+          </Button>
+
+          <Button variant="softAccent" size="pillSm" onPress={handleOpenCertificates}>
+            Certificates
           </Button>
 
           <Pressable

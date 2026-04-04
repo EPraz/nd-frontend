@@ -50,6 +50,8 @@ export default function CrewViewScreen() {
   const goVessel = () => router.push(`/projects/${pid}/vessels/${vid}`);
   const goEdit = () =>
     router.push(`/projects/${pid}/vessels/${vid}/crew/${cid}/edit`);
+  const goCertificates = () =>
+    router.push(`/projects/${pid}/vessels/${vid}/crew/${cid}/certificates`);
 
   async function confirmDelete(): Promise<boolean> {
     if (Platform.OS === "web" && typeof window !== "undefined") {
@@ -156,6 +158,15 @@ export default function CrewViewScreen() {
               }
             >
               Edit
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              onPress={goCertificates}
+              className="rounded-full"
+            >
+              Certificates
             </Button>
           </View>
         </View>
@@ -355,14 +366,31 @@ export default function CrewViewScreen() {
           <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
             <CardHeaderRow>
               <CardTitle className="text-[16px] text-textMain">
-                Notes
+                Compliance Next
               </CardTitle>
             </CardHeaderRow>
 
             <CardContent className="px-6">
-              <Text className="text-textMain text-[13px] leading-[20px]">
-          {crew.notes ?? "No operational notes recorded yet."}
-              </Text>
+              <View className="gap-4">
+                <Text className="text-textMain text-[13px] leading-[20px]">
+                  Crew certificates are managed separately so compliance by rank
+                  can stay grounded in uploaded evidence and approval state.
+                </Text>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onPress={goCertificates}
+                  className="rounded-full self-start"
+                >
+                  Open Crew Certificates
+                </Button>
+                <View className="rounded-[18px] border border-border bg-baseBg/35 p-4">
+                  <Text className="text-[12px] text-muted">Notes</Text>
+                  <Text className="text-textMain text-[13px] leading-[20px] mt-1">
+                    {crew.notes ?? "No operational notes recorded yet."}
+                  </Text>
+                </View>
+              </View>
             </CardContent>
           </Card>
         </View>
