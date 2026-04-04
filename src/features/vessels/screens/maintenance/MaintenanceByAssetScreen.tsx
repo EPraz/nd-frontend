@@ -54,19 +54,14 @@ export default function MaintenanceByAssetScreen() {
   }, [maintenance]);
 
   return (
-    <View className="gap-6 p-4 web:p-6">
+    <View className="gap-6">
       <View className="gap-3">
         <PageHeader
           title="Maintenance"
           subTitle="Manage maintenance tasks for this vessel."
         />
 
-        {/* Action Row */}
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-muted">
-            Vessel: <Text className="text-foreground font-semibold">{aid}</Text>
-          </Text>
-
+        <View className="flex-row items-center justify-end">
           <Pressable
             onPress={() =>
               router.push(`/projects/${pid}/vessels/${aid}/maintenance/new`)
@@ -80,7 +75,6 @@ export default function MaintenanceByAssetScreen() {
         </View>
       </View>
 
-      {/* Stats */}
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
         <StatCard
           iconName="construct-outline"
@@ -127,7 +121,6 @@ export default function MaintenanceByAssetScreen() {
         />
       </View>
 
-      {/* Table */}
       <View className="flex-1">
         <MaintenanceTable
           title="Vessel Maintenance Tasks"

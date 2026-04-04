@@ -8,6 +8,8 @@ import { RequirementStatusPill } from "../certificateTable/certificates.ui";
 type Props = {
   title: string;
   subtitleRight?: string;
+  headerActions?: React.ReactNode;
+  toolbarContent?: React.ReactNode;
   data: CertificateRequirementDto[];
   isLoading: boolean;
   error: string | null;
@@ -21,6 +23,8 @@ export function CertificateRequirementsTable(props: Props) {
   const {
     title,
     subtitleRight,
+    headerActions,
+    toolbarContent,
     data,
     isLoading,
     error,
@@ -159,6 +163,8 @@ export function CertificateRequirementsTable(props: Props) {
     <DataTable<CertificateRequirementDto>
       title={title}
       subtitleRight={subtitleRight}
+      headerActions={headerActions}
+      toolbarContent={toolbarContent}
       data={rows}
       isLoading={isLoading}
       error={error}

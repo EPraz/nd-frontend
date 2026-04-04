@@ -1,4 +1,5 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 import { Button } from "../button/Button";
 import { Text } from "../text/Text";
@@ -7,9 +8,17 @@ type Props = {
   title: string;
   subTitle: string;
   onRefresh?: () => void;
+  actions?: ReactNode;
+  showFilterButton?: boolean;
 };
 
-const PageHeader = ({ title, subTitle, onRefresh }: Props) => {
+const PageHeader = ({
+  title,
+  subTitle,
+  onRefresh,
+  actions,
+  showFilterButton = false,
+}: Props) => {
   return (
     <View className="flex flex-col items-start md:flex-row md:items-center justify-between gap-10">
       <View className="flex flex-1 gap-2">
@@ -21,31 +30,34 @@ const PageHeader = ({ title, subTitle, onRefresh }: Props) => {
         </Text>
       </View>
 
-      <View className="flex flex-1 max-w-[380px] flex-row items-center justify-end gap-3">
-        {/* Refresh (enterprise: accent outline) */}
-        <Button
-          variant="iconAccent"
-          size="iconLg"
-          onPress={onRefresh}
-          disabled={!onRefresh}
-          leftIcon={
-            <Feather name="refresh-cw" size={20} className="text-accent" />
-          }
-          accessibilityLabel="Refresh"
-        />
+      <View className="flex flex-1 max-w-[640px] flex-row flex-wrap items-center justify-end gap-3">
+        {actions}
 
-        {/* Filter (neutral enterprise) */}
-        <Button
-          variant="icon"
-          size="iconLg"
-          onPress={() => {}}
-          leftIcon={
-            <Ionicons name="filter" size={18} className="text-textMain" />
-          }
-          className="bg-surface/60 border border-border/60"
-          accessibilityLabel="Filter"
-          disabled
-        />
+        {onRefresh ? (
+          <Button
+            variant="iconAccent"
+            size="iconLg"
+            onPress={onRefresh}
+            leftIcon={
+              <Feather name="refresh-cw" size={20} className="text-accent" />
+            }
+            accessibilityLabel="Refresh"
+          />
+        ) : null}
+
+        {showFilterButton ? (
+          <Button
+            variant="icon"
+            size="iconLg"
+            onPress={() => {}}
+            leftIcon={
+              <Ionicons name="filter" size={18} className="text-textMain" />
+            }
+            className="bg-surface/60 border border-border/60"
+            accessibilityLabel="Filter"
+            disabled
+          />
+        ) : null}
       </View>
     </View>
   );

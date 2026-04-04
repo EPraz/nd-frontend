@@ -1,9 +1,11 @@
-import { PageHeader, StatCard, Text } from "@/src/components";
+import { Button, PageHeader, StatCard } from "@/src/components";
+import type { CrewDto } from "@/src/features/crew/contracts";
+import { CrewQuickViewModal } from "@/src/features/crew/screens/crewQuickViewModal";
 import { CrewTable } from "@/src/features/crew";
 import { useCrewByAsset } from "@/src/hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo } from "react";
-import { Pressable, View } from "react-native";
+import { useMemo, useState } from "react";
+import { View } from "react-native";
 
 export default function CrewByAssetScreen() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function CrewByAssetScreen() {
   const aid = String(assetId);
 
   const { crew, loading, error, refresh } = useCrewByAsset(pid, aid);
+  const [selectedCrew, setSelectedCrew] = useState<CrewDto | null>(null);
 
   const stats = useMemo(() => {
     let active = 0;
@@ -35,33 +38,25 @@ export default function CrewByAssetScreen() {
   }, [crew]);
 
   return (
-    <View className="gap-6 p-4 web:p-6">
+    <View className="gap-6">
       <View className="gap-3">
         <PageHeader
           title="Crew"
           subTitle="Manage crew members assigned to this vessel."
-        />
-
-        {/* Action Row */}
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-muted">
-            Vessel: <Text className="text-foreground font-semibold">{aid}</Text>
-          </Text>
-
-          <Pressable
-            onPress={() =>
-              router.push(`/projects/${pid}/vessels/${aid}/crew/new`)
-            }
-            className="rounded-full px-4 py-2 bg-primary"
-          >
-            <Text className="text-primary-foreground text-sm font-semibold">
+          onRefresh={refresh}
+          actions={
+            <Button
+              variant="default"
+              size="sm"
+              className="rounded-full"
+              onPress={() => router.push(`/projects/${pid}/vessels/${aid}/crew/new`)}
+            >
               + Add Crew Member
-            </Text>
-          </Pressable>
-        </View>
+            </Button>
+          }
+        />
       </View>
 
-      {/* Stats */}
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
         <StatCard
           iconName="people-outline"
@@ -97,7 +92,6 @@ export default function CrewByAssetScreen() {
         />
       </View>
 
-      {/* Table */}
       <View className="flex-1">
         <CrewTable
           title="Vessel Crew"
@@ -107,7 +101,17 @@ export default function CrewByAssetScreen() {
           error={error}
           onRetry={refresh}
           showVesselColumn={false}
+          selectedRowId={selectedCrew?.id ?? null}
+          onRowPress={(row) => setSelectedCrew(row)}
         />
+
+        {selectedCrew ? (
+          <CrewQuickViewModal
+            crew={selectedCrew}
+            projectId={pid}
+            onClose={() => setSelectedCrew(null)}
+          />
+        ) : null}
       </View>
     </View>
   );

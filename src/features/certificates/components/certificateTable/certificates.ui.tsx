@@ -1,4 +1,5 @@
 import { Text } from "@/src/components";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import type {
   CertificateStatus,
   CertificateWorkflowStatus,
@@ -25,7 +26,9 @@ export function CertificateStatusPill(props: { status: CertificateStatus }) {
 
   return (
     <View className={`px-3 py-1 rounded-full w-fit ${pillBg[s]}`}>
-      <Text className={`text-xs font-medium ${pillText[s]}`}>{s}</Text>
+      <Text className={`text-xs font-medium ${pillText[s]}`}>
+        {humanizeTechnicalLabel(s)}
+      </Text>
     </View>
   );
 }
@@ -41,7 +44,9 @@ export function WorkflowStatusPill(props: { status: CertificateWorkflowStatus })
 
   return (
     <View className={`px-3 py-1 rounded-full w-fit ${tone[props.status]}`}>
-      <Text className="text-xs font-medium">{props.status}</Text>
+      <Text className="text-xs font-medium">
+        {humanizeTechnicalLabel(props.status)}
+      </Text>
     </View>
   );
 }
@@ -68,7 +73,9 @@ export function RequirementStatusPill(props: {
 
   return (
     <View className={`px-3 py-1 rounded-full w-fit ${tone[props.status]}`}>
-      <Text className="text-xs font-medium">{props.status}</Text>
+      <Text className="text-xs font-medium">
+        {humanizeTechnicalLabel(props.status)}
+      </Text>
     </View>
   );
 }

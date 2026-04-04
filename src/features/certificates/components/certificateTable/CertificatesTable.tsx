@@ -12,6 +12,8 @@ import {
 type Props = {
   title: string;
   subtitleRight?: string;
+  headerActions?: React.ReactNode;
+  toolbarContent?: React.ReactNode;
 
   data: CertificateDto[];
   isLoading: boolean;
@@ -122,6 +124,8 @@ export function CertificatesTable(props: Props) {
     <DataTable<CertificateDto>
       title={props.title}
       subtitleRight={props.subtitleRight}
+      headerActions={props.headerActions}
+      toolbarContent={props.toolbarContent}
       data={rows}
       isLoading={props.isLoading}
       error={props.error}

@@ -73,13 +73,13 @@ export function CrewTable(props: Props) {
         key: "rank",
         header: "Rank",
         flex: 1.5,
-        render: (row) => <Text>{row.rank ?? "—"}</Text>,
+        render: (row) => <Text>{row.rank ?? "-"}</Text>,
       },
       {
         key: "department",
         header: "Department",
         flex: 1,
-        render: (row) => <Text>{row.department ?? "—"}</Text>,
+        render: (row) => <Text>{row.department ?? "-"}</Text>,
       },
       {
         key: "status",

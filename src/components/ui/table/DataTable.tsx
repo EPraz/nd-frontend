@@ -18,6 +18,8 @@ export type Column<Row> = {
 export type DataTableProps<Row> = {
   title: string;
   subtitleRight?: string;
+  headerActions?: React.ReactNode;
+  toolbarContent?: React.ReactNode;
 
   data: Row[];
   isLoading: boolean;
@@ -43,14 +45,24 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
   return (
     <View className="flex p-5 gap-5 rounded-[20px] bg-surface border border-border">
       <View className="flex-row items-center justify-between gap-10">
-        <Text className="text-[20px] leading-[130%] font-semibold text-textMain">
-          {props.title}
-        </Text>
+        <View className="flex-1 gap-1">
+          <Text className="text-[20px] leading-[130%] font-semibold text-textMain">
+            {props.title}
+          </Text>
 
-        {props.subtitleRight ? (
-          <Text className="text-[12px] text-muted">{props.subtitleRight}</Text>
+          {props.subtitleRight ? (
+            <Text className="text-[12px] text-muted">{props.subtitleRight}</Text>
+          ) : null}
+        </View>
+
+        {props.headerActions ? (
+          <View className="flex-row flex-wrap items-center justify-end gap-2">
+            {props.headerActions}
+          </View>
         ) : null}
       </View>
+
+      {props.toolbarContent ? <View>{props.toolbarContent}</View> : null}
 
       <View className="flex-1">
         {props.isLoading ? (

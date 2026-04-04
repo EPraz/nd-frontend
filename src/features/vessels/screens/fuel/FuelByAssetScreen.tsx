@@ -28,7 +28,6 @@ export default function FuelByAssetScreen() {
 
     let critical = 0;
 
-    // unit dominante (L/MT)
     let lCount = 0;
     let mtCount = 0;
 
@@ -55,8 +54,6 @@ export default function FuelByAssetScreen() {
     }
 
     const unit = mtCount > lCount ? "MT" : "L";
-
-    // totales simples en unidad dominante (sin float)
     const toInt = (s: string) => Math.round(Number(s || "0") * 1000);
     const toStr = (n: number) => (n / 1000).toFixed(3).replace(/\.?0+$/, "");
 
@@ -88,19 +85,14 @@ export default function FuelByAssetScreen() {
   }, [fuelLogs]);
 
   return (
-    <View className="gap-6 p-4 web:p-6">
+    <View className="gap-6">
       <View className="gap-3">
         <PageHeader
           title="Fuel"
           subTitle="Review and log fuel operations for this vessel."
         />
 
-        {/* Action row */}
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-muted">
-            Vessel: <Text className="text-foreground font-semibold">{aid}</Text>
-          </Text>
-
+        <View className="flex-row items-center justify-end">
           <Pressable
             onPress={() =>
               router.push(`/projects/${pid}/vessels/${aid}/fuel/new`)
@@ -114,7 +106,6 @@ export default function FuelByAssetScreen() {
         </View>
       </View>
 
-      {/* Stats */}
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
         <StatCard
           iconName="flame-outline"
@@ -161,7 +152,6 @@ export default function FuelByAssetScreen() {
         />
       </View>
 
-      {/* Table */}
       <View className="flex-1">
         <FuelTable
           title="Vessel Fuel Logs"
@@ -173,8 +163,6 @@ export default function FuelByAssetScreen() {
           showVesselColumn={false}
           sortByDate
           groupByFuelType
-          // si luego tienes detail page:
-          // onRowPress={(row) => router.push(`/projects/${pid}/vessels/${aid}/fuel/${row.id}`)}
         />
       </View>
     </View>

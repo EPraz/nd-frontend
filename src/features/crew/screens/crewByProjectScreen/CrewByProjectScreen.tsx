@@ -21,6 +21,27 @@ export default function CrewByProjectScreen() {
         title="Crew"
         subTitle="Track and manage crew members across vessels."
         onRefresh={page.refetch}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onPress={() => router.push(`/projects/${pid}/crew-certificates`)}
+            >
+              Crew Certificates
+            </Button>
+
+            <Button
+              variant="default"
+              size="sm"
+              className="rounded-full"
+              onPress={() => router.push(`/projects/${pid}/crew/new`)}
+            >
+              + Add Crew
+            </Button>
+          </>
+        }
       />
 
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
@@ -59,26 +80,6 @@ export default function CrewByProjectScreen() {
       </View>
 
       <View className="flex-1 gap-4">
-        <View className="flex-row flex-wrap items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            onPress={() => router.push(`/projects/${pid}/crew-certificates`)}
-          >
-            Crew Certificates
-          </Button>
-
-          <Button
-            variant="default"
-            size="sm"
-            className="rounded-full"
-            onPress={() => router.push(`/projects/${pid}/crew/new`)}
-          >
-            + Add Crew
-          </Button>
-        </View>
-
         <CrewTable
           title="Crew Members"
           subtitleRight="Sorted by name"

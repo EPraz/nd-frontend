@@ -4,4 +4,5 @@ export * from "./Field";
 export * from "./FieldDisplay";
 export * from "./RowInfo";
 export * from "./SearchableVesselSelect";
+export * from "./ToolbarSelect";
 export * from "./VesselPill";
