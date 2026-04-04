@@ -26,7 +26,7 @@ export function useAlertsFeedData() {
         alerts.push({
           id: `cert-${c.id}`,
           type: "CERTIFICATE",
-          title: c.name,
+            title: c.certificateName,
           subtitle: c.assetName,
           severity: "CRITICAL",
           date: c.expiryDate,
@@ -37,7 +37,7 @@ export function useAlertsFeedData() {
         alerts.push({
           id: `cert-${c.id}`,
           type: "CERTIFICATE",
-          title: c.name,
+            title: c.certificateName,
           subtitle: c.assetName,
           severity: "WARNING",
           date: c.expiryDate,

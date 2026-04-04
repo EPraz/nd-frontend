@@ -100,7 +100,7 @@ export function useCertificatesPageData(
     // ---- sort
     const list = filtered.slice().sort((a, b) => {
       if (sort === "NAME_ASC") {
-        return a.name.localeCompare(b.name);
+        return a.certificateName.localeCompare(b.certificateName);
       }
 
       const ta = safeTime(a.expiryDate);

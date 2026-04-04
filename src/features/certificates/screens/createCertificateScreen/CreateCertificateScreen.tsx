@@ -1,4 +1,5 @@
 import { Button, Text } from "@/src/components";
+import { useCertificateTypes } from "@/src/features/certificates";
 import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -7,7 +8,7 @@ import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 import { useVessels } from "@/src/features/vessels/hooks/useVessels";
 import { useCreateCertificate } from "@/src/hooks";
-import { CertificateFormCard, CertificatePreviewCard } from "../../components";
+import { CertificateFormCard } from "../../components";
 import { emptyCertificateFormValues } from "../../contracts";
 import { toCreateCertificateInput } from "../../helpers";
 
@@ -29,11 +30,15 @@ export default function CreateCertificateScreen() {
     loading: vesselsLoading,
     error: vesselsError,
   } = useVessels(pid);
+  const {
+    certificateTypes,
+    loading: certificateTypesLoading,
+    error: certificateTypesError,
+  } = useCertificateTypes(pid);
 
   const [values, setValues] = useState(() => emptyCertificateFormValues());
   const [localError, setLocalError] = useState<string | null>(null);
 
-  // si vienes con assetId fijo, lo seteamos una sola vez
   useEffect(() => {
     if (!fixedAssetId) return;
     setValues((prev) => {
@@ -53,13 +58,13 @@ export default function CreateCertificateScreen() {
   const canSubmit = useMemo(() => {
     if (loading) return false;
     if (!effectiveAssetId) return false;
-    if (values.name.trim().length < 2) return false;
+    if (!values.certificateTypeId) return false;
     return true;
-  }, [loading, effectiveAssetId, values.name]);
+  }, [loading, effectiveAssetId, values.certificateTypeId]);
 
-  function patch(p: Partial<typeof values>) {
+  function patch(patchValues: Partial<typeof values>) {
     setLocalError(null);
-    setValues((prev) => ({ ...prev, ...p }));
+    setValues((prev) => ({ ...prev, ...patchValues }));
   }
 
   function goBackOrTo(fallbackHref: string) {
@@ -77,16 +82,16 @@ export default function CreateCertificateScreen() {
       setLocalError("Selecciona un vessel.");
       return;
     }
-    if (values.name.trim().length < 2) {
-      setLocalError("Certificate Name es requerido.");
+    if (!values.certificateTypeId) {
+      setLocalError("Selecciona un certificate type.");
       return;
     }
     if (values.issueDate.trim() && !isIsoDateOnly(values.issueDate)) {
-      setLocalError("Issue date inválido. Usa formato YYYY-MM-DD.");
+      setLocalError("Issue date invalido. Usa formato YYYY-MM-DD.");
       return;
     }
     if (values.expiryDate.trim() && !isIsoDateOnly(values.expiryDate)) {
-      setLocalError("Expiry date inválido. Usa formato YYYY-MM-DD.");
+      setLocalError("Expiry date invalido. Usa formato YYYY-MM-DD.");
       return;
     }
 
@@ -94,12 +99,13 @@ export default function CreateCertificateScreen() {
       const input = toCreateCertificateInput({
         ...values,
         assetId: effectiveAssetId,
+        certificateTypeId: values.certificateTypeId,
       });
 
       await submit(input);
       router.replace(certificatesHref);
     } catch {
-      // error string ya lo maneja el hook
+      // Hook already exposes the error string.
     }
   }
 
@@ -109,7 +115,6 @@ export default function CreateCertificateScreen() {
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View className="gap-3">
           <Pressable
             onPress={() => goBackOrTo(certificatesHref)}
@@ -128,10 +133,11 @@ export default function CreateCertificateScreen() {
           <View className="web:flex-row web:items-start web:justify-between gap-4">
             <View className="gap-1 flex-1">
               <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
-                Add New Certificate
+                Manual Certificate Entry
               </Text>
               <Text className="text-muted text-[14px]">
-                Create a certificate and assign it to a vessel.
+                Fallback flow for backlog cleanup or exceptions. The primary
+                path is now to upload the document from a requirement.
               </Text>
             </View>
 
@@ -170,37 +176,40 @@ export default function CreateCertificateScreen() {
           </View>
         </View>
 
-        {/* Content grid */}
-        <View className="gap-5 web:lg:flex-row">
-          {/* Left */}
-          <View className="flex-1 gap-5 web:lg:w-[60%]">
-            <CertificateFormCard
-              fixedAssetId={fixedAssetId}
-              currentVessel={
-                fixedAssetId
-                  ? (vessels.find((v) => v.id === fixedAssetId) ?? null)
-                  : null
-              }
-              vessels={vessels}
-              vesselsLoading={vesselsLoading}
-              vesselsError={vesselsError}
-              onCreateVessel={() => router.push(createVesselHref)}
-              values={{
-                ...values,
-                // si viene fijo, forzamos assetId para consistencia
-                assetId: fixedAssetId ?? values.assetId,
-              }}
-              onChange={patch}
-              localError={localError}
-              apiError={error}
-              disabled={loading}
-            />
+        <View className="w-full web:max-w-[980px] self-center gap-5">
+          <View className="rounded-[20px] border border-border bg-baseBg/35 p-4">
+            <Text className="text-textMain font-semibold text-[13px]">
+              Secondary workflow
+            </Text>
+            <Text className="text-muted text-[12px] leading-[18px] mt-1">
+              Use this only when the vessel requirement cannot start from a
+              document upload yet.
+            </Text>
           </View>
 
-          {/* Right */}
-          <View className="flex-1 gap-5 web:lg:w-[40%]">
-            <CertificatePreviewCard values={values} />
-          </View>
+          <CertificateFormCard
+            fixedAssetId={fixedAssetId}
+            currentVessel={
+              fixedAssetId
+                ? (vessels.find((v) => v.id === fixedAssetId) ?? null)
+                : null
+            }
+            vessels={vessels}
+            vesselsLoading={vesselsLoading}
+            vesselsError={vesselsError}
+            onCreateVessel={() => router.push(createVesselHref)}
+            certificateTypes={certificateTypes}
+            certificateTypesLoading={certificateTypesLoading}
+            certificateTypesError={certificateTypesError}
+            values={{
+              ...values,
+              assetId: fixedAssetId ?? values.assetId,
+            }}
+            onChange={patch}
+            localError={localError}
+            apiError={error}
+            disabled={loading}
+          />
         </View>
       </ScrollView>
     </View>

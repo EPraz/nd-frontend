@@ -1,0 +1,1 @@
+export const ENABLE_MANUAL_CERTIFICATE_CREATE = false;

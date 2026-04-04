@@ -1,9 +1,10 @@
-import { PageHeader, StatCard, Text } from "@/src/components";
+import { Button, PageHeader, StatCard, Text } from "@/src/components";
 import { CertificatesTable } from "@/src/features/certificates/components";
+import { ENABLE_MANUAL_CERTIFICATE_CREATE } from "@/src/features/certificates/config";
 import { useCertificatesByAsset } from "@/src/hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 export default function AssetCertificatesScreen() {
   const router = useRouter();
@@ -61,22 +62,51 @@ export default function AssetCertificatesScreen() {
           subTitle="Monitor certificate validity and compliance for this vessel."
         />
 
-        {/* Action row (MVP): create */}
         <View className="flex-row items-center justify-between">
           <Text className="text-sm text-muted">
             Vessel: <Text className="text-foreground font-semibold">{aid}</Text>
           </Text>
 
-          <Pressable
-            onPress={() =>
-              router.push(`/projects/${pid}/vessels/${aid}/certificates/new`)
-            }
-            className="rounded-full px-4 py-2 bg-primary"
-          >
-            <Text className="text-primary-foreground text-sm font-semibold">
-              + Add Certificate
-            </Text>
-          </Pressable>
+          <View className="flex-row flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => router.push(`/projects/${pid}/certificates`)}
+              className="rounded-full"
+            >
+              Open Requirements
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() =>
+                router.push({
+                  pathname: "/projects/[projectId]/certificates/upload",
+                  params: {
+                    projectId: pid,
+                    assetId: aid,
+                  },
+                })
+              }
+              className="rounded-full"
+            >
+              Add Extra Certificate
+            </Button>
+
+            {ENABLE_MANUAL_CERTIFICATE_CREATE ? (
+              <Button
+                variant="default"
+                size="sm"
+                onPress={() =>
+                  router.push(`/projects/${pid}/vessels/${aid}/certificates/new`)
+                }
+                className="rounded-full"
+              >
+                Manual Entry
+              </Button>
+            ) : null}
+          </View>
         </View>
       </View>
 

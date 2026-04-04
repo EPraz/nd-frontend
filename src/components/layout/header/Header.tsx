@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Keyboard, TextInput, View, useWindowDimensions } from "react-native";
+import { TextInput, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Text } from "../../ui";
 
@@ -22,7 +22,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
       <View className="w-full items-center">
         <View
           style={{ maxWidth: contentWidth, width: "100%" }}
-          className="h-[72px] lg:h-[84px] flex-row items-center justify-between px-4 lg:px-6"
+          className="md:h-[72px] lg:h-[84px] flex-col md:flex-row items-center justify-between px-4 lg:px-6"
         >
           {/* Left */}
           <View className="flex-row items-center gap-3">
@@ -31,7 +31,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
           </View>
 
           {/* Center: Search (web/desktop) */}
-          <Button
+          {/* <Button
             variant="ghost"
             className="hidden lg:flex flex-1 px-6 ml-3 items-stretch justify-center"
             onPress={() => Keyboard.dismiss()}
@@ -39,6 +39,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
             <View className="flex-row items-center w-full max-w-[520px] h-[52px] gap-3 px-5 rounded-full border border-border/70 bg-surface/70 web:backdrop-blur-md">
               <Ionicons name="search" size={20} color={ICON_MUTED} />
               <TextInput
+                disableFullscreenUI
                 placeholder="Search anything…"
                 placeholderTextColor={ICON_MUTED}
                 className="flex-1 text-[14px] text-textMain web:outline-none"
@@ -46,7 +47,23 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
                 submitBehavior="blurAndSubmit"
               />
             </View>
-          </Button>
+          </Button> */}
+
+          <View className="hidden lg:flex flex-1 px-6 ml-3 items-stretch justify-center">
+            <View className="flex-row items-center max-w-[520px] h-[52px] gap-3 px-5 rounded-full border border-border/70 bg-surface/70 web:backdrop-blur-md">
+              <Ionicons name="search" size={20} color={ICON_MUTED} />
+              <TextInput
+                disableFullscreenUI
+                placeholder="Search anything…"
+                placeholderTextColor={ICON_MUTED}
+                className="flex-1 text-[14px] text-textMain web:outline-none"
+                returnKeyType="search"
+                submitBehavior="blurAndSubmit"
+                disableKeyboardShortcuts
+                aria-disabled
+              />
+            </View>
+          </View>
 
           {/* Right */}
           <View className="flex-row items-center gap-3">

@@ -12,25 +12,24 @@ import { Button, MiniPill, Text, Tone, toneClasses } from "../../ui";
 
 const MAX_CERTS = 10;
 
-function statusTone(s: CertificateStatus): Tone {
-  if (s === "EXPIRED") return "fail";
-  if (s === "EXPIRING_SOON") return "warn";
-  if (s === "PENDING") return "info";
+function statusTone(status: CertificateStatus): Tone {
+  if (status === "EXPIRED") return "fail";
+  if (status === "EXPIRING_SOON") return "warn";
+  if (status === "PENDING") return "info";
   return "ok";
 }
 
-function statusRank(s: CertificateStatus) {
-  // menor = más importante
-  if (s === "EXPIRED") return 0;
-  if (s === "EXPIRING_SOON") return 1;
-  if (s === "PENDING") return 2;
-  return 3; // VALID
+function statusRank(status: CertificateStatus) {
+  if (status === "EXPIRED") return 0;
+  if (status === "EXPIRING_SOON") return 1;
+  if (status === "PENDING") return 2;
+  return 3;
 }
 
-function statusIcon(s: CertificateStatus) {
-  if (s === "EXPIRED") return "alert-circle-outline";
-  if (s === "EXPIRING_SOON") return "time-outline";
-  if (s === "PENDING") return "hourglass-outline";
+function statusIcon(status: CertificateStatus) {
+  if (status === "EXPIRED") return "alert-circle-outline";
+  if (status === "EXPIRING_SOON") return "time-outline";
+  if (status === "PENDING") return "hourglass-outline";
   return "checkmark-circle-outline";
 }
 
@@ -41,55 +40,28 @@ export default function ExpiringCertificatesModule() {
   const { data, isLoading, error, refetch } = useCertificatesData();
 
   const top = useMemo(() => {
-    const withDate = data.filter((c) => Boolean(c.expiryDate));
+    const withDate = data.filter((certificate) => Boolean(certificate.expiryDate));
 
     return withDate
       .slice()
-      .sort((a, b) => {
-        // 1) prioridad por status
-        const ra = statusRank(a.status);
-        const rb = statusRank(b.status);
-        if (ra !== rb) return ra - rb;
+      .sort((left, right) => {
+        const leftRank = statusRank(left.status);
+        const rightRank = statusRank(right.status);
+        if (leftRank !== rightRank) return leftRank - rightRank;
 
-        // 2) por fecha asc (más cercano primero)
-        const da = new Date(a.expiryDate!).getTime();
-        const db = new Date(b.expiryDate!).getTime();
-        if (da !== db) return da - db;
+        const leftExpiry = new Date(left.expiryDate!).getTime();
+        const rightExpiry = new Date(right.expiryDate!).getTime();
+        if (leftExpiry !== rightExpiry) return leftExpiry - rightExpiry;
 
-        // 3) estable: nombre
-        return a.name.localeCompare(b.name);
+        return left.certificateName.localeCompare(right.certificateName);
       })
       .slice(0, MAX_CERTS);
   }, [data]);
 
-  const totalExpiringLike = useMemo(() => {
-    // útil para “Top N” badge. Incluye expired + expiringSoon + pending
-    return data.filter(
-      (c) =>
-        c.status === "EXPIRED" ||
-        c.status === "EXPIRING_SOON" ||
-        c.status === "PENDING",
-    ).length;
-  }, [data]);
-
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
-      <View className="flex-1 p-3 border border-border">
+      <View className="flex-1 border border-border p-3">
         <View className="flex-1 gap-3">
-          {/* Header mini */}
-          {/* <View className="flex-row items-center justify-between">
-            <Text className="text-sm font-semibold text-textMain">
-              Expiring Certificates
-            </Text>
-
-            <MiniPill className="bg-baseBg/35">
-              <Text className="text-[10px] text-textMain/80">
-                Top {Math.min(MAX_CERTS, totalExpiringLike || MAX_CERTS)}
-              </Text>
-            </MiniPill>
-          </View> */}
-
-          {/* List */}
           {top.length === 0 ? (
             <View className="flex-1">
               <Text className="text-xs text-muted">No certificates found.</Text>
@@ -100,13 +72,13 @@ export default function ExpiringCertificatesModule() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1, gap: 8, paddingBottom: 12 }}
             >
-              {top.map((c: CertificateDto) => {
-                const tone = statusTone(c.status);
+              {top.map((certificate: CertificateDto) => {
+                const tone = statusTone(certificate.status);
                 const ui = toneClasses(tone);
 
                 return (
                   <Pressable
-                    key={c.id}
+                    key={certificate.id}
                     onPress={() =>
                       router.push({
                         pathname: "/projects/[projectId]/certificates",
@@ -114,12 +86,11 @@ export default function ExpiringCertificatesModule() {
                       })
                     }
                     className={cn(
-                      "border-b border-border bg-surface overflow-hidden",
+                      "overflow-hidden border-b border-border bg-surface",
                       "web:hover:bg-muted/10",
                     )}
                   >
                     <View className="flex-row items-center gap-3 px-3 py-3">
-                      {/* Icon */}
                       <View
                         className={cn(
                           "h-9 w-9 items-center justify-center rounded-lg border border-border",
@@ -127,40 +98,32 @@ export default function ExpiringCertificatesModule() {
                         )}
                       >
                         <Ionicons
-                          name={statusIcon(c.status) as any}
+                          name={statusIcon(certificate.status) as any}
                           size={18}
                           color="rgba(255,255,255,0.85)"
                         />
                       </View>
 
-                      {/* Text */}
                       <View className="flex-1">
                         <Text
                           className="text-sm font-semibold text-textMain"
                           numberOfLines={1}
                         >
-                          {c.name}
+                          {certificate.certificateName}
                         </Text>
                         <Text
-                          className="text-xs text-muted mt-0.5"
+                          className="mt-0.5 text-xs text-muted"
                           numberOfLines={1}
                         >
-                          {c.assetName} • {formatDate(c.expiryDate)}
+                          {certificate.assetName} · {formatDate(certificate.expiryDate)}
                         </Text>
                       </View>
 
-                      {/* Status chip */}
-                      <MiniPill
-                        className={cn(ui.chip, "rounded-full px-2.5 py-1")}
-                      >
+                      <MiniPill className={cn(ui.chip, "rounded-full px-2.5 py-1")}>
                         <View className="flex-row items-center gap-2">
-                          <View
-                            className={cn("h-2 w-2 rounded-full", ui.dot)}
-                          />
-                          <Text
-                            className={cn("text-[10px] font-semibold", ui.text)}
-                          >
-                            {c.status}
+                          <View className={cn("h-2 w-2 rounded-full", ui.dot)} />
+                          <Text className={cn("text-[10px] font-semibold", ui.text)}>
+                            {certificate.status}
                           </Text>
                         </View>
                       </MiniPill>
@@ -177,7 +140,6 @@ export default function ExpiringCertificatesModule() {
             </ScrollView>
           )}
 
-          {/* Footer CTA fijo */}
           <Button
             variant="softAccent"
             size="sm"

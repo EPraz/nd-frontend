@@ -1,108 +1,211 @@
-import { Button, PageHeader, StatCard } from "@/src/components";
-import { useCertificatesPageData } from "@/src/hooks";
+import { Button, PageHeader, StatCard, Text } from "@/src/components";
+import { useToast } from "@/src/context";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo } from "react";
 import { View } from "react-native";
-import { CertificatesTable } from "../../components";
-import { CertificateDto } from "../../contracts";
-import { CertificateQuickViewModal } from "../certificateQuickViewModal";
+import { CertificateRequirementsTable } from "../../components";
+import { ENABLE_MANUAL_CERTIFICATE_CREATE } from "../../config";
+import { CertificateRequirementDto } from "../../contracts";
+import {
+  useCertificateRequirementsByProject,
+  useGenerateCertificateRequirements,
+} from "../../hooks";
 
 export default function CertificatesByProjectScreen() {
   const router = useRouter();
+  const { show } = useToast();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const pid = String(projectId);
-  const [selectedCertificate, setSelectedCertificate] =
-    useState<CertificateDto | null>(null);
 
-  const page = useCertificatesPageData(pid);
+  const { requirements, loading, error, refresh } =
+    useCertificateRequirementsByProject(pid);
+  const {
+    generateProject,
+    loading: generating,
+    error: generationError,
+  } = useGenerateCertificateRequirements(pid);
+
+  const stats = useMemo(() => {
+    let missing = 0;
+    let underReview = 0;
+    let provided = 0;
+    let expired = 0;
+    let exempt = 0;
+
+    for (const row of requirements) {
+      if (row.status === "MISSING") missing += 1;
+      if (row.status === "UNDER_REVIEW") underReview += 1;
+      if (row.status === "PROVIDED") provided += 1;
+      if (row.status === "EXPIRED") expired += 1;
+      if (row.status === "EXEMPT") exempt += 1;
+    }
+
+    return {
+      total: requirements.length,
+      missing,
+      underReview,
+      provided,
+      expired,
+      exempt,
+      uploaded: requirements.filter((row) => row.hasStructuredCertificate).length,
+    };
+  }, [requirements]);
+
+  async function onGenerate() {
+    try {
+      const result = await generateProject();
+      await refresh();
+      show(
+        `Requirements refreshed for ${result.processedAssets} vessel${result.processedAssets === 1 ? "" : "s"}.`,
+        "success",
+      );
+    } catch {
+      show("Failed to refresh certificate requirements", "error");
+    }
+  }
+
+  function openUpload(row: CertificateRequirementDto) {
+    router.push({
+      pathname: "/projects/[projectId]/certificates/upload",
+      params: {
+        projectId: pid,
+        assetId: row.assetId,
+        requirementId: row.id,
+      },
+    });
+  }
+
+  function openExtraUpload() {
+    router.push({
+      pathname: "/projects/[projectId]/certificates/upload",
+      params: {
+        projectId: pid,
+      },
+    });
+  }
 
   return (
     <View className="gap-6 p-4 web:p-6">
       <PageHeader
-        title="Certificates"
-        subTitle="Monitor certificate validity and compliance across vessels."
+        title="Certificate Compliance"
+        subTitle="Upload documents from each vessel requirement so compliance stays grounded in real evidence."
+        onRefresh={refresh}
       />
 
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
         <StatCard
-          loading={page.isLoading || !!page.error}
+          loading={loading}
           iconName="documents-outline"
           iconLib="ion"
-          title="Total Certificates"
-          value={String(page.stats.total)}
-          suffix="in this project"
-          badgeValue={String(page.stats.critical)}
-          badgeColor={page.stats.critical > 0 ? "fail" : "success"}
-          badgeLabel="critical items"
+          title="Requirements"
+          value={String(stats.total)}
+          suffix="active certificate requirements"
+          badgeValue={String(stats.uploaded)}
+          badgeColor={stats.uploaded > 0 ? "success" : "fail"}
+          badgeLabel="records"
         />
 
         <StatCard
-          loading={page.isLoading || !!page.error}
+          loading={loading}
           iconName="alert-circle-outline"
           iconLib="ion"
-          title="Expired"
-          value={String(page.stats.expired)}
-          suffix="require immediate action"
-          badgeValue={page.stats.expired > 0 ? "CRITICAL" : "OK"}
-          badgeColor={page.stats.expired > 0 ? "fail" : "success"}
+          title="Missing"
+          value={String(stats.missing)}
+          suffix="need a document upload"
+          badgeValue={stats.missing > 0 ? "ACTION" : "OK"}
+          badgeColor={stats.missing > 0 ? "fail" : "success"}
           badgeLabel="status"
         />
 
         <StatCard
-          loading={page.isLoading || !!page.error}
-          iconName="time-outline"
+          loading={loading}
+          iconName="search-outline"
           iconLib="ion"
-          title="Expiring Soon"
-          value={String(page.stats.expiringSoon)}
-          suffix="upcoming renewals"
-          badgeValue={page.stats.expiringSoon > 0 ? "ATTN" : "OK"}
-          badgeColor={page.stats.expiringSoon > 0 ? "fail" : "success"}
-          badgeLabel="status"
+          title="Under Review"
+          value={String(stats.underReview)}
+          suffix="uploaded and awaiting confirmation"
+          badgeValue={stats.underReview > 0 ? "REVIEW" : "CLEAR"}
+          badgeColor={stats.underReview > 0 ? "fail" : "success"}
+          badgeLabel="queue"
         />
 
         <StatCard
-          loading={page.isLoading || !!page.error}
+          loading={loading}
           iconName="checkmark-circle-outline"
           iconLib="ion"
-          title="Valid"
-          value={String(page.stats.valid)}
-          suffix="currently compliant"
-          badgeValue={String(page.stats.pending)}
-          badgeColor={page.stats.pending > 0 ? "fail" : "success"}
-          badgeLabel="pending"
+          title="Provided"
+          value={String(stats.provided)}
+          suffix="currently backed by a certificate"
+          badgeValue={String(stats.expired)}
+          badgeColor={stats.expired > 0 ? "fail" : "success"}
+          badgeLabel="expired"
         />
       </View>
 
-      <View className="flex-1 gap-4">
-        <Button
-          variant="default"
-          size="sm"
-          className="rounded-full self-end"
-          onPress={() => router.push(`/projects/${pid}/certificates/new`)}
-        >
-          + Add Certificate
-        </Button>
-        <CertificatesTable
-          title="Certificates"
-          subtitleRight="Sorted by expiry"
-          data={page.list}
-          isLoading={page.isLoading}
-          error={page.error}
-          onRetry={page.refetch}
-          showVesselColumn
-          sortByExpiry
-          selectedRowId={selectedCertificate?.id ?? null}
-          onRowPress={(row) => setSelectedCertificate(row)}
-        />
+      <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+        <Text className="text-textMain font-semibold text-[14px]">
+          Maritime-first flow
+        </Text>
+        <Text className="text-muted text-[12px] leading-[18px]">
+          Requirements drive the main flow. Upload from a row when the system
+          expects a certificate, or use `Add extra certificate` for documents
+          that are outside the current rule set.
+        </Text>
 
-        {selectedCertificate && (
-          <CertificateQuickViewModal
-            certificate={selectedCertificate}
-            projectId={pid}
-            onClose={() => setSelectedCertificate(null)}
-          />
-        )}
+        <View className="flex-row flex-wrap gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onPress={onGenerate}
+            loading={generating}
+            className="rounded-full"
+            rightIcon={
+              <Ionicons
+                name="refresh-outline"
+                size={16}
+                className="text-textMain"
+              />
+            }
+          >
+            Refresh requirements
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onPress={openExtraUpload}
+            className="rounded-full"
+          >
+            Add extra certificate
+          </Button>
+
+          {ENABLE_MANUAL_CERTIFICATE_CREATE ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => router.push(`/projects/${pid}/certificates/new`)}
+              className="rounded-full"
+            >
+              Manual entry
+            </Button>
+          ) : null}
+        </View>
+
+        {generationError ? (
+          <Text className="text-[12px] text-destructive">{generationError}</Text>
+        ) : null}
       </View>
+
+      <CertificateRequirementsTable
+        title="Vessel Requirements"
+        subtitleRight="Upload from the row that is missing or needs a fresher document"
+        data={requirements}
+        isLoading={loading}
+        error={error}
+        onRetry={refresh}
+        onUpload={openUpload}
+      />
     </View>
   );
 }

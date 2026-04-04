@@ -2,8 +2,6 @@ import { clearToken, getToken } from "@/src/helpers/tokenStore";
 import { authEvents } from "../events/session/authEvents";
 import { getBaseUrl } from "./baseUrl";
 
-type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
-
 export class ApiError<TPayload = unknown> extends Error {
   readonly status: number;
   readonly payload?: TPayload;
@@ -67,8 +65,10 @@ async function request<T>(
   const headers = await withAuthHeaders(options?.init);
 
   const hasBody = options && "body" in options && options.body !== undefined;
+  const isFormDataBody =
+    typeof FormData !== "undefined" && options?.body instanceof FormData;
 
-  if (hasBody && !headers.has("Content-Type")) {
+  if (hasBody && !isFormDataBody && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -79,7 +79,11 @@ async function request<T>(
     // importante: en web permite cookies si algún endpoint usa cookie httpOnly
     // en RN no rompe; simplemente se ignora si no aplica
     credentials: "include",
-    body: hasBody ? JSON.stringify(options.body) : undefined,
+    body: hasBody
+      ? isFormDataBody
+        ? (options?.body as FormData)
+        : JSON.stringify(options?.body)
+      : undefined,
   });
 
   const payload = await parseJsonSafe(res);

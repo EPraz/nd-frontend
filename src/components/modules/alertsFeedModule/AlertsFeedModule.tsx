@@ -150,6 +150,7 @@ export default function AlertsFeedModule() {
             variant="softAccent"
             size="sm"
             className="rounded-xl"
+            disabled
             onPress={() =>
               router.push({
                 pathname: "/projects/[projectId]/alerts",

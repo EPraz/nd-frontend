@@ -3,7 +3,11 @@ import { formatDate } from "@/src/helpers";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { CertificateDto } from "../../contracts";
-import { CertificateStatusPill } from "./certificates.ui";
+import {
+  CertificateStatusPill,
+  RequirementStatusPill,
+  WorkflowStatusPill,
+} from "./certificates.ui";
 
 type Props = {
   title: string;
@@ -52,7 +56,7 @@ export function CertificatesTable(props: Props) {
               )
             }
           >
-            {r.name}
+            {r.certificateName}
           </TableLink>
         ),
       },
@@ -84,6 +88,20 @@ export function CertificatesTable(props: Props) {
         render: (r) => <CertificateStatusPill status={r.status} />,
       },
       {
+        key: "workflow",
+        header: "Workflow",
+        flex: 1,
+        render: (r) => <WorkflowStatusPill status={r.workflowStatus} />,
+      },
+      {
+        key: "requirement",
+        header: "Requirement",
+        flex: 1,
+        render: (r) => (
+          <RequirementStatusPill status={r.requirementStatus ?? null} />
+        ),
+      },
+      {
         key: "expiry",
         header: "Expiry",
         flex: 1,
@@ -98,7 +116,7 @@ export function CertificatesTable(props: Props) {
     );
 
     return cols;
-  }, [props.showVesselColumn]);
+  }, [projectId, props.showVesselColumn, router]);
 
   return (
     <DataTable<CertificateDto>
@@ -109,7 +127,7 @@ export function CertificatesTable(props: Props) {
       error={props.error}
       onRetry={props.onRetry}
       columns={columns}
-      minWidth={props.minWidth ?? (props.showVesselColumn ? 860 : 720)}
+      minWidth={props.minWidth ?? (props.showVesselColumn ? 1080 : 920)}
       getRowId={(r) => r.id}
       onRowPress={props.onRowPress}
       emptyText="No certificates found."

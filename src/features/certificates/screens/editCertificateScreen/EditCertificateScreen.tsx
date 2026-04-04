@@ -1,13 +1,14 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
 import { useToast } from "@/src/context";
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import { useCertificateTypes } from "@/src/features/certificates";
 import { useVessels } from "@/src/features/vessels";
 import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { CertificateFormCard, CertificatePreviewCard } from "../../components";
+import { CertificateFormCard } from "../../components";
 import { emptyCertificateFormValues } from "../../contracts";
 import {
   certificateFormFromDto,
@@ -34,39 +35,38 @@ export default function EditCertificateScreen() {
     vid,
     cid,
   );
-
   const {
     submit,
     loading: saving,
     error: saveError,
   } = useUpdateCertificate(pid, vid, cid);
-
   const {
     vessels,
     loading: vesselsLoading,
     error: vesselsError,
   } = useVessels(pid);
+  const {
+    certificateTypes,
+    loading: certificateTypesLoading,
+    error: certificateTypesError,
+  } = useCertificateTypes(pid);
 
   const [values, setValues] = useState(() => emptyCertificateFormValues());
   const [dirty, setDirty] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  // hydrate form cuando llega certificate
   useEffect(() => {
-    if (!certificate) return;
-    if (dirty) return;
+    if (!certificate || dirty) return;
 
     setValues((prev) => ({
       ...prev,
-      ...certificateFormFromDto(certificate),
-      // selectedVessel se resuelve con lista de vessels (si ya llegó)
+      ...certificateFormFromDto(certificate, certificateTypes),
       selectedVessel:
         vessels.find((v) => v.id === (certificate.assetId ?? vid)) ?? null,
     }));
-  }, [certificate, dirty, vessels, vid]);
+  }, [certificate, dirty, vessels, vid, certificateTypes]);
 
   const effectiveAssetId = values.assetId ?? vid;
-
   const currentVessel = useMemo<AssetDto | null>(() => {
     return vessels.find((v) => v.id === effectiveAssetId) ?? null;
   }, [vessels, effectiveAssetId]);
@@ -78,15 +78,15 @@ export default function EditCertificateScreen() {
   const canSubmit = useMemo(() => {
     if (saving) return false;
     if (!effectiveAssetId) return false;
-    if (values.name.trim().length < 2) return false;
+    if (!values.certificateTypeId) return false;
     if (!dirty) return false;
     return true;
-  }, [saving, effectiveAssetId, values.name, dirty]);
+  }, [saving, effectiveAssetId, values.certificateTypeId, dirty]);
 
-  function patch(p: Partial<typeof values>) {
+  function patch(patchValues: Partial<typeof values>) {
     setLocalError(null);
     setDirty(true);
-    setValues((prev) => ({ ...prev, ...p }));
+    setValues((prev) => ({ ...prev, ...patchValues }));
   }
 
   function goBackOrTo(fallbackHref: string) {
@@ -105,23 +105,23 @@ export default function EditCertificateScreen() {
       setLocalError("Selecciona un vessel.");
       return;
     }
-    if (values.name.trim().length < 2) {
-      setLocalError("Certificate Name es requerido.");
+    if (!values.certificateTypeId) {
+      setLocalError("Selecciona un certificate type.");
       return;
     }
     if (values.issueDate.trim() && !isIsoDateOnly(values.issueDate)) {
-      setLocalError("Issue date inválido. Usa formato YYYY-MM-DD.");
+      setLocalError("Issue date invalido. Usa formato YYYY-MM-DD.");
       return;
     }
     if (values.expiryDate.trim() && !isIsoDateOnly(values.expiryDate)) {
-      setLocalError("Expiry date inválido. Usa formato YYYY-MM-DD.");
+      setLocalError("Expiry date invalido. Usa formato YYYY-MM-DD.");
       return;
     }
 
     try {
       const input = toUpdateCertificateInput({
         values: { ...values, assetId: assetIdToUse },
-        allowMoveVessel: false, // pon false si NO quieres permitir mover de vessel
+        allowMoveVessel: false,
       });
 
       await submit(input);
@@ -143,7 +143,6 @@ export default function EditCertificateScreen() {
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View className="gap-3">
           <Pressable
             onPress={() => goBackOrTo(viewHref)}
@@ -160,10 +159,11 @@ export default function EditCertificateScreen() {
           <View className="web:flex-row web:items-start web:justify-between gap-4">
             <View className="gap-1 flex-1">
               <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
-                Edit Certificate - {certificate.name}
+                Edit Certificate
               </Text>
               <Text className="text-muted text-[14px]">
-                Update certificate details and vessel assignment.
+                Review and correct extracted metadata for {certificate.certificateName} on{" "}
+                {certificate.assetName}.
               </Text>
             </View>
 
@@ -179,7 +179,7 @@ export default function EditCertificateScreen() {
               </Button>
 
               <Button
-                variant="default"
+                variant="outline"
                 size="lg"
                 onPress={onSave}
                 disabled={!canSubmit}
@@ -198,10 +198,19 @@ export default function EditCertificateScreen() {
           </View>
         </View>
 
-        {/* Content grid */}
-        <View className="gap-5 web:lg:flex-row">
-          {/* Left */}
-          <View className="flex-1 gap-5 web:lg:w-[60%]">
+        <View className="w-full web:max-w-[980px] self-center gap-5">
+          <View className="rounded-[20px] border border-warning/30 bg-warning/10 p-4 gap-2">
+            <Text className="text-textMain font-semibold text-[13px]">
+              Metadata editing
+            </Text>
+            <Text className="text-muted text-[12px] leading-[18px]">
+              Use this screen to correct extracted metadata after the submitted
+              record exists. Approval now happens from the certificate view, not
+              from inside edit.
+            </Text>
+          </View>
+
+          <View className="flex-1 gap-5">
             <CertificateFormCard
               fixedAssetId={vid}
               currentVessel={currentVessel}
@@ -209,27 +218,25 @@ export default function EditCertificateScreen() {
               vesselsLoading={vesselsLoading}
               vesselsError={vesselsError}
               onCreateVessel={() => router.push(createVesselHref)}
+              certificateTypes={certificateTypes}
+              certificateTypesLoading={certificateTypesLoading}
+              certificateTypesError={certificateTypesError}
               values={values}
               onChange={patch}
               localError={localError}
               apiError={saveError}
               disabled={saving}
+              showFilesNextHint={false}
             />
 
-            {/* quick link */}
             <Pressable
               onPress={() => router.replace(listHref)}
               className="self-start"
             >
               <Text className="text-accent font-semibold">
-                Go to vessel certificates list →
+                Go to vessel certificates list
               </Text>
             </Pressable>
-          </View>
-
-          {/* Right */}
-          <View className="flex-1 gap-5 web:lg:w-[40%]">
-            <CertificatePreviewCard values={values} />
           </View>
         </View>
       </ScrollView>

@@ -1,9 +1,14 @@
-import { Button, MiniPill, QuickViewModalFrame, Text } from "@/src/components";
-import { formatDate, Stat } from "@/src/helpers";
+import { Button, MiniPill, QuickViewModalFrame, Stat, Text } from "@/src/components";
+import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 import { CertificateDto, CertificateStatus } from "../../contracts";
+import {
+  CertificateStatusPill,
+  RequirementStatusPill,
+  WorkflowStatusPill,
+} from "../../components/certificateTable/certificates.ui";
 
 type Props = {
   certificate: CertificateDto;
@@ -21,25 +26,17 @@ function daysUntil(iso: string | null) {
   return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }
 
-function statusTone(status: CertificateStatus) {
+function statusLabel(status: CertificateStatus) {
   switch (status) {
     case "VALID":
-      return { bg: "bg-success/15", text: "text-success", label: "Valid" };
+      return "Valid";
     case "EXPIRING_SOON":
-      return {
-        bg: "bg-warning/15",
-        text: "text-warning",
-        label: "Expiring soon",
-      };
+      return "Expiring soon";
     case "EXPIRED":
-      return {
-        bg: "bg-destructive/15",
-        text: "text-destructive",
-        label: "Expired",
-      };
+      return "Expired";
     case "PENDING":
     default:
-      return { bg: "bg-info/15", text: "text-info", label: "Pending" };
+      return "Pending";
   }
 }
 
@@ -49,19 +46,12 @@ export default function CertificateQuickViewModal({
   onClose,
 }: Props) {
   const router = useRouter();
-
-  const tone = statusTone(certificate.status);
-
-  const exp = formatDate(certificate.expiryDate);
-  const iss = formatDate(certificate.issueDate);
-
-  const d = daysUntil(certificate.expiryDate);
-  const expiryMeta =
-    d === null
-      ? "—"
-      : d < 0
-        ? `${Math.abs(d)} day(s) overdue`
-        : `${d} day(s) remaining`;
+  const expiryMeta = (() => {
+    const d = daysUntil(certificate.expiryDate);
+    if (d === null) return "—";
+    if (d < 0) return `${Math.abs(d)} day(s) overdue`;
+    return `${d} day(s) remaining`;
+  })();
 
   const handleOpenVesselCertificates = () => {
     onClose();
@@ -75,11 +65,6 @@ export default function CertificateQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${certificate.assetId}`);
   };
 
-  // Placeholder
-  const handleDelete = () => {
-    // TODO: confirm dialog + delete endpoint
-  };
-
   const handleEdit = () => {
     onClose();
     router.push(
@@ -89,28 +74,13 @@ export default function CertificateQuickViewModal({
 
   return (
     <QuickViewModalFrame
-      portalName={certificate.name}
+      portalName={certificate.certificateName}
       open={true}
       onClose={onClose}
       title="Certificate Details"
-      subtitle="Quick compliance snapshot. Open the vessel certificates page for full management."
+      subtitle="Quick structured snapshot. Open the vessel certificates page for full management."
       headerActions={
         <>
-          <Button
-            variant="softDestructive"
-            size="pillSm"
-            onPress={handleDelete}
-            leftIcon={
-              <Ionicons
-                name="trash-outline"
-                size={16}
-                className="text-destructive"
-              />
-            }
-          >
-            Delete
-          </Button>
-
           <Button
             variant="softAccent"
             size="pillSm"
@@ -123,7 +93,7 @@ export default function CertificateQuickViewModal({
               />
             }
           >
-            Edit Vessel
+            Edit
           </Button>
 
           <Button
@@ -154,28 +124,26 @@ export default function CertificateQuickViewModal({
       scroll
       maxWidth={980}
     >
-      {/* Top content */}
       <View className="mt-1 gap-5 web:flex-row">
-        {/* Left info */}
         <View className="flex-1 gap-2">
           <Text className="text-textMain text-[22px] font-semibold">
-            {certificate.name}
+            {certificate.certificateName}
           </Text>
 
           <View className="flex-row flex-wrap items-center gap-2">
-            <View className={`rounded-full px-3 py-1 ${tone.bg}`}>
-              <Text className={`text-[12px] font-semibold ${tone.text}`}>
-                {tone.label}
-              </Text>
-            </View>
+            <CertificateStatusPill status={certificate.status} />
+            <WorkflowStatusPill status={certificate.workflowStatus} />
+            <RequirementStatusPill status={certificate.requirementStatus ?? null} />
+          </View>
 
-            <MiniPill>{`Certificate ID: ${certificate.id}`}</MiniPill>
+          <View className="flex-row flex-wrap gap-2">
+            <MiniPill>{`Code: ${certificate.certificateCode}`}</MiniPill>
             <MiniPill>{`Vessel: ${certificate.assetName}`}</MiniPill>
+            <MiniPill>{`Attachments: ${certificate.attachmentCount}`}</MiniPill>
           </View>
 
           <Text className="text-textMain/55 text-[13px] leading-[18px]">
-            Monitor validity and expiry. Use the vessel page for renewals and
-            document management.
+            Structured certificate record with workflow and requirement context.
           </Text>
 
           <View className="mt-2 flex-row gap-2">
@@ -193,25 +161,27 @@ export default function CertificateQuickViewModal({
           </View>
         </View>
 
-        {/* Right preview placeholder */}
         <View className="w-full web:w-[360px] shrink-0">
           <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-border bg-baseBg/35 items-center justify-center">
             <Text className="text-textMain text-[20px] font-semibold">
-              PDF Preview
+              Attachment Preview
             </Text>
-            <Text className="text-muted text-[12px] mt-1">(upload later)</Text>
+            <Text className="text-muted text-[12px] mt-1">
+              {certificate.attachmentCount > 0
+                ? `${certificate.attachmentCount} file(s)`
+                : "No files yet"}
+            </Text>
           </View>
         </View>
       </View>
 
-      {/* Main stats */}
       <View className="mt-2 gap-4 flex-col web:flex-row">
         <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
           <Text className="text-textMain font-semibold mb-3">Validity</Text>
 
           <View className="gap-4 web:flex-row">
-            <Stat label="Issue Date" value={iss} />
-            <Stat label="Expiry Date" value={exp} />
+            <Stat label="Issue Date" value={formatDate(certificate.issueDate)} />
+            <Stat label="Expiry Date" value={formatDate(certificate.expiryDate)} />
             <Stat label="Expiry Window" value={expiryMeta} />
           </View>
         </View>
@@ -222,7 +192,7 @@ export default function CertificateQuickViewModal({
           <View className="gap-4 web:flex-row">
             <Stat label="Issuer" value={certificate.issuer ?? "—"} />
             <Stat label="Number" value={certificate.number ?? "—"} />
-            <Stat label="Status" value={tone.label} />
+            <Stat label="Status" value={statusLabel(certificate.status)} />
           </View>
         </View>
       </View>
