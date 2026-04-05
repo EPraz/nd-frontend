@@ -2,7 +2,7 @@ import vesselBanner from "@/src/assets/ship-banner-2.jpg";
 import { Button, Card, Text } from "@/src/components";
 import { HeroBanner } from "@/src/components/modules/heroSection";
 import type { SpecItem } from "@/src/components/modules/heroSection/hero.ui";
-import { useProjectContext } from "@/src/context";
+import { useProjectContext, useProjectEntitlements } from "@/src/context";
 import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
 import { useRouter } from "expo-router";
 import { Platform, View } from "react-native";
@@ -15,6 +15,7 @@ const GRID_BASE =
 export default function VesselOverviewScreen() {
   const router = useRouter();
   const { projectName } = useProjectContext();
+  const { isSubmoduleEnabled } = useProjectEntitlements();
   const { projectId, assetId, vessel, summary } = useVesselShell();
   const isWeb = Platform.OS === "web";
 
@@ -141,6 +142,10 @@ export default function VesselOverviewScreen() {
     },
   ];
 
+  const showCertificates = isSubmoduleEnabled("vessels", "certificates");
+  const showCrew = isSubmoduleEnabled("vessels", "crew");
+  const showMaintenance = isSubmoduleEnabled("vessels", "maintenance");
+
   if (isWeb) {
     return (
       <View className="web:flex web:flex-col web:gap-4 web:lg:flex-row">
@@ -161,7 +166,8 @@ export default function VesselOverviewScreen() {
               </Card>
             </View>
 
-            <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
+            {showCrew ? (
+              <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
               <OverviewPanel
                 title={crewCard.title}
                 description={crewCard.subtitle}
@@ -173,9 +179,11 @@ export default function VesselOverviewScreen() {
                   onPress={() => router.push(crewCard.href)}
                 />
               </OverviewPanel>
-            </View>
+              </View>
+            ) : null}
 
-            <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
+            {showMaintenance ? (
+              <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
               <OverviewPanel
                 title={maintenanceCard.title}
                 description={maintenanceCard.subtitle}
@@ -187,11 +195,13 @@ export default function VesselOverviewScreen() {
                   onPress={() => router.push(maintenanceCard.href)}
                 />
               </OverviewPanel>
-            </View>
+              </View>
+            ) : null}
           </View>
         </View>
 
-        <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
+        {showCertificates ? (
+          <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
           <View className={LATERAL_HEIGHT}>
             <OverviewPanel
               title={certificatesCard.title}
@@ -223,7 +233,8 @@ export default function VesselOverviewScreen() {
               </View>
             </OverviewPanel>
           </View> */}
-        </View>
+          </View>
+        ) : null}
       </View>
     );
   }
@@ -243,7 +254,8 @@ export default function VesselOverviewScreen() {
         />
       </Card>
 
-      <OverviewPanel
+      {showCertificates ? (
+        <OverviewPanel
         title={certificatesCard.title}
         description={certificatesCard.subtitle}
       >
@@ -252,17 +264,21 @@ export default function VesselOverviewScreen() {
           actionLabel={certificatesCard.cta}
           onPress={() => router.push(certificatesCard.href)}
         />
-      </OverviewPanel>
+        </OverviewPanel>
+      ) : null}
 
-      <OverviewPanel title={crewCard.title} description={crewCard.subtitle}>
+      {showCrew ? (
+        <OverviewPanel title={crewCard.title} description={crewCard.subtitle}>
         <ModuleSummary
           rows={crewCard.rows}
           actionLabel={crewCard.cta}
           onPress={() => router.push(crewCard.href)}
         />
-      </OverviewPanel>
+        </OverviewPanel>
+      ) : null}
 
-      <OverviewPanel
+      {showMaintenance ? (
+        <OverviewPanel
         title={maintenanceCard.title}
         description={maintenanceCard.subtitle}
       >
@@ -271,7 +287,8 @@ export default function VesselOverviewScreen() {
           actionLabel={maintenanceCard.cta}
           onPress={() => router.push(maintenanceCard.href)}
         />
-      </OverviewPanel>
+        </OverviewPanel>
+      ) : null}
 
       <OverviewPanel
         title="Vessel profile snapshot"

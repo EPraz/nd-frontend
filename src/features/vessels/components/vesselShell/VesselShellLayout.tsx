@@ -1,5 +1,5 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
-import { useProjectContext } from "@/src/context";
+import { useProjectContext, useProjectEntitlements } from "@/src/context";
 import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
 import { usePathname, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
@@ -15,6 +15,7 @@ export function VesselShellLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { projectName } = useProjectContext();
+  const { isSubmoduleEnabled, loading: entitlementsLoading } = useProjectEntitlements();
   const {
     projectId,
     assetId,
@@ -99,11 +100,60 @@ export function VesselShellLayout({
       tone:
         summary.fuel.total > 0 ? ("success" as const) : ("neutral" as const),
     },
-  ];
+  ].filter((item) => isSubmoduleEnabled("vessels", item.key));
 
   const hasDedicatedActiveSection = navItems
     .filter((item) => item.key !== "overview")
     .some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+
+  const blockedSubmodule = getBlockedVesselSubmodule(
+    pathname,
+    basePath,
+    isSubmoduleEnabled,
+  );
+
+  const guardedSubmodule = getGuardedVesselSubmodule(pathname, basePath);
+
+  if (guardedSubmodule && entitlementsLoading) {
+    return <Loading fullScreen />;
+  }
+
+  if (blockedSubmodule) {
+    return (
+      <View className="gap-5">
+        <View className="rounded-[24px] border border-border bg-surface p-6 gap-4">
+          <View className="gap-2">
+            <Text className="text-xl font-semibold text-textMain">
+              Submodule unavailable
+            </Text>
+            <Text className="text-muted">
+              {blockedSubmodule} is disabled for this project. Re-enable it from
+              Project Settings to access it from the vessel shell.
+            </Text>
+          </View>
+
+          <View className="flex-row flex-wrap gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => router.push(basePath)}
+              className="rounded-full"
+            >
+              Back to vessel overview
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onPress={() => router.push(`/projects/${projectId}/settings`)}
+              className="rounded-full"
+            >
+              Open settings
+            </Button>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="gap-5">
@@ -218,6 +268,43 @@ export function VesselShellLayout({
       <View>{children}</View>
     </View>
   );
+}
+
+function getGuardedVesselSubmodule(pathname: string, basePath: string): string | null {
+  const checks = [
+    { key: "overview", label: "Overview", href: basePath },
+    { key: "certificates", label: "Certificates", href: `${basePath}/certificates` },
+    { key: "crew", label: "Crew", href: `${basePath}/crew` },
+    { key: "maintenance", label: "Maintenance", href: `${basePath}/maintenance` },
+    { key: "fuel", label: "Fuel", href: `${basePath}/fuel` },
+  ];
+
+  const match = checks.find(
+    (entry) => pathname === entry.href || pathname.startsWith(`${entry.href}/`),
+  );
+
+  return match?.label ?? null;
+}
+
+function getBlockedVesselSubmodule(
+  pathname: string,
+  basePath: string,
+  isSubmoduleEnabled: (moduleKey: string, submoduleKey: string) => boolean,
+): string | null {
+  const checks = [
+    { key: "overview", label: "Overview", href: basePath },
+    { key: "certificates", label: "Certificates", href: `${basePath}/certificates` },
+    { key: "crew", label: "Crew", href: `${basePath}/crew` },
+    { key: "maintenance", label: "Maintenance", href: `${basePath}/maintenance` },
+    { key: "fuel", label: "Fuel", href: `${basePath}/fuel` },
+  ];
+
+  const match = checks.find(
+    (entry) => pathname === entry.href || pathname.startsWith(`${entry.href}/`),
+  );
+
+  if (!match) return null;
+  return isSubmoduleEnabled("vessels", match.key) ? null : match.label;
 }
 
 function MetaChip({ label, value }: { label: string; value: string }) {

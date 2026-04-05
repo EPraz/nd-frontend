@@ -1,10 +1,11 @@
-import { useDashboardScope } from "@/src/context";
+import { useDashboardScope, useProjectEntitlements } from "@/src/context";
 import { useCrewSummaryData } from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text } from "../../ui";
 
@@ -12,6 +13,7 @@ const MAX_VESSELS = 10;
 
 export default function CrewSummaryModule() {
   const { projectId } = useDashboardScope();
+  const { isModuleEnabled } = useProjectEntitlements();
   const { data, isLoading, error, refetch } = useCrewSummaryData();
   const router = useRouter();
 
@@ -23,6 +25,9 @@ export default function CrewSummaryModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
+      {!isModuleEnabled("crew") ? (
+        <ModuleUnavailableState label="Crew" />
+      ) : (
       <View className="flex-1 p-3 border border-border">
         <View className="flex-1 gap-3">
           {/* STATS */}
@@ -201,6 +206,7 @@ export default function CrewSummaryModule() {
           </Button>
         </View>
       </View>
+      )}
     </ModuleFrame>
   );
 }

@@ -1,9 +1,10 @@
-import { useDashboardScope } from "@/src/context";
+import { useDashboardScope, useProjectEntitlements } from "@/src/context";
 import { useVesselsListData, VesselCertStatus } from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
+import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text, Tone, toneClasses } from "../../ui";
 
@@ -24,6 +25,7 @@ function statusRank(status: VesselCertStatus) {
 
 export default function VesselsListModule() {
   const { projectId } = useDashboardScope();
+  const { isModuleEnabled } = useProjectEntitlements();
   const { data, isLoading, error, refetch } = useVesselsListData();
   const router = useRouter();
 
@@ -43,6 +45,9 @@ export default function VesselsListModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
+      {!isModuleEnabled("vessels") ? (
+        <ModuleUnavailableState label="Vessels" />
+      ) : (
       <View className="flex-1 p-3 border-border border">
         {/* Root layout: lista arriba, footer abajo */}
         <View className="flex-1 gap-3">
@@ -197,6 +202,7 @@ export default function VesselsListModule() {
           </Button>
         </View>
       </View>
+      )}
     </ModuleFrame>
   );
 }

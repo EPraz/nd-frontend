@@ -1,9 +1,10 @@
-import { useDashboardScope } from "@/src/context";
+import { useDashboardScope, useProjectEntitlements } from "@/src/context";
 import { useVesselsHealthData, VesselHealthStatus } from "@/src/hooks";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
+import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text, Tone, toneClasses } from "../../ui";
 
@@ -23,6 +24,7 @@ function iconFor(s: VesselHealthStatus) {
 
 export default function VesselsHealthModule() {
   const { projectId } = useDashboardScope();
+  const { isModuleEnabled } = useProjectEntitlements();
   const { data, isLoading, error, refetch } = useVesselsHealthData();
   const router = useRouter();
 
@@ -30,6 +32,9 @@ export default function VesselsHealthModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
+      {!isModuleEnabled("vessels") ? (
+        <ModuleUnavailableState label="Vessels" />
+      ) : (
       <View className="flex-1 p-3 border border-border">
         <View className="flex-1 gap-3">
           {/* Header (mini summary) */}
@@ -167,6 +172,7 @@ export default function VesselsHealthModule() {
           </Button>
         </View>
       </View>
+      )}
     </ModuleFrame>
   );
 }

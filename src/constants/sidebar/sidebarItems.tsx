@@ -13,10 +13,21 @@ export type SidebarItemType = {
   enabled?: boolean;
 };
 
-export function sidebarItems(kind: ProjectKind): {
+type SidebarItemsOptions = {
+  moduleEnabled?: Partial<Record<SidebarKey, boolean>>;
+  canManageProject?: boolean;
+};
+
+export function sidebarItems(
+  kind: ProjectKind,
+  options: SidebarItemsOptions = {},
+): {
   main: SidebarItemType[];
   secondary: SidebarItemType[];
 } {
+  const isEnabled = (key: SidebarKey, fallback = true) =>
+    options.moduleEnabled?.[key] ?? fallback;
+
   const common: SidebarItemType[] = [
     { key: "dashboard", label: "Dashboard", iconBase: "grid", enabled: true },
   ];
@@ -25,25 +36,35 @@ export function sidebarItems(kind: ProjectKind): {
     return {
       main: [
         ...common,
-        { key: "vessels", label: "Vessels", iconBase: "boat", enabled: true },
+        {
+          key: "vessels",
+          label: "Vessels",
+          iconBase: "boat",
+          enabled: isEnabled("vessels"),
+        },
         {
           key: "certificates",
           label: "Certificates",
           iconBase: "document-text",
-          enabled: true,
+          enabled: isEnabled("certificates"),
         },
-        { key: "crew", label: "Crew", iconBase: "people", enabled: true },
+        {
+          key: "crew",
+          label: "Crew",
+          iconBase: "people",
+          enabled: isEnabled("crew"),
+        },
         {
           key: "maintenance",
           label: "Maintenance",
           iconBase: "construct",
-          enabled: true,
+          enabled: isEnabled("maintenance"),
         },
         {
           key: "fuel",
           label: "Fuel",
           iconBase: "flame",
-          enabled: false,
+          enabled: isEnabled("fuel", false),
         },
       ],
       secondary: [
@@ -51,7 +72,7 @@ export function sidebarItems(kind: ProjectKind): {
           key: "settings",
           label: "Settings",
           iconBase: "settings",
-          enabled: false,
+          enabled: options.canManageProject ?? false,
         },
         {
           key: "help",
@@ -80,7 +101,7 @@ export function sidebarItems(kind: ProjectKind): {
           key: "settings",
           label: "Settings",
           iconBase: "settings",
-          enabled: false,
+          enabled: options.canManageProject ?? false,
         },
         {
           key: "help",
@@ -109,7 +130,7 @@ export function sidebarItems(kind: ProjectKind): {
           key: "settings",
           label: "Settings",
           iconBase: "settings",
-          enabled: false,
+          enabled: options.canManageProject ?? false,
         },
         {
           key: "help",
@@ -128,7 +149,7 @@ export function sidebarItems(kind: ProjectKind): {
         key: "settings",
         label: "Settings",
         iconBase: "settings",
-        enabled: false,
+        enabled: options.canManageProject ?? false,
       },
       {
         key: "help",

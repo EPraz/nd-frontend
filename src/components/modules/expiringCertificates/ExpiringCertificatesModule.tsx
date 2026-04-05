@@ -1,4 +1,4 @@
-import { useDashboardScope } from "@/src/context";
+import { useDashboardScope, useProjectEntitlements } from "@/src/context";
 import { CertificateDto, CertificateStatus } from "@/src/features/certificates";
 import { formatDate } from "@/src/helpers";
 import { useCertificatesData } from "@/src/hooks";
@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text, Tone, toneClasses } from "../../ui";
 
@@ -35,6 +36,7 @@ function statusIcon(status: CertificateStatus) {
 
 export default function ExpiringCertificatesModule() {
   const { projectId } = useDashboardScope();
+  const { isModuleEnabled } = useProjectEntitlements();
   const router = useRouter();
 
   const { data, isLoading, error, refetch } = useCertificatesData();
@@ -60,6 +62,9 @@ export default function ExpiringCertificatesModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
+      {!isModuleEnabled("certificates") ? (
+        <ModuleUnavailableState label="Certificates" />
+      ) : (
       <View className="flex-1 border border-border p-3">
         <View className="flex-1 gap-3">
           {top.length === 0 ? (
@@ -162,6 +167,7 @@ export default function ExpiringCertificatesModule() {
           </Button>
         </View>
       </View>
+      )}
     </ModuleFrame>
   );
 }

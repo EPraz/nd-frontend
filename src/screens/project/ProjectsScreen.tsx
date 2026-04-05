@@ -1,4 +1,4 @@
-import { Badge, Card, Loading, Separator, Text } from "@/src/components";
+import { Badge, Button, Card, Loading, Separator, Text } from "@/src/components";
 import { useSessionContext } from "@/src/context";
 import { ProjectDto, ProjectKind } from "@/src/contracts/projects.contract";
 import { useProjects } from "@/src/hooks";
@@ -23,7 +23,7 @@ function statusChip(status: string) {
 export default function ProjectsScreen() {
   const router = useRouter();
   const { projects, loading, error, refresh } = useProjects();
-  const { signOut } = useSessionContext();
+  const { signOut, session } = useSessionContext();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -78,6 +78,17 @@ export default function ProjectsScreen() {
             </View>
 
             <View className="flex-row gap-2">
+              {session?.role === "ADMIN" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  onPress={() => router.push("/admin")}
+                >
+                  Admin console
+                </Button>
+              ) : null}
+
               <Pressable
                 onPress={refresh}
                 className="h-10 w-10 items-center justify-center rounded-xl border border-border/70 bg-surface/70 web:backdrop-blur-md web:shadow-black/40"

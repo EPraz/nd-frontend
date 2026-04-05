@@ -47,6 +47,11 @@ export default function Sidebar({
     }
   }, [collapsed, isDesktop]);
 
+  const visibleMainItems = items.main.filter((item) => item.enabled !== false);
+  const visibleSecondaryItems = items.secondary.filter(
+    (item) => item.enabled !== false,
+  );
+
   return (
     <SidebarContainer
       collapsed={collapsed}
@@ -78,7 +83,7 @@ export default function Sidebar({
           showsVerticalScrollIndicator={false}
         >
           <GroupSidebarMenu collapsed={collapsed}>
-            {items.main.map((it) => (
+            {visibleMainItems.map((it) => (
               <SidebarItem
                 key={it.key}
                 active={activeKey === it.key}
@@ -95,7 +100,7 @@ export default function Sidebar({
           <View className="w-full h-px bg-border" />
 
           <GroupSidebarMenu collapsed={collapsed}>
-            {items.secondary.map((it) => (
+            {visibleSecondaryItems.map((it) => (
               <SidebarItem
                 key={it.key}
                 active={activeKey === it.key}

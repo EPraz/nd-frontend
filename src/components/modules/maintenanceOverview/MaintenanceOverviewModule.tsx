@@ -1,4 +1,4 @@
-import { useDashboardScope } from "@/src/context";
+import { useDashboardScope, useProjectEntitlements } from "@/src/context";
 import { MaintenanceStatus } from "@/src/features/maintenance";
 import { formatDate } from "@/src/helpers";
 import {
@@ -8,40 +8,32 @@ import {
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, MiniStat, Text, Tone, toneClasses } from "../../ui";
+import { ModuleUnavailableState } from "../ModuleUnavailableState";
 
 const MAX_NEXT = 10;
-const COMPACT_HEIGHT_PX = 400;
 
-function maintenanceTone(s: MaintenanceStatus): Tone {
-  // ajusta a tus statuses reales
-  if (s === "OVERDUE") return "fail";
-  if (s === "IN_PROGRESS") return "warn";
-  if (s === "OPEN") return "info";
+function maintenanceTone(status: MaintenanceStatus): Tone {
+  if (status === "OVERDUE") return "fail";
+  if (status === "IN_PROGRESS") return "warn";
+  if (status === "OPEN") return "info";
   return "ok";
 }
 
-function statusRank(s: MaintenanceStatus) {
-  // menor = más importante
-  if (s === "OVERDUE") return 0;
-  if (s === "IN_PROGRESS") return 1;
-  if (s === "OPEN") return 2;
+function statusRank(status: MaintenanceStatus) {
+  if (status === "OVERDUE") return 0;
+  if (status === "IN_PROGRESS") return 1;
+  if (status === "OPEN") return 2;
   return 3;
 }
 
 export default function MaintenanceOverviewModule() {
   const { projectId } = useDashboardScope();
+  const { isModuleEnabled } = useProjectEntitlements();
   const { data, isLoading, error, refetch } = useMaintenanceOverviewData();
   const router = useRouter();
-  const [slotH, setSlotH] = useState<number | null>(null);
-
-  const compact = useMemo(() => {
-    if (slotH == null) return true;
-    return slotH <= COMPACT_HEIGHT_PX;
-  }, [slotH]);
 
   const upcoming = (data as MaintenanceOverviewData)?.upcoming as
     | {
@@ -57,15 +49,14 @@ export default function MaintenanceOverviewModule() {
     upcoming && upcoming.length > 0
       ? upcoming
           .slice()
-          .sort((a, b) => {
-            const ra = statusRank(a.status ?? "OPEN");
-            const rb = statusRank(b.status ?? "OPEN");
-            if (ra !== rb) return ra - rb;
+          .sort((left, right) => {
+            const leftRank = statusRank(left.status ?? "OPEN");
+            const rightRank = statusRank(right.status ?? "OPEN");
+            if (leftRank !== rightRank) return leftRank - rightRank;
 
-            // por fecha asc
-            const da = new Date(a.dueDate).getTime();
-            const db = new Date(b.dueDate).getTime();
-            return da - db;
+            const leftDate = new Date(left.dueDate).getTime();
+            const rightDate = new Date(right.dueDate).getTime();
+            return leftDate - rightDate;
           })
           .slice(0, MAX_NEXT)
       : [];
@@ -75,86 +66,65 @@ export default function MaintenanceOverviewModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
-      <View
-        className="flex-1 p-3 border border-border"
-        onLayout={(e) => {
-          const h = Math.round(e.nativeEvent.layout.height);
-          setSlotH((prev) => (prev === h ? prev : h)); // ✅ evita renders extra
-        }}
-      >
-        <View className="flex-1 gap-3">
-          {/* STATS */}
-          {compact ? (
-            // ✅ compacto: 2 stats, 1 fila, sin wrap
-            <View className="flex-row gap-3">
-              <MiniStat
-                tone="info"
-                className="text-info"
-                label="Open"
-                value={String(data.open)}
-              />
-              <MiniStat
-                tone="fail"
-                className="text-destructive"
-                label="Overdue"
-                value={String(data.overdue)}
-              />
-            </View>
-          ) : (
-            // ✅ normal: 4 stats
+      {!isModuleEnabled("maintenance") ? (
+        <ModuleUnavailableState label="Maintenance" />
+      ) : (
+        <View className="flex-1 border border-border p-3">
+          <View className="flex-1 gap-3">
             <View className="flex-row flex-wrap gap-3">
               <MiniStat label="Total" value={String(data.total)} />
               <MiniStat label="Open" value={String(data.open)} />
-              <MiniStat label="In Progress" value={String(data.inProgress)} />
+              <MiniStat
+                label="In Progress"
+                value={String(data.inProgress)}
+              />
               <MiniStat
                 className="text-destructive"
                 label="Overdue"
                 value={String(data.overdue)}
               />
             </View>
-          )}
 
-          {/* LIST / NEXT */}
-          {!hasList ? (
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-textMain">
-                Next Maintenance
-              </Text>
+            {!hasList ? (
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-textMain">
+                  Next Maintenance
+                </Text>
 
-              <View className="mt-2 rounded-xl border border-border bg-surface px-3 py-3">
-                {nextDue ? (
-                  <>
-                    <Text
-                      className="text-sm font-semibold text-textMain"
-                      numberOfLines={1}
-                    >
-                      {nextDue.title}
-                    </Text>
-                    <Text
-                      className="text-xs text-muted mt-0.5"
-                      numberOfLines={1}
-                    >
-                      {nextDue.assetName}
-                    </Text>
-                    <View className="flex-row items-center justify-between mt-2">
-                      <View className="flex-row items-center gap-2">
-                        <Ionicons
-                          name="time-outline"
-                          size={14}
-                          color="rgba(255,255,255,0.65)"
-                        />
-                        <Text className="text-xs text-muted">
-                          {formatDate(nextDue.dueDate)}
-                        </Text>
-                      </View>
+                <View className="mt-2 rounded-xl border border-border bg-surface px-3 py-3">
+                  {nextDue ? (
+                    <>
+                      <Text
+                        className="text-sm font-semibold text-textMain"
+                        numberOfLines={1}
+                      >
+                        {nextDue.title}
+                      </Text>
+                      <Text
+                        className="mt-0.5 text-xs text-muted"
+                        numberOfLines={1}
+                      >
+                        {nextDue.assetName}
+                      </Text>
+                      <View className="mt-2 flex-row items-center justify-between">
+                        <View className="flex-row items-center gap-2">
+                          <Ionicons
+                            name="time-outline"
+                            size={14}
+                            color="rgba(255,255,255,0.65)"
+                          />
+                          <Text className="text-xs text-muted">
+                            {formatDate(nextDue.dueDate)}
+                          </Text>
+                        </View>
 
-                      {/* si tu nextDue trae status */}
-                      {"status" in nextDue
-                        ? (() => {
+                        {"status" in nextDue ? (
+                          (() => {
                             const tone = maintenanceTone(
-                              (nextDue as any).status,
+                              (nextDue as { status: MaintenanceStatus }).status,
                             );
                             const ui = toneClasses(tone);
+
                             return (
                               <MiniPill
                                 className={cn(
@@ -175,149 +145,132 @@ export default function MaintenanceOverviewModule() {
                                       ui.text,
                                     )}
                                   >
-                                    {(nextDue as any).status}
+                                    {(nextDue as { status: MaintenanceStatus }).status}
                                   </Text>
                                 </View>
                               </MiniPill>
                             );
                           })()
-                        : null}
-                    </View>
-                  </>
-                ) : (
-                  <Text className="text-xs text-muted">
-                    No upcoming maintenance.
-                  </Text>
-                )}
+                        ) : null}
+                      </View>
+                    </>
+                  ) : (
+                    <Text className="text-xs text-muted">
+                      No upcoming maintenance.
+                    </Text>
+                  )}
+                </View>
               </View>
-            </View>
-          ) : (
-            <View className="flex-1 gap-2">
-              {/* <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-textMain">
-                  Upcoming Maintenance
-                </Text>
+            ) : (
+              <View className="flex-1 gap-2">
+                <ScrollView
+                  className="flex-1"
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    gap: 8,
+                    paddingBottom: 12,
+                  }}
+                >
+                  {list.map((item) => {
+                    const tone = maintenanceTone(item.status ?? "OPEN");
+                    const ui = toneClasses(tone);
 
-                <MiniPill className="bg-baseBg/35">
-                  <Text className="text-[10px] text-textMain/80">
-                    Top {Math.min(MAX_NEXT, upcoming?.length ?? MAX_NEXT)}
-                  </Text>
-                </MiniPill>
-              </View> */}
-
-              <ScrollView
-                className="flex-1"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  gap: 8,
-                  paddingBottom: 12,
-                }}
-              >
-                {list.map((m) => {
-                  const tone = maintenanceTone(m.status ?? "OPEN");
-                  const ui = toneClasses(tone);
-
-                  return (
-                    <Pressable
-                      key={m.id}
-                      onPress={() =>
-                        router.push({
-                          pathname: "/projects/[projectId]/maintenance",
-                          params: { projectId },
-                        })
-                      }
-                      className={cn(
-                        "border-b border-border bg-surface overflow-hidden",
-                        "web:hover:bg-muted/10",
-                      )}
-                    >
-                      <View className="flex-row items-center gap-3 px-3 py-3">
-                        {/* Icon */}
-                        <View
-                          className={cn(
-                            "h-9 w-9 items-center justify-center rounded-lg border border-border",
-                            ui.iconBg ?? "bg-baseBg/35",
-                          )}
-                        >
-                          <Ionicons
-                            name="construct-outline"
-                            size={18}
-                            color="rgba(255,255,255,0.85)"
-                          />
-                        </View>
-
-                        {/* Text */}
-                        <View className="flex-1">
-                          <Text
-                            className="text-sm font-semibold text-textMain"
-                            numberOfLines={1}
+                    return (
+                      <Pressable
+                        key={item.id}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/projects/[projectId]/maintenance",
+                            params: { projectId },
+                          })
+                        }
+                        className={cn(
+                          "overflow-hidden border-b border-border bg-surface",
+                          "web:hover:bg-muted/10",
+                        )}
+                      >
+                        <View className="flex-row items-center gap-3 px-3 py-3">
+                          <View
+                            className={cn(
+                              "h-9 w-9 items-center justify-center rounded-lg border border-border",
+                              ui.iconBg ?? "bg-baseBg/35",
+                            )}
                           >
-                            {m.title}
-                          </Text>
-                          <Text
-                            className="text-xs text-muted mt-0.5"
-                            numberOfLines={1}
-                          >
-                            {m.assetName} • {formatDate(m.dueDate)}
-                          </Text>
-                        </View>
-
-                        {/* Status chip */}
-                        <MiniPill
-                          className={cn(ui.chip, "rounded-full px-2.5 py-1")}
-                        >
-                          <View className="flex-row items-center gap-2">
-                            <View
-                              className={cn("h-2 w-2 rounded-full", ui.dot)}
+                            <Ionicons
+                              name="construct-outline"
+                              size={18}
+                              color="rgba(255,255,255,0.85)"
                             />
+                          </View>
+
+                          <View className="flex-1">
                             <Text
-                              className={cn(
-                                "text-[10px] font-semibold",
-                                ui.text,
-                              )}
+                              className="text-sm font-semibold text-textMain"
+                              numberOfLines={1}
                             >
-                              {m.status ?? "OPEN"}
+                              {item.title}
+                            </Text>
+                            <Text
+                              className="mt-0.5 text-xs text-muted"
+                              numberOfLines={1}
+                            >
+                              {item.assetName} • {formatDate(item.dueDate)}
                             </Text>
                           </View>
-                        </MiniPill>
 
-                        <Ionicons
-                          name="chevron-forward"
-                          size={18}
-                          color="rgba(255,255,255,0.35)"
-                        />
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
+                          <MiniPill
+                            className={cn(ui.chip, "rounded-full px-2.5 py-1")}
+                          >
+                            <View className="flex-row items-center gap-2">
+                              <View className={cn("h-2 w-2 rounded-full", ui.dot)} />
+                              <Text
+                                className={cn(
+                                  "text-[10px] font-semibold",
+                                  ui.text,
+                                )}
+                              >
+                                {item.status ?? "OPEN"}
+                              </Text>
+                            </View>
+                          </MiniPill>
 
-          {/* FOOTER CTA */}
-          <Button
-            variant="softAccent"
-            size="sm"
-            className="rounded-xl"
-            onPress={() =>
-              router.push({
-                pathname: "/projects/[projectId]/maintenance",
-                params: { projectId },
-              })
-            }
-            leftIcon={
-              <Ionicons
-                name="list-outline"
-                size={16}
-                color="rgba(255,255,255,0.65)"
-              />
-            }
-          >
-            View All Maintenance
-          </Button>
+                          <Ionicons
+                            name="chevron-forward"
+                            size={18}
+                            color="rgba(255,255,255,0.35)"
+                          />
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+
+            <Button
+              variant="softAccent"
+              size="sm"
+              className="rounded-xl"
+              onPress={() =>
+                router.push({
+                  pathname: "/projects/[projectId]/maintenance",
+                  params: { projectId },
+                })
+              }
+              leftIcon={
+                <Ionicons
+                  name="list-outline"
+                  size={16}
+                  color="rgba(255,255,255,0.65)"
+                />
+              }
+            >
+              View All Maintenance
+            </Button>
+          </View>
         </View>
-      </View>
+      )}
     </ModuleFrame>
   );
 }
