@@ -51,7 +51,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-4">
+    <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
       <View className="gap-1">
         <Text className="text-textMain font-semibold text-[14px]">{title}</Text>
         <Text className="text-muted text-[12px] leading-[18px]">
@@ -80,7 +80,7 @@ function SelectorOption({
       disabled={disabled}
       className={[
         "rounded-full border px-3 py-2",
-        selected ? "border-accent bg-accent/10" : "border-border bg-baseBg/25",
+        selected ? "border-accent bg-accent/10" : "border-shellLine bg-shellPanelSoft",
         disabled ? "opacity-60" : "",
       ].join(" ")}
     >
@@ -349,7 +349,7 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 flex-row items-center justify-between">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 flex-row items-center justify-between">
               <View className="gap-1">
                 <Text className="text-textMain font-semibold">Status</Text>
                 <Text className="text-muted text-[12px]">
@@ -467,7 +467,7 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 flex-row items-center justify-between">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 flex-row items-center justify-between">
               <View className="gap-1">
                 <Text className="text-textMain font-semibold">
                   Familiarization Checklist
@@ -559,7 +559,7 @@ export default function CrewFormCard({
               editable={!disabled}
             />
 
-            <View className="rounded-[18px] border border-border bg-baseBg/25 p-4 gap-2">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-2">
               <View className="flex-row items-center gap-2">
                 <Ionicons
                   name="information-circle-outline"

@@ -121,7 +121,7 @@ export function VesselShellLayout({
   if (blockedSubmodule) {
     return (
       <View className="gap-5">
-        <View className="rounded-[24px] border border-border bg-surface p-6 gap-4">
+        <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-6 web:backdrop-blur-md">
           <View className="gap-2">
             <Text className="text-xl font-semibold text-textMain">
               Submodule unavailable
@@ -227,7 +227,7 @@ export function VesselShellLayout({
                 "min-w-[180px] flex-1 rounded-[20px] border px-4 py-3",
                 isActive
                   ? "border-accent/45 bg-accent/10"
-                  : "border-border bg-baseBg/20",
+                  : "border-shellLine bg-shellPanelSoft web:backdrop-blur-md",
               ].join(" ")}
             >
               <View className="gap-2">
@@ -309,7 +309,7 @@ function getBlockedVesselSubmodule(
 
 function MetaChip({ label, value }: { label: string; value: string }) {
   return (
-    <View className="rounded-full border border-border bg-baseBg/30 px-3 py-2">
+    <View className="rounded-full border border-shellLine bg-shellPanelSoft px-3 py-2 web:backdrop-blur-md">
       <Text className="text-[11px] text-muted">{label}</Text>
       <Text className="text-[13px] font-semibold text-textMain">{value}</Text>
     </View>
@@ -326,6 +326,6 @@ function toneClasses(tone: NavTone) {
       return { bg: "bg-destructive/15", text: "text-destructive" };
     case "neutral":
     default:
-      return { bg: "bg-baseBg/45", text: "text-textMain/75" };
+      return { bg: "bg-shellSoft", text: "text-muted" };
   }
 }

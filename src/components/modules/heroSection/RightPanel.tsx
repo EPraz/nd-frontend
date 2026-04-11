@@ -18,9 +18,8 @@ const RightPanel = ({
 }) => {
   return (
     <View className="flex-1">
-      {/* Header del panel */}
       <View className="px-4 pt-4 pb-3">
-        <Text className="text-textMain/90 text-[12px] uppercase tracking-wider text-center">
+        <Text className="text-center text-[12px] uppercase tracking-wider text-muted">
           {title ?? "Overview"}
         </Text>
         <Text className="text-textMain text-[14px] font-semibold mt-1 text-center">
@@ -30,11 +29,9 @@ const RightPanel = ({
 
       <View className="h-px bg-white/10" />
 
-      {/* Body */}
       <View className="flex-1 flex-row">
-        {/* Columna A */}
         <View className="flex-1 px-4 py-4">
-          <Text className="text-textMain/60 text-[11px] uppercase tracking-wider mb-3">
+          <Text className="mb-3 text-[11px] uppercase tracking-wider text-muted">
             {leftTitle ?? "General"}
           </Text>
 
@@ -47,9 +44,8 @@ const RightPanel = ({
 
         <View className="w-px bg-white/10" />
 
-        {/* Columna B */}
         <View className="flex-1 px-4 py-4">
-          <Text className="text-textMain/60 text-[11px] uppercase tracking-wider mb-3">
+          <Text className="mb-3 text-[11px] uppercase tracking-wider text-muted">
             {rightTitle ?? "Certificates"}
           </Text>
 

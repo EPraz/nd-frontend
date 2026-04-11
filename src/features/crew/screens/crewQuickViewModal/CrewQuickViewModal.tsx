@@ -184,7 +184,7 @@ export default function CrewQuickViewModal({
           <View className="mt-2 flex-row gap-2">
             <Pressable
               onPress={handleOpenVessel}
-              className="flex-row items-center gap-2 rounded-full border border-border bg-baseBg/35 px-4 py-2 active:opacity-80"
+              className="flex-row items-center gap-2 rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2 active:opacity-80"
             >
               <Ionicons
                 name="boat-outline"
@@ -197,7 +197,7 @@ export default function CrewQuickViewModal({
         </View>
 
         <View className="w-full web:w-[360px] shrink-0">
-          <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-border bg-baseBg/35 items-center justify-center">
+          <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-shellLine bg-shellPanelSoft items-center justify-center">
             <Text className="text-textMain text-[20px] font-semibold">
               Crew Photo
             </Text>
@@ -209,7 +209,7 @@ export default function CrewQuickViewModal({
       </View>
 
       <View className="mt-2 gap-4 flex-col web:flex-row">
-        <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
+        <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
           <Text className="text-textMain font-semibold mb-3">Identity</Text>
 
           <View className="gap-4 web:flex-row">
@@ -219,7 +219,7 @@ export default function CrewQuickViewModal({
           </View>
         </View>
 
-        <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
+        <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
           <Text className="text-textMain font-semibold mb-3">Operational</Text>
 
           <View className="gap-4 web:flex-row">
@@ -233,7 +233,7 @@ export default function CrewQuickViewModal({
         </View>
       </View>
 
-      <View className="mt-4 rounded-[22px] border border-border bg-baseBg/35 p-4">
+      <View className="mt-4 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
         <Text className="text-textMain font-semibold mb-3">Contract Snapshot</Text>
         <View className="gap-4 web:flex-row">
           <Stat label="Contract" value={crew.contractType ?? "—"} />

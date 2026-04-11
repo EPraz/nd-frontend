@@ -7,9 +7,12 @@ import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Linking, Pressable, ScrollView, View } from "react-native";
 import { CrewCertificateFormCard } from "../../components";
 import {
+  applyCrewCertificateFormPatch,
+  CrewCertificateFormValues,
   crewCertificateFormFromIngestion,
   emptyCrewCertificateFormValues,
   toConfirmCrewCertificateIngestionInput,
@@ -58,13 +61,21 @@ export default function CrewCertificateIngestionReviewScreen() {
     error: certificateTypesError,
   } = useCertificateTypes(pid);
 
-  const [values, setValues] = useState(() => emptyCrewCertificateFormValues());
+  const {
+    formState: { isDirty },
+    reset,
+    setValue,
+    watch,
+  } = useForm<CrewCertificateFormValues>({
+    defaultValues: emptyCrewCertificateFormValues(),
+  });
+  const values = watch();
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ingestion) return;
-    setValues(crewCertificateFormFromIngestion(ingestion, certificateTypes));
-  }, [certificateTypes, ingestion]);
+    if (!ingestion || isDirty) return;
+    reset(crewCertificateFormFromIngestion(ingestion, certificateTypes));
+  }, [certificateTypes, ingestion, isDirty, reset]);
 
   const hasStructuredCandidate = Boolean(
     ingestion?.candidateNumber ||
@@ -144,7 +155,7 @@ export default function CrewCertificateIngestionReviewScreen() {
   }
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
@@ -245,7 +256,7 @@ export default function CrewCertificateIngestionReviewScreen() {
             ) : null}
           </View>
 
-          <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
             <Text className="text-textMain font-semibold text-[13px]">
               Extracted candidate preview
             </Text>
@@ -290,7 +301,7 @@ export default function CrewCertificateIngestionReviewScreen() {
             )}
 
             {ingestion.extractedTextPreview ? (
-              <View className="rounded-[16px] border border-border bg-baseBg/50 p-3 gap-2">
+              <View className="rounded-[16px] border border-shellLine bg-shellPanelSoft p-3 gap-2">
                 <Text className="text-muted text-[12px]">Extracted text preview</Text>
                 <Text className="text-textMain text-[12px] leading-[18px]">
                   {ingestion.extractedTextPreview}
@@ -307,7 +318,7 @@ export default function CrewCertificateIngestionReviewScreen() {
             values={values}
             onChange={(patch) => {
               setLocalError(null);
-              setValues((prev) => ({ ...prev, ...patch }));
+              applyCrewCertificateFormPatch(setValue, patch);
             }}
             localError={localError}
             apiError={confirmError}

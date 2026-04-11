@@ -34,7 +34,7 @@ export default function CrewPreviewCard({
       </CardHeaderRow>
 
       <CardContent className="px-6">
-        <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-3">
+        <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
           <RowInfo label="Name" value={values.fullName.trim() || "—"} />
           <RowInfo label="Rank" value={values.rank.trim() || "—"} />
           <RowInfo
@@ -51,7 +51,7 @@ export default function CrewPreviewCard({
           <RowInfo label="Status" value={values.status} />
         </View>
 
-        <View className="mt-4 rounded-[18px] border border-border bg-baseBg/35 p-4 gap-2">
+        <View className="mt-4 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-2">
           <Text className="text-muted text-[12px] leading-[16px]">
             Crew core now captures identity, contract, experience,
             familiarization, and medical status. Certificates and training come

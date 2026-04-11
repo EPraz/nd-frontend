@@ -9,14 +9,17 @@ import {
 import { View } from "react-native";
 import { CertificateFormValues } from "../../contracts";
 
+const EMPTY_VALUE = "-";
+
 export default function CertificatePreviewCard({
   values,
 }: {
   values: CertificateFormValues;
 }) {
-  const vesselName = values.selectedVessel?.name ?? "—";
-  const certificateTypeName = values.selectedCertificateType?.name ?? "—";
-  const certificateCode = values.selectedCertificateType?.code ?? "—";
+  const vesselName = values.selectedVessel?.name ?? EMPTY_VALUE;
+  const certificateTypeName =
+    values.selectedCertificateType?.name ?? EMPTY_VALUE;
+  const certificateCode = values.selectedCertificateType?.code ?? EMPTY_VALUE;
 
   return (
     <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
@@ -28,18 +31,24 @@ export default function CertificatePreviewCard({
       </CardHeaderRow>
 
       <CardContent className="px-6">
-        <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-3">
+        <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
           <RowInfo label="Type" value={certificateTypeName} />
           <RowInfo label="Code" value={certificateCode} />
-          <RowInfo label="Number" value={values.number.trim() || "—"} />
-          <RowInfo label="Issuer" value={values.issuer.trim() || "—"} />
-          <RowInfo label="Issue Date" value={values.issueDate.trim() || "—"} />
-          <RowInfo label="Expiry Date" value={values.expiryDate.trim() || "—"} />
-          <RowInfo label="Notes" value={values.notes.trim() || "—"} />
+          <RowInfo label="Number" value={values.number.trim() || EMPTY_VALUE} />
+          <RowInfo label="Issuer" value={values.issuer.trim() || EMPTY_VALUE} />
+          <RowInfo
+            label="Issue Date"
+            value={values.issueDate.trim() || EMPTY_VALUE}
+          />
+          <RowInfo
+            label="Expiry Date"
+            value={values.expiryDate.trim() || EMPTY_VALUE}
+          />
+          <RowInfo label="Notes" value={values.notes.trim() || EMPTY_VALUE} />
           <RowInfo label="Vessel" value={vesselName} />
         </View>
 
-        <View className="mt-4 rounded-[18px] border border-border bg-baseBg/35 p-4">
+        <View className="mt-4 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
           <Text className="text-muted text-[12px] leading-[16px]">
             Tip: choose the certificate type first so compliance rules and
             requirements map correctly.

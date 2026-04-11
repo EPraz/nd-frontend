@@ -8,10 +8,12 @@ import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Linking, Pressable, ScrollView, View } from "react-native";
 import { CertificateFormCard } from "../../components";
-import { emptyCertificateFormValues } from "../../contracts";
+import { CertificateFormValues, emptyCertificateFormValues } from "../../contracts";
 import {
+  applyCertificateFormPatch,
   certificateFormFromIngestion,
   toConfirmCertificateIngestionInput,
 } from "../../helpers";
@@ -59,17 +61,25 @@ export default function CertificateIngestionReviewScreen() {
     error: certificateTypesError,
   } = useCertificateTypes(pid);
 
-  const [values, setValues] = useState(() => emptyCertificateFormValues());
+  const {
+    formState: { isDirty },
+    reset,
+    setValue,
+    watch,
+  } = useForm<CertificateFormValues>({
+    defaultValues: emptyCertificateFormValues(),
+  });
+  const values = watch();
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ingestion) return;
-    setValues((prev) => ({
-      ...prev,
+    if (!ingestion || isDirty) return;
+    reset({
+      ...emptyCertificateFormValues(),
       ...certificateFormFromIngestion(ingestion, certificateTypes),
       selectedVessel: vessels.find((vessel) => vessel.id === aid) ?? null,
-    }));
-  }, [aid, certificateTypes, ingestion, vessels]);
+    });
+  }, [aid, certificateTypes, ingestion, isDirty, reset, vessels]);
 
   const currentVessel = useMemo<AssetDto | null>(() => {
     return vessels.find((vessel) => vessel.id === aid) ?? null;
@@ -151,7 +161,7 @@ export default function CertificateIngestionReviewScreen() {
   }
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
@@ -254,7 +264,7 @@ export default function CertificateIngestionReviewScreen() {
             ) : null}
           </View>
 
-          <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
             <Text className="text-textMain font-semibold text-[13px]">
               Extracted candidate preview
             </Text>
@@ -299,7 +309,7 @@ export default function CertificateIngestionReviewScreen() {
             )}
 
             {ingestion.extractedTextPreview ? (
-              <View className="rounded-[16px] border border-border bg-baseBg/50 p-3 gap-2">
+              <View className="rounded-[16px] border border-shellLine bg-shellPanelSoft p-3 gap-2">
                 <Text className="text-muted text-[12px]">Extracted text preview</Text>
                 <Text className="text-textMain text-[12px] leading-[18px]">
                   {ingestion.extractedTextPreview}
@@ -321,7 +331,7 @@ export default function CertificateIngestionReviewScreen() {
             values={values}
             onChange={(patch) => {
               setLocalError(null);
-              setValues((prev) => ({ ...prev, ...patch }));
+              applyCertificateFormPatch(setValue, patch);
             }}
             localError={localError}
             apiError={confirmError}

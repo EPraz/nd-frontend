@@ -86,7 +86,7 @@ function styleByType(type: ToastType) {
         icon: "notifications" as const,
         iconClass: "text-muted",
         barClass: "bg-accent",
-        borderClass: "border-border",
+        borderClass: "border-shellLine",
       };
   }
 }
@@ -170,7 +170,7 @@ function ToastCard({
           className="absolute bottom-0 left-0 right-0"
           style={{ height: 6 }}
         >
-          <View className="h-full w-full bg-border/40" />
+            <View className="h-full w-full bg-shellLine" />
           <Animated.View
             className={cn("absolute left-0 top-0 h-full w-full", s.barClass)}
             style={{

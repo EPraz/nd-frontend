@@ -50,7 +50,7 @@ export function ToolbarSelect<T extends string>(props: ToolbarSelectProps<T>) {
       <View ref={anchorRef} collapsable={false}>
         <Pressable
           onPress={handleToggle}
-          className="min-h-11 flex-row items-center justify-between gap-3 rounded-full border border-border/70 bg-surface/70 px-4 py-2"
+      className="min-h-11 flex-row items-center justify-between gap-3 rounded-full border border-shellLine bg-shellGlass px-4 py-2 web:backdrop-blur-md"
           style={props.minWidth ? { minWidth: props.minWidth } : undefined}
         >
           <Text className="text-[13px] font-medium text-textMain">
@@ -74,7 +74,7 @@ export function ToolbarSelect<T extends string>(props: ToolbarSelectProps<T>) {
         <Pressable onPress={props.onToggle} className="flex-1 bg-black/20">
           <Pressable
             onPress={() => {}}
-            className="absolute rounded-2xl border border-border bg-surface p-2 shadow-sm shadow-black/30"
+        className="absolute rounded-2xl border border-shellLine bg-shellPanel p-2 shadow-sm shadow-black/30 web:backdrop-blur-md"
             style={{
               top: (anchorRect?.y ?? 0) + (anchorRect?.height ?? 0) + 8,
               left:

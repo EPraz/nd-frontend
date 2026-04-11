@@ -27,6 +27,34 @@
 
   --popover: 0 0% 100%;
   --ring: 214 46% 46%; /* tono medio del accent */
+
+  --auth-canvas: 216 50% 97%;
+  --auth-shell: 214 48% 95% / 0.9;
+  --auth-panel: 214 42% 92%;
+  --auth-panel-soft: 214 36% 90% / 0.84;
+  --auth-field: 0 0% 100% / 0.94;
+  --auth-line: 214 28% 78%;
+  --auth-copy: 215 40% 16%;
+  --auth-copy-muted: 215 24% 34%;
+  --auth-copy-subtle: 214 18% 46%;
+  --auth-highlight: 24 92% 56%;
+  --auth-badge: 24 92% 90% / 0.92;
+  --auth-badge-border: 24 92% 56% / 0.28;
+  --auth-glow: 192 74% 48%;
+  --auth-soft: 199 44% 84%;
+
+  --shell-canvas: 216 44% 95%;
+  --shell-panel: 214 42% 92% / 0.86;
+  --shell-panel-soft: 214 36% 90% / 0.78;
+  --shell-glass: 216 42% 96% / 0.72;
+  --shell-line: 214 28% 78% / 0.78;
+  --shell-soft: 210 34% 88%;
+  --shell-chrome: 216 42% 96% / 0.8;
+  --shell-chrome-soft: 214 40% 92% / 0.78;
+  --shell-card-hover: 214 38% 89% / 0.88;
+  --shell-badge: 24 92% 90% / 0.92;
+  --shell-badge-border: 24 92% 56% / 0.28;
+  --shell-highlight: 24 92% 56%;
 }
 
 /* ---------- Dark (default) ---------- */
@@ -42,8 +70,8 @@
   /* #dde6ed */
   /* --text-main: 206 32% 90%; */
 
-  --bg-base: 222 47% 11%; /* ~#0B1220  (base) */
-  --bg-surface: 221 39% 16%; /* ~#111B2E  (surface/card) */
+  --bg-base: 223 38% 14%; /* slightly lighter workspace canvas */
+  --bg-surface: 221 30% 20%; /* clearer shared surface tone */
   --accent: 24 95% 60%; /* ~#FF8A3D  (accent) */
   --text-main: 210 40% 96%; /* ~#F3F4F6  (text) */
 
@@ -53,11 +81,39 @@
   --destructive: 0 72% 51%;
   --muted: 215 20% 65%;
 
-  --border: 220 22% 26%;
-  --input: 220 22% 26%;
+  --border: 219 24% 34%;
+  --input: 219 24% 34%;
 
-  --popover: 221 34% 18%;
+  --popover: 221 30% 21%;
   --ring: 24 95% 60%; /* mismo accent */
+
+  --auth-canvas: 223 42% 11%;
+  --auth-shell: 222 29% 17% / 0.88;
+  --auth-panel: 221 30% 20%;
+  --auth-panel-soft: 221 24% 22% / 0.8;
+  --auth-field: 222 28% 17% / 0.92;
+  --auth-line: 218 24% 34%;
+  --auth-copy: 210 38% 96%;
+  --auth-copy-muted: 214 28% 80%;
+  --auth-copy-subtle: 214 18% 63%;
+  --auth-highlight: 27 95% 61%;
+  --auth-badge: 26 88% 18% / 0.72;
+  --auth-badge-border: 26 92% 56% / 0.4;
+  --auth-glow: 191 82% 57%;
+  --auth-soft: 197 34% 26%;
+
+  --shell-canvas: 223 36% 14%;
+  --shell-panel: 222 28% 20% / 0.92;
+  --shell-panel-soft: 221 24% 22% / 0.86;
+  --shell-glass: 222 26% 20% / 0.76;
+  --shell-line: 218 24% 35% / 0.95;
+  --shell-soft: 221 22% 26%;
+  --shell-chrome: 222 27% 18% / 0.78;
+  --shell-chrome-soft: 221 25% 21% / 0.76;
+  --shell-card-hover: 221 24% 24% / 0.9;
+  --shell-badge: 26 88% 18% / 0.72;
+  --shell-badge-border: 26 92% 56% / 0.42;
+  --shell-highlight: 27 95% 61%;
 }
 
 /* ---------- Base element styling ---------- */

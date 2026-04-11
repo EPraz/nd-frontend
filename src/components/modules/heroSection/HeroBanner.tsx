@@ -37,7 +37,7 @@ export function HeroBanner({
   const webUri = isWeb ? toWebUri(source as any) : "";
 
   return (
-    <View className="w-full overflow-hidden rounded-xl border border-border">
+    <View className="w-full overflow-hidden rounded-xl border border-shellLine">
       {isWeb ? (
         <View
           className="w-full h-[375px]"
@@ -118,7 +118,7 @@ function OverlayContent(props: {
               {title}
             </Text>
 
-            <Text className="text-textMain/70 text-[13px] max-w-[520px]">
+            <Text className="max-w-[520px] text-[13px] text-muted">
               {subtitle ?? "Project overview - fleet, crew and certificates status."}
             </Text>
           </View>
@@ -129,7 +129,7 @@ function OverlayContent(props: {
             <BlurView
               intensity={42}
               tint="dark"
-              className="flex-1 overflow-hidden rounded-xl border border-white/10"
+              className="flex-1 overflow-hidden rounded-xl border border-shellLine"
             >
               <RightPanel
                 left={left}
@@ -140,7 +140,7 @@ function OverlayContent(props: {
               />
             </BlurView>
           ) : (
-            <View className="flex-1 overflow-hidden rounded-xl border border-white/10 bg-black/55">
+            <View className="flex-1 overflow-hidden rounded-xl border border-shellLine bg-black/55">
               <RightPanel
                 left={left}
                 right={right}

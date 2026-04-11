@@ -103,7 +103,7 @@ export default function FuelFormCard({
 
           <Field
             label="Note"
-            placeholder="Optional note…"
+            placeholder="Optional noteâ€¦"
             value={values.note}
             onChangeText={(v) => onChange({ note: v })}
             multiline
@@ -137,7 +137,7 @@ export default function FuelFormCard({
           />
 
           {allowEditTypes ? (
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-2">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-2">
               <Text className="text-textMain font-semibold">Types (Edit)</Text>
               <Text className="text-muted text-[12px]">
                 Wire up selects for eventType/fuelType later (MVP).

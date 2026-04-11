@@ -97,7 +97,7 @@ export default function Sidebar({
             ))}
           </GroupSidebarMenu>
 
-          <View className="w-full h-px bg-border" />
+          <View className="h-px w-full bg-shellLine" />
 
           <GroupSidebarMenu collapsed={collapsed}>
             {visibleSecondaryItems.map((it) => (

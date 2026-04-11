@@ -4,12 +4,17 @@ import { useCrewById } from "@/src/features/crew";
 import * as DocumentPicker from "expo-document-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Pressable, ScrollView, View } from "react-native";
 import {
   useCreateCrewRequirementIngestion,
   useCreateExtraCrewCertificateIngestion,
   useCrewCertificateRequirementsByCrew,
 } from "../../hooks";
+
+type CrewCertificateUploadFormValues = {
+  notes: string;
+};
 
 export default function CrewCertificateUploadScreen() {
   const router = useRouter();
@@ -45,7 +50,13 @@ export default function CrewCertificateUploadScreen() {
     return requirements.find((row) => row.id === rid) ?? null;
   }, [requirements, rid]);
 
-  const [notes, setNotes] = useState("");
+  const { handleSubmit, setValue, watch } =
+    useForm<CrewCertificateUploadFormValues>({
+      defaultValues: {
+        notes: "",
+      },
+    });
+  const notes = watch("notes");
   const [localError, setLocalError] = useState<string | null>(null);
   const [file, setFile] = useState<{
     uri: string;
@@ -81,7 +92,7 @@ export default function CrewCertificateUploadScreen() {
     });
   }
 
-  async function onUpload() {
+  async function onUpload(values: CrewCertificateUploadFormValues) {
     setLocalError(null);
 
     if (!file) {
@@ -93,11 +104,11 @@ export default function CrewCertificateUploadScreen() {
       const ingestion = isRequirementFlow
         ? await requirementUpload.submit({
             file,
-            notes: notes.trim() || undefined,
+            notes: values.notes.trim() || undefined,
           })
         : await extraUpload.submit({
             file,
-            notes: notes.trim() || undefined,
+            notes: values.notes.trim() || undefined,
             certificateTypeId: initialCertificateTypeId ?? undefined,
           });
 
@@ -119,7 +130,7 @@ export default function CrewCertificateUploadScreen() {
   if (crewLoading) return <Loading fullScreen />;
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
@@ -146,7 +157,7 @@ export default function CrewCertificateUploadScreen() {
         </View>
 
         <View className="w-full web:max-w-[980px] self-center gap-5">
-          <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
             <Text className="text-textMain font-semibold text-[13px]">
               1. Confirm crew context
             </Text>
@@ -155,7 +166,7 @@ export default function CrewCertificateUploadScreen() {
               <Text className="text-[12px] text-destructive">{crewError}</Text>
             ) : null}
 
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-1">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
               <Text className="text-[12px] text-muted">Crew member</Text>
               <Text className="text-textMain font-semibold">
                 {crew?.fullName ?? "Loading..."}
@@ -166,7 +177,7 @@ export default function CrewCertificateUploadScreen() {
             </View>
 
             {isRequirementFlow && requirement ? (
-              <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-1">
+              <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
                 <Text className="text-[12px] text-muted">Requirement</Text>
                 <Text className="text-textMain font-semibold">
                   {requirement.certificateName} ({requirement.certificateCode})
@@ -183,7 +194,7 @@ export default function CrewCertificateUploadScreen() {
             )}
           </View>
 
-          <View className="rounded-[24px] border border-border bg-surface p-5 gap-4">
+          <View className="rounded-[24px] border border-shellLine bg-shellPanel p-5 gap-4">
             <Text className="text-textMain text-[18px] font-semibold">
               2. Upload source document
             </Text>
@@ -197,7 +208,7 @@ export default function CrewCertificateUploadScreen() {
               {file ? "Change document" : "Pick PDF or image"}
             </Button>
 
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-1">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
               <Text className="text-[12px] text-muted">Selected file</Text>
               <Text className="text-textMain font-semibold">
                 {file?.name ?? "No file selected yet"}
@@ -211,7 +222,12 @@ export default function CrewCertificateUploadScreen() {
               label="Notes for reviewer (optional)"
               placeholder="Context before we create the candidate"
               value={notes}
-              onChangeText={setNotes}
+              onChangeText={(value) =>
+                setValue("notes", value, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                })
+              }
               multiline
             />
 
@@ -225,7 +241,7 @@ export default function CrewCertificateUploadScreen() {
             <Button
               variant="default"
               size="lg"
-              onPress={onUpload}
+              onPress={handleSubmit(onUpload)}
               loading={uploading}
               disabled={!file}
               className="rounded-full self-start"

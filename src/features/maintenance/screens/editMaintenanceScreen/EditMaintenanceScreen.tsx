@@ -133,7 +133,7 @@ export default function EditMaintenanceScreen() {
     return <ErrorState message="Maintenance not found." onRetry={refresh} />;
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}

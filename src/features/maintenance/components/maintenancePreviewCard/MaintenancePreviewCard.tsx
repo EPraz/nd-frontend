@@ -26,7 +26,7 @@ export default function MaintenancePreviewCard({
       </CardHeaderRow>
 
       <CardContent className="px-6">
-        <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-3">
+        <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
           <RowInfo label="Title" value={values.title.trim() || "—"} />
           <RowInfo
             label="Description"

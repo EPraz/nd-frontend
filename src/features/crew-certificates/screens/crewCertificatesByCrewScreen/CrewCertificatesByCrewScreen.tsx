@@ -8,9 +8,11 @@ import { View } from "react-native";
 import {
   CrewCertificateRequirementsTable,
   CrewCertificatesTable,
+  CrewMsmcComplianceSummary,
 } from "../../components";
 import type { CrewCertificateRequirementDto } from "../../contracts";
 import {
+  useCrewComplianceSummaryByAsset,
   useCrewCertificateRequirementsByCrew,
   useCrewCertificatesByCrew,
   useGenerateCrewCertificateRequirements,
@@ -44,6 +46,12 @@ export default function CrewCertificatesByCrewScreen() {
     refresh: refreshCertificates,
   } = useCrewCertificatesByCrew(pid, aid, cid);
   const {
+    summary: msmcSummary,
+    loading: msmcLoading,
+    error: msmcError,
+    refresh: refreshMsmc,
+  } = useCrewComplianceSummaryByAsset(pid, aid);
+  const {
     generateCrew,
     loading: generating,
     error: generationError,
@@ -73,13 +81,22 @@ export default function CrewCertificatesByCrewScreen() {
   }, [certificates.length, requirements]);
 
   async function refreshAll() {
-    await Promise.all([refreshCrew(), refreshRequirements(), refreshCertificates()]);
+    await Promise.all([
+      refreshCrew(),
+      refreshRequirements(),
+      refreshCertificates(),
+      refreshMsmc(),
+    ]);
   }
 
   async function onGenerate() {
     try {
       const result = await generateCrew();
-      await Promise.all([refreshRequirements(), refreshCertificates()]);
+      await Promise.all([
+        refreshRequirements(),
+        refreshCertificates(),
+        refreshMsmc(),
+      ]);
       show(
         `Requirements refreshed for ${result.processedCrewMembers} crew member${result.processedCrewMembers === 1 ? "" : "s"}.`,
         "success",
@@ -217,7 +234,7 @@ export default function CrewCertificatesByCrewScreen() {
         />
       </View>
 
-      <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+      <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
         <Text className="text-textMain font-semibold text-[14px]">
           Crew certificate flow
         </Text>
@@ -240,6 +257,14 @@ export default function CrewCertificatesByCrewScreen() {
           <Text className="text-[12px] text-destructive">{generationError}</Text>
         ) : null}
       </View>
+
+      <CrewMsmcComplianceSummary
+        title={`MSMC compliance - ${crew.assetName ?? crew.asset?.name ?? "assigned vessel"}`}
+        summaries={msmcSummary ? [msmcSummary] : []}
+        loading={msmcLoading}
+        error={msmcError}
+        onRetry={refreshMsmc}
+      />
 
       <CrewCertificateRequirementsTable
         projectId={pid}

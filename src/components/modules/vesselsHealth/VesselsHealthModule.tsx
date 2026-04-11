@@ -35,29 +35,27 @@ export default function VesselsHealthModule() {
       {!isModuleEnabled("vessels") ? (
         <ModuleUnavailableState label="Vessels" />
       ) : (
-      <View className="flex-1 p-3 border border-border">
+      <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanel p-3 web:backdrop-blur-md">
         <View className="flex-1 gap-3">
-          {/* Header (mini summary) */}
           <View className="flex-row items-center justify-between">
             <Text className="text-sm font-semibold text-textMain">
               Vessel Health
             </Text>
 
             <View className="flex-row items-center gap-2">
-              <MiniPill className="bg-baseBg/35">
-                <Text className="text-[10px] text-textMain/80">
+              <MiniPill className="bg-shellPanelSoft">
+                <Text className="text-[10px] text-muted">
                   {data.critical} critical
                 </Text>
               </MiniPill>
-              <MiniPill className="bg-baseBg/35">
-                <Text className="text-[10px] text-textMain/80">
+              <MiniPill className="bg-shellPanelSoft">
+                <Text className="text-[10px] text-muted">
                   {data.warning} warning
                 </Text>
               </MiniPill>
             </View>
           </View>
 
-          {/* List */}
           {top.length === 0 ? (
             <View className="flex-1">
               <Text className="text-xs text-muted">No vessels found.</Text>
@@ -82,16 +80,15 @@ export default function VesselsHealthModule() {
                       })
                     }
                     className={cn(
-                      "border-b border-border bg-surface overflow-hidden",
-                      "web:hover:bg-muted/10",
+                      "overflow-hidden border-b border-shellLine bg-shellPanel",
+                      "web:hover:bg-shellPanelSoft",
                     )}
                   >
                     <View className="flex-row items-center gap-3 px-3 py-3">
-                      {/* Icon */}
                       <View
                         className={cn(
-                          "h-9 w-9 items-center justify-center rounded-lg border border-border",
-                          ui.iconBg ?? "bg-baseBg/35",
+                          "h-9 w-9 items-center justify-center rounded-lg border border-shellLine",
+                          ui.iconBg ?? "bg-shellPanelSoft",
                         )}
                       >
                         <Ionicons
@@ -101,7 +98,6 @@ export default function VesselsHealthModule() {
                         />
                       </View>
 
-                      {/* Main */}
                       <View className="flex-1">
                         <Text
                           className="text-sm font-semibold text-textMain"
@@ -121,7 +117,6 @@ export default function VesselsHealthModule() {
                         </Text>
                       </View>
 
-                      {/* Status chip */}
                       <MiniPill
                         className={cn(ui.chip, "rounded-full px-2.5 py-1")}
                       >
@@ -149,7 +144,6 @@ export default function VesselsHealthModule() {
             </ScrollView>
           )}
 
-          {/* CTA */}
           <Button
             variant="softAccent"
             size="sm"

@@ -103,33 +103,33 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
     <>
       <SafeAreaView
         edges={["top", "left", "right"]}
-        className="border-b border-border/60 bg-baseBg"
+        className="border-b border-shellLine bg-shellChrome web:backdrop-blur-xl"
       >
         <View
           className="w-full flex-row items-center gap-4 px-4 py-3 lg:px-6"
           style={{ paddingLeft: leftInset }}
         >
           <View className="hidden lg:flex min-w-[220px] max-w-[320px] gap-1">
-            <Text className="text-[11px] uppercase tracking-[0.16em] text-textMain/45">
+            <Text className="text-[11px] uppercase tracking-[0.16em] text-muted">
               Current Workspace
             </Text>
             <View className="flex-row items-center gap-2">
               <Text className="text-[20px] font-semibold text-textMain">
                 {projectName}
               </Text>
-              <MiniPill className="rounded-full border-white/10 bg-white/5 px-2.5 py-1">
-                <Text className="text-[10px] font-semibold text-textMain/70">
+              <MiniPill className="rounded-full border border-shellLine bg-shellPanelSoft px-2.5 py-1">
+                <Text className="text-[10px] font-semibold text-muted">
                   {humanizeTechnicalLabel(projectKind)}
                 </Text>
               </MiniPill>
             </View>
-            <Text className="text-[12px] text-textMain/58">
+            <Text className="text-[12px] text-muted">
               Status: {humanizeTechnicalLabel(projectStatus)}
             </Text>
           </View>
 
           <View className="flex-1 items-stretch justify-center">
-            <View className="h-[52px] w-full max-w-[720px] flex-row items-center gap-3 self-center rounded-full border border-border/70 bg-surface/72 px-5 web:backdrop-blur-md">
+            <View className="h-[52px] w-full max-w-[720px] flex-row items-center gap-3 self-center rounded-full border border-shellLine bg-shellChromeSoft px-5 web:backdrop-blur-md">
               <Ionicons name="search" size={18} color={iconMuted} />
               <TextInput
                 disableFullscreenUI
@@ -145,7 +145,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
               <Button
                 variant="soft"
                 size="pillSm"
-                className="h-9 px-3"
+                className="h-9 border-shellLine bg-shellPanelSoft px-3"
                 onPress={handleHeaderSearch}
               >
                 Search
@@ -157,7 +157,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
             <Button
               variant="icon"
               size="icon"
-              className="lg:hidden"
+              className="border-shellLine bg-shellPanelSoft lg:hidden"
               onPress={() => handleSoon("Global search")}
             >
               <Ionicons name="search" size={16} color={iconMuted} />
@@ -166,6 +166,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
             <Button
               variant="icon"
               size="icon"
+              className="border-shellLine bg-shellPanelSoft"
               onPress={() => handleSoon("Messages")}
             >
               <Ionicons
@@ -178,6 +179,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
             <Button
               variant="icon"
               size="icon"
+              className="border-shellLine bg-shellPanelSoft"
               onPress={() => handleSoon("Notifications")}
             >
               <Ionicons
@@ -187,7 +189,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
               />
             </Button>
 
-            <View className="hidden lg:flex h-6 w-px bg-border/60 mx-1" />
+            <View className="hidden lg:flex h-6 w-px bg-shellLine mx-1" />
 
             <Pressable
               ref={profileTriggerRef}
@@ -199,7 +201,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
 
                 openProfileMenu();
               }}
-              className="hidden lg:flex flex-row items-center gap-3 rounded-full border border-border/70 bg-surface/72 px-2.5 py-1.5 web:backdrop-blur-md"
+              className="hidden lg:flex flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChromeSoft px-2.5 py-1.5 web:backdrop-blur-md"
             >
               <View className="h-9 w-9 items-center justify-center rounded-full border border-accent/30 bg-accent/18">
                 <Text className="text-[12px] font-semibold text-accent">
@@ -211,7 +213,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
                 <Text className="text-[13px] leading-4 font-semibold text-textMain">
                   {userName}
                 </Text>
-                <Text className="text-[10px] leading-4 text-textMain/80">
+                <Text className="text-[10px] leading-4 text-muted">
                   {userMeta}
                 </Text>
               </View>
@@ -244,7 +246,7 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
           />
 
           <View
-            className="absolute rounded-[24px] border border-border bg-surface p-5 gap-4 shadow-2xl"
+            className="absolute rounded-[24px] border border-shellLine bg-shellPanel p-5 gap-4 shadow-2xl"
             style={{
               top: profileAnchor?.top ?? 88,
               left:
@@ -264,14 +266,9 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
                 <Text className="text-[18px] font-semibold text-textMain">
                   {userName}
                 </Text>
-                <Text className="text-[13px] text-textMain/60">
+                <Text className="text-[13px] text-muted">
                   {session?.email ?? "No session email"}
                 </Text>
-                {/* <MiniPill className="mt-1 self-start rounded-full border-white/10 bg-white/5 px-2.5 py-1">
-                  <Text className="text-[10px] font-semibold text-textMain/80">
-                    {userMeta}
-                  </Text>
-                </MiniPill> */}
               </View>
             </View>
 
@@ -279,20 +276,20 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
               <Button
                 variant="soft"
                 size="sm"
-                className="justify-between rounded-[16px] px-4"
+                className="justify-between rounded-[16px] border-shellLine bg-shellPanelSoft px-4"
                 onPress={handleRefreshSession}
                 leftIcon={
                   <Ionicons
                     name="refresh-outline"
                     size={16}
-                    color="rgba(255,255,255,0.72)"
+                    color={iconMuted}
                   />
                 }
                 rightIcon={
                   <Ionicons
                     name="arrow-forward"
                     size={15}
-                    color="rgba(255,255,255,0.42)"
+                    color={iconMuted}
                   />
                 }
               >
@@ -308,14 +305,14 @@ export default function Header({ collapsed, handleSetCollapse }: Props) {
                   <Ionicons
                     name="log-out-outline"
                     size={16}
-                    color="rgba(255,255,255,0.72)"
+                    color={iconMuted}
                   />
                 }
                 rightIcon={
                   <Ionicons
                     name="arrow-forward"
                     size={15}
-                    color="rgba(255,255,255,0.72)"
+                    color={iconMuted}
                   />
                 }
               >

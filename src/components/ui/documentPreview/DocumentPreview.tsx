@@ -18,7 +18,7 @@ export function DocumentPreview({
 
   if (Platform.OS === "web" && isPdf) {
     return (
-      <View className="h-[420px] overflow-hidden rounded-[18px] border border-border bg-baseBg/30">
+    <View className="h-[420px] overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft">
         <iframe
           title="Document preview"
           src={attachmentUrl}
@@ -30,18 +30,18 @@ export function DocumentPreview({
 
   if (isImage) {
     return (
-      <View className="overflow-hidden rounded-[18px] border border-border bg-baseBg/30 p-2">
+    <View className="overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft p-2">
         <Image
           source={{ uri: attachmentUrl }}
           resizeMode="contain"
-          className="h-[320px] w-full rounded-[14px] bg-baseBg/50"
+          className="h-[320px] w-full rounded-[14px] bg-shellCanvas"
         />
       </View>
     );
   }
 
   return (
-    <View className="rounded-[18px] border border-border bg-baseBg/30 p-4 gap-2">
+    <View className="gap-2 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
       <Text className="text-[13px] text-textMain">
         Inline preview is available for PDFs on web and for image uploads.
       </Text>

@@ -118,7 +118,7 @@ export default function MaintenanceFormCard({
 
           {/* (Opcional) status/priority en edit */}
           {allowEditStatusPriority ? (
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-2">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-2">
               <Text className="text-textMain font-semibold">
                 Status & Priority
               </Text>
@@ -130,7 +130,7 @@ export default function MaintenanceFormCard({
               <View className="flex-row gap-2">
                 <Pressable
                   disabled={disabled}
-                  className="flex-1 flex-row items-center justify-center gap-2 rounded-full border border-border bg-baseBg/35 px-4 py-2"
+                  className="flex-1 flex-row items-center justify-center gap-2 rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2"
                 >
                   <Ionicons
                     name="flag-outline"
@@ -144,7 +144,7 @@ export default function MaintenanceFormCard({
 
                 <Pressable
                   disabled={disabled}
-                  className="flex-1 flex-row items-center justify-center gap-2 rounded-full border border-border bg-baseBg/35 px-4 py-2"
+                  className="flex-1 flex-row items-center justify-center gap-2 rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2"
                 >
                   <Ionicons
                     name="pulse-outline"

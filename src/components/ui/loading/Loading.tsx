@@ -14,13 +14,13 @@ const Loading = ({
   return (
     <View
       className={[
-        fullScreen
-          ? "flex-1 items-center justify-center bg-baseBg"
+      fullScreen
+        ? "flex-1 items-center justify-center bg-shellCanvas"
           : "items-center justify-center",
         className,
       ].join(" ")}
     >
-      <ActivityIndicator size={size} color="#FF8A3D" />
+      <ActivityIndicator size={size} color="hsl(var(--accent))" />
     </View>
   );
 };

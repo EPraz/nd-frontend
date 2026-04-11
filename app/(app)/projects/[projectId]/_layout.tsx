@@ -1,4 +1,4 @@
-import { Header, Loading, Sidebar, Text } from "@/src/components";
+import { Header, Loading, Sidebar, Text, WorkspaceBackdrop } from "@/src/components";
 import { sidebarItems, SidebarKey, sidebarRoutes } from "@/src/constants";
 import {
   ProjectDataProvider,
@@ -40,13 +40,19 @@ export default function ProjectShellLayout() {
   const handleSetCollapse = (value: boolean) => setCollapsed(value);
 
   if (!pid || loading) {
-    return <Loading fullScreen />;
+    return (
+      <View className="relative flex-1 items-center justify-center bg-shellCanvas">
+        <WorkspaceBackdrop />
+        <Loading fullScreen className="bg-transparent" />
+      </View>
+    );
   }
 
   if (error || !project) {
     return (
-      <View className="flex-1 bg-baseBg px-6 pt-10 gap-3">
-        <Text className="text-2xl font-semibold tracking-tight text-surface">
+      <View className="flex-1 bg-shellCanvas relative px-6 pt-10 gap-3">
+        <WorkspaceBackdrop />
+        <Text className="text-2xl font-semibold tracking-tight text-textMain">
           Project
         </Text>
         <Text className="text-destructive">
@@ -55,16 +61,16 @@ export default function ProjectShellLayout() {
 
         <Pressable
           onPress={refresh}
-          className="h-11 items-center justify-center rounded-xl bg-surface"
+          className="h-11 items-center justify-center rounded-xl border border-shellLine bg-shellPanel"
         >
           <Text className="font-semibold">Reintentar</Text>
         </Pressable>
 
         <Pressable
           onPress={() => router.replace("/projects")}
-          className="h-11 items-center justify-center rounded-xl border border-border/70 bg-surface/70"
+          className="h-11 items-center justify-center rounded-xl border border-shellLine bg-shellPanelSoft"
         >
-          <Text className="font-semibold text-surface">Volver a Projects</Text>
+          <Text className="font-semibold text-textMain">Volver a Projects</Text>
         </Pressable>
       </View>
     );
@@ -151,7 +157,8 @@ function ProjectShellScaffold({
   };
 
   return (
-    <View className="flex-1 bg-baseBg relative">
+    <View className="flex-1 bg-shellCanvas relative">
+      <WorkspaceBackdrop />
       {showOverlay && (
         <Pressable
           onPress={() => handleSetCollapse(true)}
@@ -175,7 +182,7 @@ function ProjectShellScaffold({
         handleSetCollapse={handleSetCollapse}
       />
 
-      <View className="flex-1 flex-row bg-baseBg">
+      <View className="flex-1 flex-row">
         <ScrollView
           className="flex-1"
           contentContainerClassName="p-4 gap-4 web:p-6 web:lg:ml-[92px]"
@@ -183,7 +190,7 @@ function ProjectShellScaffold({
           <View className="flex-row justify-start">
             <Pressable
               onPress={() => router.push('/projects')}
-              className="h-10 flex-row items-center gap-2 rounded-full border border-border/80 bg-surface/75 px-4"
+              className="h-10 flex-row items-center gap-2 rounded-full border border-shellLine bg-shellPanelSoft px-4 web:backdrop-blur-md"
             >
               <Text className="text-sm font-semibold text-textMain">
                 Back to workspaces
@@ -192,7 +199,7 @@ function ProjectShellScaffold({
           </View>
 
           {guardedModule && entitlementsLoading ? (
-            <Loading fullScreen />
+            <Loading fullScreen className="bg-transparent" />
           ) : blockedModule ? (
             <BlockedModuleState
               label={blockedModule}
@@ -221,7 +228,7 @@ function BlockedModuleState({
   onOpenSettings: () => void;
 }) {
   return (
-    <View className="rounded-[24px] border border-border bg-surface p-6 gap-4">
+    <View className="rounded-[24px] border border-shellLine bg-shellPanel p-6 gap-4">
       <View className="gap-2">
         <Text className="text-xl font-semibold text-textMain">
           Module unavailable
@@ -235,7 +242,7 @@ function BlockedModuleState({
       <View className="flex-row flex-wrap gap-3">
         <Pressable
           onPress={onOpenDashboard}
-          className="h-11 items-center justify-center rounded-xl border border-border bg-baseBg px-4"
+          className="h-11 items-center justify-center rounded-xl border border-shellLine bg-shellPanelSoft px-4"
         >
           <Text className="font-semibold text-textMain">Go to dashboard</Text>
         </Pressable>

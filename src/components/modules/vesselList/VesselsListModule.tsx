@@ -48,10 +48,8 @@ export default function VesselsListModule() {
       {!isModuleEnabled("vessels") ? (
         <ModuleUnavailableState label="Vessels" />
       ) : (
-      <View className="flex-1 p-3 border-border border">
-        {/* Root layout: lista arriba, footer abajo */}
+      <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanel p-3 web:backdrop-blur-md">
         <View className="flex-1 gap-3">
-          {/* LIST */}
           {data.length === 0 ? (
             <View className="flex-1">
               <Text className="text-xs text-muted">No Vessels.</Text>
@@ -82,11 +80,10 @@ export default function VesselsListModule() {
                       })
                     }
                     className={cn(
-                      "flex-row items-center justify-between border-b border-border bg-surface px-3 py-3",
-                      "web:hover:bg-muted/10",
+                      "flex-row items-center justify-between border-b border-shellLine bg-shellPanel px-3 py-3",
+                      "web:hover:bg-shellPanelSoft",
                     )}
                   >
-                    {/* Left */}
                     <View className="flex-1 pr-3">
                       <Text
                         className="text-sm font-semibold text-textMain"
@@ -106,7 +103,6 @@ export default function VesselsListModule() {
                       </View>
                     </View>
 
-                    {/* Right */}
                     <View className="items-end gap-2">
                       <MiniPill
                         className={cn(
@@ -179,7 +175,6 @@ export default function VesselsListModule() {
             </ScrollView>
           )}
 
-          {/* FOOTER (siempre abajo, no scrollea) */}
           <Button
             variant="softAccent"
             size="sm"

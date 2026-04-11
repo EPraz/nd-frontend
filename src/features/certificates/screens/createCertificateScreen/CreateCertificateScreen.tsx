@@ -4,13 +4,20 @@ import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 import { useVessels } from "@/src/features/vessels/hooks/useVessels";
 import { useCreateCertificate } from "@/src/hooks";
 import { CertificateFormCard } from "../../components";
-import { emptyCertificateFormValues } from "../../contracts";
-import { toCreateCertificateInput } from "../../helpers";
+import {
+  CertificateFormValues,
+  emptyCertificateFormValues,
+} from "../../contracts";
+import {
+  applyCertificateFormPatch,
+  toCreateCertificateInput,
+} from "../../helpers";
 
 export default function CreateCertificateScreen() {
   const router = useRouter();
@@ -36,16 +43,21 @@ export default function CreateCertificateScreen() {
     error: certificateTypesError,
   } = useCertificateTypes(pid);
 
-  const [values, setValues] = useState(() => emptyCertificateFormValues());
+  const { setValue, watch } = useForm<CertificateFormValues>({
+    defaultValues: emptyCertificateFormValues(),
+  });
+  const values = watch();
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!fixedAssetId) return;
-    setValues((prev) => {
-      if (prev.assetId === fixedAssetId) return prev;
-      return { ...prev, assetId: fixedAssetId };
+    if (values.assetId === fixedAssetId) return;
+
+    setValue("assetId", fixedAssetId, {
+      shouldDirty: false,
+      shouldTouch: false,
     });
-  }, [fixedAssetId]);
+  }, [fixedAssetId, setValue, values.assetId]);
 
   const effectiveAssetId = values.assetId ?? values.selectedVessel?.id ?? null;
 
@@ -62,9 +74,9 @@ export default function CreateCertificateScreen() {
     return true;
   }, [loading, effectiveAssetId, values.certificateTypeId]);
 
-  function patch(patchValues: Partial<typeof values>) {
+  function patch(patchValues: Partial<CertificateFormValues>) {
     setLocalError(null);
-    setValues((prev) => ({ ...prev, ...patchValues }));
+    applyCertificateFormPatch(setValue, patchValues);
   }
 
   function goBackOrTo(fallbackHref: string) {
@@ -110,7 +122,7 @@ export default function CreateCertificateScreen() {
   }
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
@@ -177,7 +189,7 @@ export default function CreateCertificateScreen() {
         </View>
 
         <View className="w-full web:max-w-[980px] self-center gap-5">
-          <View className="rounded-[20px] border border-border bg-baseBg/35 p-4">
+          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
             <Text className="text-textMain font-semibold text-[13px]">
               Secondary workflow
             </Text>

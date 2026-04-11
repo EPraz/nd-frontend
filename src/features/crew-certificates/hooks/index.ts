@@ -7,4 +7,5 @@ export * from "./useCrewCertificateRequirementsByProject";
 export * from "./useCrewCertificatesByCrew";
 export * from "./useCrewCertificatesById";
 export * from "./useCrewCertificateWorkflowActions";
+export * from "./useCrewComplianceSummary";
 export * from "./useGenerateCrewCertificateRequirements";

@@ -159,7 +159,7 @@ export default function CertificateViewScreen() {
 
   return (
     <>
-      <View className="flex-1 bg-baseBg p-4 web:p-6 gap-5">
+      <View className="flex-1 bg-shellCanvas p-4 web:p-6 gap-5">
         <View className="gap-3">
           <Pressable
             onPress={goBack}
@@ -309,14 +309,14 @@ export default function CertificateViewScreen() {
                     </View>
                   </View>
 
-                  <View className="rounded-[18px] border border-border bg-baseBg/40 p-4">
+                  <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
                     <Text className="text-[12px] text-muted">Notes</Text>
                     <Text className="text-[13px] text-textMain mt-1">
                       {certificate.notes ?? "-"}
                     </Text>
                   </View>
 
-                  <View className="rounded-[18px] border border-border bg-baseBg/40 p-4 gap-3">
+                  <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
                     <Text className="text-[12px] text-muted">Attachments</Text>
                     {attachments.length === 0 ? (
                       <Text className="text-[13px] text-textMain">
@@ -326,7 +326,7 @@ export default function CertificateViewScreen() {
                       attachments.map((attachment) => (
                         <View
                           key={attachment.id}
-                          className="rounded-[16px] border border-border bg-baseBg/30 p-3 gap-2"
+                          className="rounded-[16px] border border-shellLine bg-shellPanelSoft p-3 gap-2"
                         >
                           <Text className="text-textMain font-semibold text-[13px]">
                             {attachment.fileName}

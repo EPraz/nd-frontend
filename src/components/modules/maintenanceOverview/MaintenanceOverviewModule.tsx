@@ -69,7 +69,7 @@ export default function MaintenanceOverviewModule() {
       {!isModuleEnabled("maintenance") ? (
         <ModuleUnavailableState label="Maintenance" />
       ) : (
-        <View className="flex-1 border border-border p-3">
+        <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanel p-3 web:backdrop-blur-md">
           <View className="flex-1 gap-3">
             <View className="flex-row flex-wrap gap-3">
               <MiniStat label="Total" value={String(data.total)} />
@@ -91,7 +91,7 @@ export default function MaintenanceOverviewModule() {
                   Next Maintenance
                 </Text>
 
-                <View className="mt-2 rounded-xl border border-border bg-surface px-3 py-3">
+                <View className="mt-2 rounded-xl border border-shellLine bg-shellPanelSoft px-3 py-3 web:backdrop-blur-md">
                   {nextDue ? (
                     <>
                       <Text
@@ -186,15 +186,15 @@ export default function MaintenanceOverviewModule() {
                           })
                         }
                         className={cn(
-                          "overflow-hidden border-b border-border bg-surface",
-                          "web:hover:bg-muted/10",
+                          "overflow-hidden border-b border-shellLine bg-shellPanel",
+                          "web:hover:bg-shellPanelSoft",
                         )}
                       >
                         <View className="flex-row items-center gap-3 px-3 py-3">
                           <View
                             className={cn(
-                              "h-9 w-9 items-center justify-center rounded-lg border border-border",
-                              ui.iconBg ?? "bg-baseBg/35",
+                              "h-9 w-9 items-center justify-center rounded-lg border border-shellLine",
+                              ui.iconBg ?? "bg-shellPanelSoft",
                             )}
                           >
                             <Ionicons

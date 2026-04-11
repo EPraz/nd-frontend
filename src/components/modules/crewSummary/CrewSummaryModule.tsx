@@ -28,69 +28,14 @@ export default function CrewSummaryModule() {
       {!isModuleEnabled("crew") ? (
         <ModuleUnavailableState label="Crew" />
       ) : (
-      <View className="flex-1 p-3 border border-border">
+      <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanel p-3 web:backdrop-blur-md">
         <View className="flex-1 gap-3">
-          {/* STATS */}
-          {/* {compact ? (
-            <View className="flex-row gap-3">
-              <MiniStat
-                tone="info"
-                className="rounded-xl text-info"
-                label="Active"
-                value={String(data.active)}
-              />
-              <MiniStat
-                tone="fail"
-                className="text-destructive rounded-xl"
-                label="No Crew"
-                value={String(data.vesselsWithoutActiveCrew)}
-              />
-            </View>
-          ) : (
-            <View className="flex-row flex-wrap gap-3">
-              <MiniStat
-                className="rounded-xl"
-                label="Total"
-                value={String(data.total)}
-              />
-              <MiniStat
-                className="rounded-xl"
-                label="Active"
-                value={String(data.active)}
-              />
-              <MiniStat
-                className="rounded-xl"
-                label="Inactive"
-                value={String(data.inactive)}
-              />
-              <MiniStat
-                className="text-destructive rounded-xl"
-                label="Vessels w/o Crew"
-                value={String(data.vesselsWithoutActiveCrew)}
-              />
-            </View>
-          )} */}
-
-          {/* LIST */}
           {!hasList ? (
             <View className="flex-1">
               <Text className="text-xs text-muted">No crew assigned.</Text>
             </View>
           ) : (
             <View className="flex-1 gap-2">
-              {/* <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-textMain">
-                  Crew by Vessel
-                </Text>
-
-                <MiniPill className="bg-baseBg/35">
-                  <Text className="text-[10px] text-textMain/80">
-                    Top {Math.min(MAX_VESSELS, data.crewByVessel.length)}{" "}
-                    Vessels
-                  </Text>
-                </MiniPill>
-              </View> */}
-
               <ScrollView
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
@@ -111,24 +56,22 @@ export default function CrewSummaryModule() {
                           pathname: "/projects/[projectId]/vessels/[assetId]",
                           params: { projectId, assetId: v.assetId },
                         })
-                      }
-                      className={cn(
-                        "border-b border-border bg-surface overflow-hidden",
-                        "web:hover:bg-muted/10",
-                      )}
-                    >
-                      <View className="flex-row items-center gap-3 px-3 py-3">
-                        {/* Icon */}
-                        <View className="h-9 w-9 items-center justify-center rounded-lg border border-border bg-baseBg/35">
-                          <Ionicons
-                            name="people-outline"
-                            size={18}
+                    }
+                    className={cn(
+                      "overflow-hidden border-b border-shellLine bg-shellPanel",
+                      "web:hover:bg-shellPanelSoft",
+                    )}
+                  >
+                    <View className="flex-row items-center gap-3 px-3 py-3">
+                      <View className="h-9 w-9 items-center justify-center rounded-lg border border-shellLine bg-shellPanelSoft">
+                        <Ionicons
+                          name="people-outline"
+                          size={18}
                             color="rgba(255,255,255,0.85)"
                           />
                         </View>
 
-                        {/* Text */}
-                        <View className="flex-1">
+                      <View className="flex-1">
                           <Text
                             className="text-sm font-semibold text-textMain"
                             numberOfLines={1}
@@ -143,10 +86,9 @@ export default function CrewSummaryModule() {
                           </Text>
                         </View>
 
-                        {/* Count pill */}
-                        <MiniPill
-                          className={cn(
-                            "rounded-full px-2.5 py-1",
+                      <MiniPill
+                        className={cn(
+                          "rounded-full px-2.5 py-1",
                             isZero
                               ? "bg-destructive/12 border-destructive/30"
                               : "bg-success/12 border-success/30",
@@ -183,7 +125,6 @@ export default function CrewSummaryModule() {
             </View>
           )}
 
-          {/* CTA (fijo abajo) */}
           <Button
             variant="softAccent"
             size="sm"

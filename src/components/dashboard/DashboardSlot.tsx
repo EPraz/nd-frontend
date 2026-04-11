@@ -54,7 +54,7 @@ export function DashboardSlot(props: {
           )}
         </View>
       ) : (
-        <View className="rounded-md border border-border p-3">
+        <View className="rounded-md border border-shellLine p-3">
           {children ?? <Text className="text-muted text-sm">No content</Text>}
         </View>
       )} */}

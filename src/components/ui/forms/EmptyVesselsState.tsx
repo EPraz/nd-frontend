@@ -8,7 +8,7 @@ export function EmptyVesselsState({
   onCreateVessel: () => void;
 }) {
   return (
-    <View className="rounded-3xl border border-border/70 bg-surface/70 p-5 gap-4">
+    <View className="gap-4 rounded-3xl border border-shellLine bg-shellPanelSoft p-5 web:backdrop-blur-md">
       <View className="flex-row items-center gap-3">
         <View className="h-10 w-10 rounded-2xl bg-accent/15 items-center justify-center">
           <Ionicons name="boat-outline" size={18} color="hsl(var(--accent))" />

@@ -2,7 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "jsxImportSource": "nativewind",
-    "types": ["nativewind/types"],
+    "types": ["nativewind/types", "jest"],
     "baseUrl": ".",
     "strict": true,
     "paths": {

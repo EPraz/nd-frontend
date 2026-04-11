@@ -6,7 +6,7 @@ import { TextClassContext } from "../text/Text";
 
 const badgeVariants = cva(
   cn(
-    "border-border group shrink-0 flex-row items-center justify-center gap-1 overflow-hidden rounded-full border px-2 py-0.5",
+    "group shrink-0 flex-row items-center justify-center gap-1 overflow-hidden rounded-full border border-shellLine px-2 py-0.5",
     Platform.select({
       web: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive w-fit whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] [&>svg]:pointer-events-none [&>svg]:size-3",
     }),
@@ -19,8 +19,8 @@ const badgeVariants = cva(
           Platform.select({ web: "[a&]:hover:bg-accent/90" }),
         ),
         secondary: cn(
-          "bg-surface/70 border-transparent",
-          Platform.select({ web: "[a&]:hover:bg-surface/90" }),
+          "bg-shellPanelSoft border-transparent",
+          Platform.select({ web: "[a&]:hover:bg-shellSoft" }),
         ),
         destructive: cn(
           "bg-destructive border-transparent",

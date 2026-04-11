@@ -11,13 +11,19 @@ import { useToast } from "@/src/context";
 import { useVessels } from "@/src/features/vessels";
 import * as DocumentPicker from "expo-document-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Pressable, ScrollView, View } from "react-native";
 import {
   useCertificateRequirementsByAsset,
   useCreateExtraCertificateIngestion,
   useCreateRequirementIngestion,
 } from "../../hooks";
+
+type CertificateUploadFormValues = {
+  selectedVesselId: string | null;
+  notes: string;
+};
 
 export default function CertificateUploadScreen() {
   const router = useRouter();
@@ -46,10 +52,14 @@ export default function CertificateUploadScreen() {
     return requirements.find((row) => row.id === rid) ?? null;
   }, [requirements, rid]);
 
-  const [selectedVesselId, setSelectedVesselId] = useState<string | null>(
-    fixedAssetId,
-  );
-  const [notes, setNotes] = useState("");
+  const { setValue, watch } = useForm<CertificateUploadFormValues>({
+    defaultValues: {
+      selectedVesselId: fixedAssetId,
+      notes: "",
+    },
+  });
+  const selectedVesselId = watch("selectedVesselId");
+  const notes = watch("notes");
   const [localError, setLocalError] = useState<string | null>(null);
   const [file, setFile] = useState<{
     uri: string;
@@ -58,8 +68,21 @@ export default function CertificateUploadScreen() {
     file?: unknown;
   } | null>(null);
 
+  useEffect(() => {
+    if (!fixedAssetId) return;
+    if (selectedVesselId === fixedAssetId) return;
+
+    setValue("selectedVesselId", fixedAssetId, {
+      shouldDirty: false,
+      shouldTouch: false,
+    });
+  }, [fixedAssetId, selectedVesselId, setValue]);
+
   const selectedVessel = useMemo(
-    () => vessels.find((vessel) => vessel.id === (selectedVesselId ?? fixedAssetId)) ?? null,
+    () =>
+      vessels.find(
+        (vessel) => vessel.id === (selectedVesselId ?? fixedAssetId),
+      ) ?? null,
     [fixedAssetId, selectedVesselId, vessels],
   );
 
@@ -70,7 +93,10 @@ export default function CertificateUploadScreen() {
     fixedAssetId ?? "",
     rid ?? "",
   );
-  const extraUpload = useCreateExtraCertificateIngestion(pid, effectiveAssetId ?? "");
+  const extraUpload = useCreateExtraCertificateIngestion(
+    pid,
+    effectiveAssetId ?? "",
+  );
 
   const uploading =
     requirementUpload.loading || extraUpload.loading || requirementsLoading;
@@ -120,7 +146,10 @@ export default function CertificateUploadScreen() {
             notes: notes.trim() || undefined,
           });
 
-      show("Document uploaded. Review the extracted candidate next.", "success");
+      show(
+        "Document uploaded. Review the extracted candidate next.",
+        "success",
+      );
       router.replace({
         pathname: "/projects/[projectId]/certificates/review",
         params: {
@@ -135,7 +164,7 @@ export default function CertificateUploadScreen() {
   }
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
@@ -152,7 +181,9 @@ export default function CertificateUploadScreen() {
 
           <View className="gap-1">
             <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
-              {isRequirementFlow ? "Upload Requirement Document" : "Add Extra Certificate"}
+              {isRequirementFlow
+                ? "Upload Requirement Document"
+                : "Add Extra Certificate"}
             </Text>
             <Text className="text-muted text-[14px]">
               The file uploads first so the backend can extract a candidate. The
@@ -162,7 +193,7 @@ export default function CertificateUploadScreen() {
         </View>
 
         <View className="w-full web:max-w-[980px] self-center gap-5">
-          <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
             <Text className="text-textMain font-semibold text-[13px]">
               1. Choose the vessel context
             </Text>
@@ -175,24 +206,33 @@ export default function CertificateUploadScreen() {
               )
             ) : vessels.length === 0 && !vesselsLoading ? (
               <EmptyVesselsState
-                onCreateVessel={() => router.push(`/projects/${pid}/vessels/new`)}
+                onCreateVessel={() =>
+                  router.push(`/projects/${pid}/vessels/new`)
+                }
               />
             ) : (
               <View className="gap-2">
                 <SearchableVesselSelect
                   vessels={vessels}
                   value={selectedVessel}
-                  onChange={(vessel) => setSelectedVesselId(vessel?.id ?? null)}
+                  onChange={(vessel) =>
+                    setValue("selectedVesselId", vessel?.id ?? null, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    })
+                  }
                   disabled={vesselsLoading}
                 />
                 {vesselsError ? (
-                  <Text className="text-[12px] text-destructive">{vesselsError}</Text>
+                  <Text className="text-[12px] text-destructive">
+                    {vesselsError}
+                  </Text>
                 ) : null}
               </View>
             )}
 
             {isRequirementFlow && requirement ? (
-              <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-1">
+              <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
                 <Text className="text-[12px] text-muted">Requirement</Text>
                 <Text className="text-textMain font-semibold">
                   {requirement.certificateName} ({requirement.certificateCode})
@@ -209,7 +249,7 @@ export default function CertificateUploadScreen() {
             )}
           </View>
 
-          <View className="rounded-[24px] border border-border bg-surface p-5 gap-4">
+          <View className="rounded-[24px] border border-shellLine bg-shellPanel p-5 gap-4">
             <Text className="text-textMain text-[18px] font-semibold">
               2. Upload source document
             </Text>
@@ -223,7 +263,7 @@ export default function CertificateUploadScreen() {
               {file ? "Change document" : "Pick PDF or image"}
             </Button>
 
-            <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-1">
+            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
               <Text className="text-[12px] text-muted">Selected file</Text>
               <Text className="text-textMain font-semibold">
                 {file?.name ?? "No file selected yet"}
@@ -237,7 +277,12 @@ export default function CertificateUploadScreen() {
               label="Notes for reviewer (optional)"
               placeholder="Context before we create the candidate"
               value={notes}
-              onChangeText={setNotes}
+              onChangeText={(value) =>
+                setValue("notes", value, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                })
+              }
               multiline
             />
 
@@ -245,7 +290,9 @@ export default function CertificateUploadScreen() {
               <Text className="text-[12px] text-destructive">{localError}</Text>
             ) : null}
             {uploadError ? (
-              <Text className="text-[12px] text-destructive">{uploadError}</Text>
+              <Text className="text-[12px] text-destructive">
+                {uploadError}
+              </Text>
             ) : null}
 
             <Button

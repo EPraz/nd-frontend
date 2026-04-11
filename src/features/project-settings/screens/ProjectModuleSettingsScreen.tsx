@@ -47,7 +47,7 @@ export default function ProjectModuleSettingsScreen() {
           title="Project Settings"
           subTitle="Only admins can configure which modules and submodules are available for this project."
         />
-        <Card className="bg-surface border-border">
+        <Card className="border-shellLine bg-shellPanel">
           <CardContent className="py-6">
             <Text className="text-textMain text-base font-semibold">
               Access restricted
@@ -147,7 +147,7 @@ export default function ProjectModuleSettingsScreen() {
         }
       />
 
-      <Card className="border-border bg-surface">
+      <Card className="border-shellLine bg-shellPanel">
         <CardHeader className="gap-2">
           <Text className="text-[11px] uppercase tracking-[0.24em] text-muted">
             Module Access
@@ -157,8 +157,9 @@ export default function ProjectModuleSettingsScreen() {
           </CardTitle>
           <CardDescription>
             This settings page controls what appears in the project sidebar and
-            in vessel-level navigation. Core colors stay mostly in base/surface,
-            while accent is reserved for active decisions and save actions.
+            in vessel-level navigation. Core surfaces now follow the shared
+            workspace shell, while accent is reserved for active decisions and
+            save actions.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -175,7 +176,7 @@ export default function ProjectModuleSettingsScreen() {
       ) : null}
 
       {loading && draft.length === 0 ? (
-        <Card className="border-border bg-surface">
+        <Card className="border-shellLine bg-shellPanel">
           <CardContent className="py-6">
             <Text className="text-muted">Loading module settings...</Text>
           </CardContent>
@@ -184,7 +185,7 @@ export default function ProjectModuleSettingsScreen() {
 
       <View className="gap-4">
         {draft.map((module) => (
-          <Card key={module.key} className="border-border bg-surface">
+          <Card key={module.key} className="border-shellLine bg-shellPanel">
             <CardHeaderRow className="items-start">
               <View className="min-w-[240px] flex-1 gap-2">
                 <View className="flex-row items-center gap-3">
@@ -193,7 +194,7 @@ export default function ProjectModuleSettingsScreen() {
                       "h-10 w-10 items-center justify-center rounded-2xl border",
                       module.enabled
                         ? "border-accent/35 bg-accent/10"
-                        : "border-border bg-baseBg/35",
+                        : "border-shellLine bg-shellPanelSoft",
                     ].join(" ")}
                   >
                     <Feather
@@ -220,7 +221,7 @@ export default function ProjectModuleSettingsScreen() {
             </CardHeaderRow>
 
             <CardContent className="gap-3">
-              <View className="rounded-[20px] border border-border bg-baseBg/35 p-4">
+              <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
                 <Text className="text-[11px] uppercase tracking-[0.22em] text-muted">
                   Submodules
                 </Text>
@@ -229,7 +230,7 @@ export default function ProjectModuleSettingsScreen() {
                   {module.submodules.map((submodule) => (
                     <View
                       key={`${module.key}-${submodule.key}`}
-                      className="flex-row items-center justify-between gap-4 rounded-2xl border border-border/80 bg-surface/70 px-4 py-3"
+                      className="flex-row items-center justify-between gap-4 rounded-2xl border border-shellLine bg-shellPanel px-4 py-3"
                     >
                       <View className="min-w-[240px] flex-1 gap-1">
                         <Text className="font-semibold text-textMain">
@@ -279,7 +280,7 @@ function SettingsToggle({
         "min-w-[124px] flex-row items-center justify-between rounded-full border px-3 py-2",
         value
           ? "border-accent/40 bg-accent/12"
-          : "border-border bg-baseBg/35",
+          : "border-shellLine bg-shellPanelSoft",
         disabled ? "opacity-45" : "opacity-100",
       ].join(" ")}
     >
@@ -295,13 +296,13 @@ function SettingsToggle({
       <View
         className={[
           "h-6 w-11 rounded-full px-1",
-          value ? "bg-accent/25" : "bg-baseBg/70",
+          value ? "bg-accent/25" : "bg-shellGlass",
         ].join(" ")}
       >
         <View
           className={[
             "mt-1 h-4 w-4 rounded-full",
-            value ? "ml-auto bg-accent" : "ml-0 bg-border",
+            value ? "ml-auto bg-accent" : "ml-0 bg-shellLine",
           ].join(" ")}
         />
       </View>

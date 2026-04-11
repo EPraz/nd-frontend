@@ -22,7 +22,7 @@ function toneBg(tone?: MiniStatProps["tone"]) {
     case "fail":
       return "bg-destructive/10 border-destructive/25";
     default:
-      return "bg-surface border-border";
+      return "bg-shellPanel border-shellLine";
   }
 }
 
@@ -37,7 +37,7 @@ export function MiniStat({
   return (
     <View
       className={cn(
-        "flex-1 min-w-[140px] rounded-xl border p-3",
+        "flex-1 min-w-[140px] rounded-xl border p-3 web:backdrop-blur-md",
         toneBg(tone),
         className,
       )}
@@ -68,7 +68,7 @@ export function MiniStat({
 export function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-1 gap-1">
-      <Text className="text-textMain/50 text-[12px]">{label}</Text>
+      <Text className="text-[12px] text-muted">{label}</Text>
       <Text className="text-textMain text-[18px] font-semibold">{value}</Text>
     </View>
   );
@@ -83,7 +83,7 @@ export function StatSlot({
 }) {
   return (
     <View className="flex-1 gap-1">
-      <Text className="text-textMain/50 text-[12px]">{label}</Text>
+      <Text className="text-[12px] text-muted">{label}</Text>
       <View className="min-h-[26px] justify-center">{value}</View>
     </View>
   );

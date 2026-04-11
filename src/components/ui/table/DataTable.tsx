@@ -43,7 +43,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
   const isMobile = width < 768;
 
   return (
-    <View className="flex p-5 gap-5 rounded-[20px] bg-surface border border-border">
+    <View className="flex gap-5 rounded-[20px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
       <View className="flex-row items-center justify-between gap-10">
         <View className="flex-1 gap-1">
           <Text className="text-[20px] leading-[130%] font-semibold text-textMain">
@@ -68,7 +68,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
         {props.isLoading ? (
           <Text className="text-sm text-muted">Loading…</Text>
         ) : props.error ? (
-          <View className="gap-3 p-4 rounded-xl bg-muted/20 border border-border">
+          <View className="gap-3 rounded-xl border border-shellLine bg-shellPanelSoft p-4">
             <Text className="text-sm text-destructive">{props.error}</Text>
 
             <Pressable
@@ -79,7 +79,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
             </Pressable>
           </View>
         ) : props.data.length === 0 ? (
-          <View className="p-4 rounded-xl bg-muted/20 border border-border">
+          <View className="rounded-xl border border-shellLine bg-shellPanelSoft p-4">
             <Text className="text-sm text-muted">
               {props.emptyText ?? "No data found."}
             </Text>
@@ -123,7 +123,7 @@ function TableList<Row>(props: DataTableProps<Row>) {
 function Header<Row>(props: { columns: Column<Row>[] }) {
   return (
     <TextClassContext.Provider value="text-muted text-[12px] tracking-wide uppercase">
-      <View className="flex-row items-center w-full h-[48px] rounded-tr-2xl rounded-tl-2xl bg-baseBg border-b border-border">
+      <View className="flex-row items-center w-full h-[48px] rounded-tr-2xl rounded-tl-2xl border-b border-shellLine bg-shellPanelSoft">
         {props.columns.map((c) => (
           <Text key={c.key} className="px-3 py-2" style={{ flex: c.flex }}>
             {c.header}
@@ -146,7 +146,8 @@ function RowItem<Row>(props: {
 }) {
   const clickable = Boolean(props.onRowPress);
 
-  const zebraBg = props.index % 2 === 0 ? "bg-baseBg/60" : "bg-surface/20";
+  const zebraBg =
+    props.index % 2 === 0 ? "bg-shellPanelSoft" : "bg-shellPanel";
 
   const renderRow = (state?: PressState) => {
     const hovered = Boolean(state?.hovered);
@@ -163,7 +164,7 @@ function RowItem<Row>(props: {
       <TextClassContext.Provider value={textClass}>
         <View
           className={[
-            "relative flex-row items-center w-full h-[65px] border-b border-border transition-colors",
+            "relative flex-row items-center w-full h-[65px] border-b border-shellLine transition-colors",
             zebraBg,
             hovered ? "bg-accent/40" : "",
             hovered ? "web:z-[300]" : "web:z-[1]",

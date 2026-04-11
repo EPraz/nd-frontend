@@ -20,7 +20,7 @@ import { useFuelById } from "../../hooks/useFuelById";
 // (Opcional) pill simple para enums sin crear componente aparte
 function TypePill({ label }: { label: string }) {
   return (
-    <View className="rounded-full border border-border bg-baseBg/35 px-3 py-1">
+    <View className="rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">
       <Text className="text-textMain text-[12px] font-semibold">{label}</Text>
     </View>
   );
@@ -54,7 +54,7 @@ export default function FuelViewScreen() {
   const vesselName = fuel.asset.name ?? fuel.assetId;
 
   return (
-    <View className="flex-1 bg-baseBg p-4 web:p-6 gap-5">
+    <View className="flex-1 bg-shellCanvas p-4 web:p-6 gap-5">
       {/* Top bar */}
       <View className="gap-3">
         <Pressable
@@ -193,7 +193,7 @@ export default function FuelViewScreen() {
                 </View>
 
                 {/* Notes */}
-                <View className="rounded-[18px] border border-border bg-baseBg/40 p-4">
+                <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
                   <Text className="text-[12px] text-muted">Note</Text>
                   <Text className="text-[13px] text-textMain mt-1">
                     {fuel.note?.trim() ? fuel.note : "—"}
@@ -239,7 +239,7 @@ export default function FuelViewScreen() {
             </CardHeaderRow>
 
             <CardContent className="px-6">
-              <View className="h-[260px] rounded-[18px] border border-border bg-baseBg/40 items-center justify-center">
+              <View className="h-[260px] rounded-[18px] border border-shellLine bg-shellPanelSoft items-center justify-center">
                 <Text className="text-textMain text-[18px] font-semibold">
                   Receipt / BDN (later)
                 </Text>
@@ -249,13 +249,13 @@ export default function FuelViewScreen() {
               </View>
 
               <View className="mt-3 flex-row gap-2">
-                <View className="h-16 w-16 rounded-[14px] border border-border bg-baseBg/40 items-center justify-center">
+                <View className="h-16 w-16 rounded-[14px] border border-shellLine bg-shellPanelSoft items-center justify-center">
                   <Text className="text-muted text-[11px]">Thumb</Text>
                 </View>
-                <View className="h-16 w-16 rounded-[14px] border border-border bg-baseBg/40 items-center justify-center">
+                <View className="h-16 w-16 rounded-[14px] border border-shellLine bg-shellPanelSoft items-center justify-center">
                   <Text className="text-muted text-[11px]">Thumb</Text>
                 </View>
-                <View className="h-16 w-16 rounded-[14px] border border-dashed border-border bg-baseBg/40 items-center justify-center">
+                <View className="h-16 w-16 rounded-[14px] border border-dashed border-shellLine bg-shellPanelSoft items-center justify-center">
                   <Ionicons name="add" size={18} className="text-accent" />
                 </View>
               </View>

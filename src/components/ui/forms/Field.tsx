@@ -28,7 +28,7 @@ export function Field({
 }: FieldProps) {
   return (
     <View className="gap-2">
-      <Text className="text-textMain/80 text-sm font-medium">{label}</Text>
+      <Text className="text-sm font-medium text-muted">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -37,8 +37,7 @@ export function Field({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize ?? "none"}
         editable={editable}
-        className="h-12 rounded-2xl bg-baseBg/40 border border-white/15 px-4 text-textMain  focus:border-accent"
-        // OK en dark; si quieres perfecto cross-theme, luego lo llevamos a helper
+        className="h-12 rounded-[20px] border border-shellLine bg-shellPanelSoft px-4 text-textMain web:backdrop-blur-md focus:border-accent"
         secureTextEntry={secureTextEntry}
         multiline={multiline}
       />

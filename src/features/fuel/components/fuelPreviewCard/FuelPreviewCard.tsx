@@ -24,7 +24,7 @@ export default function FuelPreviewCard({
       </CardHeaderRow>
 
       <CardContent className="px-6">
-        <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-3">
+        <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
           <RowInfo label="Date" value={values.date.trim() || "—"} />
           <RowInfo label="Quantity" value={values.quantity.trim() || "—"} />
           <RowInfo label="Unit" value={values.unit || "—"} />
@@ -34,7 +34,7 @@ export default function FuelPreviewCard({
           <RowInfo label="Note" value={values.note.trim() || "—"} />
         </View>
 
-        <View className="mt-4 rounded-[18px] border border-border bg-baseBg/35 p-4">
+        <View className="mt-4 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
           <Text className="text-muted text-[12px] leading-[16px]">
             Tip: Mantén unidades y precios consistentes para auditorías y
             costos.

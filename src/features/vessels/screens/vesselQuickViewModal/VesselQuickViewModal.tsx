@@ -222,7 +222,7 @@ export default function VesselQuickViewModal({
 
         {/* Right image placeholder */}
         <View className="w-full web:w-[360px] shrink-0">
-          <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-border bg-baseBg/35 items-center justify-center">
+          <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-shellLine bg-shellPanelSoft items-center justify-center">
             <Text className="text-textMain text-[28px] font-semibold">
               Image Here
             </Text>
@@ -232,7 +232,7 @@ export default function VesselQuickViewModal({
 
       {/* Bottom stats */}
       <View className="mt-2 gap-4 flex-col web:flex-row">
-        <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
+        <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
           <View className="mb-4 flex-row items-center justify-between">
             <Text className="text-textMain font-semibold">
               Operational Insight
@@ -246,7 +246,7 @@ export default function VesselQuickViewModal({
           </View>
         </View>
 
-        <View className="flex-1 rounded-[22px] border border-border bg-baseBg/35 p-4">
+        <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
           <View className="mb-4 flex-row items-center justify-between">
             <Text className="text-textMain font-semibold">
               Compliance Performance

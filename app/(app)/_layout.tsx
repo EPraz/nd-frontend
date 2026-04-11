@@ -1,4 +1,4 @@
-import { Loading } from "@/src/components";
+import { Loading, WorkspaceBackdrop } from "@/src/components";
 import { useSessionContext } from "@/src/context";
 import { Slot, useRootNavigationState, useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -18,8 +18,9 @@ export default function AppLayout() {
 
   if (!navReady || loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-baseBg">
-        <Loading fullScreen />
+      <View className="flex-1 items-center justify-center bg-shellCanvas relative">
+        <WorkspaceBackdrop />
+        <Loading fullScreen className="bg-transparent" />
       </View>
     );
   }

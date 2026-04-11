@@ -321,7 +321,7 @@ function OverviewPanel(props: {
         props.fullHeight ? "h-full" : "",
       ].join(" ")}
     >
-      <View className="gap-1 border-b border-border px-4 py-4">
+      <View className="gap-1 border-b border-shellLine px-4 py-4">
         <Text className="text-[15px] font-semibold text-textMain">
           {props.title}
         </Text>
@@ -373,7 +373,7 @@ function ModuleSummary(props: {
 
 function DetailMetric({ label, value }: { label: string; value: string }) {
   return (
-    <View className="rounded-xl border border-border bg-baseBg/25 px-4 py-3 gap-1">
+    <View className="rounded-xl border border-shellLine bg-shellPanelSoft px-4 py-3 gap-1">
       <Text className="text-[12px] text-muted">{label}</Text>
       <Text className="text-[13px] font-semibold text-textMain">{value}</Text>
     </View>

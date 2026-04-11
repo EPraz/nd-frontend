@@ -6,6 +6,7 @@ import {
   CrewCertificateDto,
   CrewCertificateIngestionDto,
   CrewCertificateRequirementDto,
+  CrewComplianceSummaryDto,
   CrewRequirementGenerationResult,
 } from "../contracts";
 
@@ -46,6 +47,23 @@ export async function fetchCrewCertificateRequirementsByCrew(
 ): Promise<CrewCertificateRequirementDto[]> {
   return apiClient.get<CrewCertificateRequirementDto[]>(
     `/projects/${projectId}/assets/${assetId}/crew/${crewId}/certificate-requirements`,
+  );
+}
+
+export async function fetchCrewComplianceSummaryByProject(
+  projectId: string,
+): Promise<CrewComplianceSummaryDto[]> {
+  return apiClient.get<CrewComplianceSummaryDto[]>(
+    `/projects/${projectId}/crew-compliance/summary`,
+  );
+}
+
+export async function fetchCrewComplianceSummaryByAsset(
+  projectId: string,
+  assetId: string,
+): Promise<CrewComplianceSummaryDto> {
+  return apiClient.get<CrewComplianceSummaryDto>(
+    `/projects/${projectId}/assets/${assetId}/crew-compliance/summary`,
   );
 }
 

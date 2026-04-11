@@ -7,10 +7,15 @@ import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Pressable, ScrollView, View } from "react-native";
 import { CertificateFormCard } from "../../components";
-import { emptyCertificateFormValues } from "../../contracts";
 import {
+  CertificateFormValues,
+  emptyCertificateFormValues,
+} from "../../contracts";
+import {
+  applyCertificateFormPatch,
   certificateFormFromDto,
   toUpdateCertificateInput,
 } from "../../helpers";
@@ -51,20 +56,27 @@ export default function EditCertificateScreen() {
     error: certificateTypesError,
   } = useCertificateTypes(pid);
 
-  const [values, setValues] = useState(() => emptyCertificateFormValues());
-  const [dirty, setDirty] = useState(false);
+  const {
+    formState: { isDirty },
+    reset,
+    setValue,
+    watch,
+  } = useForm<CertificateFormValues>({
+    defaultValues: emptyCertificateFormValues(),
+  });
+  const values = watch();
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!certificate || dirty) return;
+    if (!certificate || isDirty) return;
 
-    setValues((prev) => ({
-      ...prev,
+    reset({
+      ...emptyCertificateFormValues(),
       ...certificateFormFromDto(certificate, certificateTypes),
       selectedVessel:
         vessels.find((v) => v.id === (certificate.assetId ?? vid)) ?? null,
-    }));
-  }, [certificate, dirty, vessels, vid, certificateTypes]);
+    });
+  }, [certificate, isDirty, reset, vessels, vid, certificateTypes]);
 
   const effectiveAssetId = values.assetId ?? vid;
   const currentVessel = useMemo<AssetDto | null>(() => {
@@ -79,14 +91,13 @@ export default function EditCertificateScreen() {
     if (saving) return false;
     if (!effectiveAssetId) return false;
     if (!values.certificateTypeId) return false;
-    if (!dirty) return false;
+    if (!isDirty) return false;
     return true;
-  }, [saving, effectiveAssetId, values.certificateTypeId, dirty]);
+  }, [saving, effectiveAssetId, values.certificateTypeId, isDirty]);
 
-  function patch(patchValues: Partial<typeof values>) {
+  function patch(patchValues: Partial<CertificateFormValues>) {
     setLocalError(null);
-    setDirty(true);
-    setValues((prev) => ({ ...prev, ...patchValues }));
+    applyCertificateFormPatch(setValue, patchValues);
   }
 
   function goBackOrTo(fallbackHref: string) {
@@ -138,7 +149,7 @@ export default function EditCertificateScreen() {
     return <ErrorState message="Certificate not found." onRetry={refresh} />;
 
   return (
-    <View className="flex-1 bg-baseBg">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}

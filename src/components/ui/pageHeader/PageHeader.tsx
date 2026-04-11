@@ -53,7 +53,7 @@ const PageHeader = ({
             leftIcon={
               <Ionicons name="filter" size={18} className="text-textMain" />
             }
-            className="bg-surface/60 border border-border/60"
+            className="border border-shellLine bg-shellGlass web:backdrop-blur-md"
             accessibilityLabel="Filter"
             disabled
           />

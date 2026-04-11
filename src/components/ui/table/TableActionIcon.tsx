@@ -35,12 +35,12 @@ export function TableActionIcon({
         const baseClass =
           tone === "accent"
             ? "border-accent/35 bg-accent/10"
-            : "border-border/80 bg-baseBg/45";
+            : "border-shellLine bg-shellPanelSoft";
 
         const hoverClass =
           tone === "accent"
             ? "border-accent/50 bg-accent/18"
-            : "border-border bg-baseBg/70";
+            : "border-shellLine bg-shellSoft";
 
         return (
           <>
@@ -60,7 +60,7 @@ export function TableActionIcon({
             </View>
 
             {hovered ? (
-              <View className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-full border border-border bg-baseBg px-3 py-1.5 shadow-sm shadow-black/20 web:z-[200]">
+              <View className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-full border border-shellLine bg-shellPanel px-3 py-1.5 shadow-sm shadow-black/20 web:z-[200]">
                 <Text className="text-[11px] font-medium text-textMain whitespace-nowrap">
                   {tooltip}
                 </Text>

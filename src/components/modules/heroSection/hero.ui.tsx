@@ -34,7 +34,7 @@ export function toneText(t?: SpecItem["statusTone"]) {
 }
 
 export function Bullet() {
-  return <Text className="text-textMain/70 text-[12px]">•</Text>;
+  return <Text className="text-[12px] text-muted">•</Text>;
 }
 
 export function toWebUri(source: any) {

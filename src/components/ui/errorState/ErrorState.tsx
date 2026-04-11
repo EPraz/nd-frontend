@@ -10,7 +10,7 @@ const ErrorState = ({
   onRetry: () => void;
 }) => {
   return (
-    <View className="rounded-[24px] border border-border bg-surface p-5 gap-3">
+    <View className="gap-3 rounded-[24px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
       <Text className="text-destructive font-semibold">Error</Text>
       <Text className="text-muted">{message}</Text>
       <Button variant="outline" size="sm" onPress={onRetry}>

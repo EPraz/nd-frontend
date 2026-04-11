@@ -45,9 +45,8 @@ export default function AlertsFeedModule() {
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
-      <View className="flex-1 p-3 border border-border">
+      <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanel p-3 web:backdrop-blur-md">
         <View className="flex-1 gap-3">
-          {/* LIST */}
           {data.length === 0 ? (
             <View className="flex-1">
               <Text className="text-xs text-muted">No alerts.</Text>
@@ -76,17 +75,15 @@ export default function AlertsFeedModule() {
                       })
                     }
                     className={cn(
-                      "border-b border-border bg-surface overflow-hidden",
-                      "web:hover:bg-muted/10",
+                      "overflow-hidden border-b border-shellLine bg-shellPanel",
+                      "web:hover:bg-shellPanelSoft",
                     )}
                   >
                     <View className="flex-row items-center gap-3 px-3 py-3">
-                      {/* Icon */}
                       <View
                         className={cn(
-                          "h-9 w-9 items-center justify-center rounded-lg border border-border",
-                          // si toneClasses ya trae un bg para icon, úsalo
-                          ui.iconBg ?? "bg-baseBg/35",
+                          "h-9 w-9 items-center justify-center rounded-lg border border-shellLine",
+                          ui.iconBg ?? "bg-shellPanelSoft",
                         )}
                       >
                         <Ionicons
@@ -96,7 +93,6 @@ export default function AlertsFeedModule() {
                         />
                       </View>
 
-                      {/* Text */}
                       <View className="flex-1">
                         <Text
                           className="text-sm font-semibold text-textMain"
@@ -112,7 +108,6 @@ export default function AlertsFeedModule() {
                         </Text>
                       </View>
 
-                      {/* Severity */}
                       <MiniPill
                         className={cn(
                           ui.chip,
@@ -131,7 +126,6 @@ export default function AlertsFeedModule() {
                         </View>
                       </MiniPill>
 
-                      {/* Chevron */}
                       <Ionicons
                         name="chevron-forward"
                         size={18}
@@ -143,8 +137,6 @@ export default function AlertsFeedModule() {
               })}
             </ScrollView>
           )}
-
-          {/* FOOTER CTA (fijo abajo) */}
 
           <Button
             variant="softAccent"

@@ -64,7 +64,7 @@ export default function ProjectDashboardScreen() {
   const LATERAL_HEIGHT = "web:h-[45vh] web:max-h-[520px] web:min-h-[375px]";
   const GRID_BASE =
     "web:grid web:gap-4 web:grid-cols-1 web:md:grid-cols-2 web:2xl:grid-cols-6";
-  const GRID_ROWS = "web:auto-rows-[375px]"; // opcional
+  const GRID_ROWS = "web:auto-rows-[375px]";
 
   const SLOT_CLASS_2XL: Record<SlotId, string> = {
     hero: "web:col-span-1 web:md:col-span-2 web:2xl:col-span-6",
@@ -85,7 +85,7 @@ export default function ProjectDashboardScreen() {
     <DashboardScopeProvider
       value={{ scope: "PROJECT", projectId: pid, projectKind }}
     >
-      <ScrollView className="flex-1 bg-baseBg">
+      <ScrollView className="flex-1 bg-transparent">
         <View className="p-4 web:p-0 gap-4">
           <View className="gap-1">
             <Text className="text-2xl font-semibold">

@@ -7,7 +7,7 @@ export function ModuleUnavailableState({
   label: string;
 }) {
   return (
-    <View className="flex-1 justify-center rounded-2xl border border-border bg-baseBg/30 px-4 py-5">
+    <View className="flex-1 justify-center rounded-2xl border border-shellLine bg-shellPanelSoft px-4 py-5">
       <Text className="text-sm font-semibold text-textMain">
         Module unavailable
       </Text>

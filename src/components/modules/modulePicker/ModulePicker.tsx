@@ -11,8 +11,6 @@ export function ModulePicker(props: {
   value: DashboardModuleId;
   items: Item[];
   onChange: (id: DashboardModuleId) => void;
-
-  /** "inline" = header style (card-like) | "overlay" = glass pill (hero) */
   variant?: "inline" | "overlay";
   iconName?: React.ComponentProps<typeof Ionicons>["name"];
 }) {
@@ -26,59 +24,57 @@ export function ModulePicker(props: {
   } = props;
 
   const [open, setOpen] = useState(false);
-
-  const currentLabel = useMemo(() => {
-    return items.find((i) => i.id === value)?.label ?? "Select module";
-  }, [items, value]);
+  const currentLabel = useMemo(
+    () => items.find((item) => item.id === value)?.label ?? "Select module",
+    [items, value],
+  );
 
   return (
     <>
-      {/* Trigger */}
       {variant === "overlay" ? (
-        // HERO: glass pill
         <Pressable
           onPress={() => setOpen(true)}
-          className="flex-row items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/30 px-3 py-2"
+          className="flex-row items-center justify-between gap-3 rounded-xl border border-shellLine bg-shellChromeSoft px-3 py-2 web:backdrop-blur-md"
         >
           <View className="flex-1">
-            <Text className="text-[11px] text-textMain/60">{title}</Text>
-            <Text
-              className="text-sm text-textMain font-semibold"
-              numberOfLines={1}
-            >
+            <Text className="text-[11px] text-muted">{title}</Text>
+            <Text className="text-sm font-semibold text-textMain" numberOfLines={1}>
               {currentLabel}
             </Text>
           </View>
 
-          <View className="h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-            <Ionicons name="chevron-down" size={18} color="white" />
+          <View className="h-8 w-8 items-center justify-center rounded-lg border border-shellLine bg-shellPanelSoft">
+            <Ionicons
+              name="chevron-down"
+              size={18}
+              color="hsl(var(--muted))"
+            />
           </View>
         </Pressable>
       ) : (
-        // CARD HEADER: enterprise look
         <Pressable
           onPress={() => setOpen(true)}
           className="flex-row items-center justify-between"
         >
           <View className="flex-row items-center gap-2">
-            <Ionicons name={iconName} size={16} color="white" />
+            <Ionicons name={iconName} size={16} color="hsl(var(--muted))" />
             <View className="gap-0.5">
               <Text className="text-sm font-semibold text-muted">
                 {currentLabel}
               </Text>
-              {/* <Text className="text-xs text-muted" numberOfLines={1}>
-                {currentLabel}
-              </Text> */}
             </View>
           </View>
 
-          <View className="h-8 w-8 items-center justify-center rounded-full border border-border bg-surface">
-            <Ionicons name="chevron-down" size={18} color="white" />
+          <View className="h-8 w-8 items-center justify-center rounded-full border border-shellLine bg-shellPanelSoft">
+            <Ionicons
+              name="chevron-down"
+              size={18}
+              color="hsl(var(--muted))"
+            />
           </View>
         </Pressable>
       )}
 
-      {/* Modal */}
       <Modal
         transparent
         visible={open}
@@ -90,38 +86,35 @@ export function ModulePicker(props: {
           onPress={() => setOpen(false)}
         >
           <View className="flex-1 items-center justify-center px-6">
-            {/* stop propagation */}
             <Pressable onPress={() => {}} className="w-full max-w-[560px]">
-              <View className="rounded-2xl border border-border bg-surface overflow-hidden">
-                {/* Header */}
+              <View className="overflow-hidden rounded-2xl border border-shellLine bg-shellPanel web:backdrop-blur-md">
                 <View className="px-4 py-3">
-                  <Text className="text-textMain font-semibold">
+                  <Text className="font-semibold text-textMain">
                     Choose module
                   </Text>
-                  <Text className="text-xs text-muted mt-1">
-                    Cambia el contenido de esta sección.
+                  <Text className="mt-1 text-xs text-muted">
+                    Change this dashboard section.
                   </Text>
                 </View>
 
                 <Separator />
 
-                {/* List */}
-                <View className="p-3 gap-2">
-                  {items.map((it) => {
-                    const active = it.id === value;
+                <View className="gap-2 p-3">
+                  {items.map((item) => {
+                    const active = item.id === value;
 
                     return (
                       <Pressable
-                        key={it.id}
+                        key={item.id}
                         onPress={() => {
-                          onChange(it.id);
+                          onChange(item.id);
                           setOpen(false);
                         }}
                         className={[
                           "rounded-xl border px-3 py-3",
                           active
-                            ? "border-ring bg-accent/15"
-                            : "border-border bg-surface/40",
+                            ? "border-accent/40 bg-accent/15"
+                            : "border-shellLine bg-shellPanelSoft",
                         ].join(" ")}
                       >
                         <View className="flex-row items-center justify-between">
@@ -129,26 +122,26 @@ export function ModulePicker(props: {
                             className={[
                               "text-sm",
                               active
-                                ? "text-textMain font-semibold"
+                                ? "font-semibold text-textMain"
                                 : "text-textMain",
                             ].join(" ")}
                           >
-                            {it.label}
+                            {item.label}
                           </Text>
 
                           {active ? (
-                            <View className="h-6 w-6 items-center justify-center rounded-full bg-accent/25 border border-ring">
+                            <View className="h-6 w-6 items-center justify-center rounded-full border border-accent/40 bg-accent/25">
                               <Ionicons
                                 name="checkmark"
                                 size={14}
-                                color="white"
+                                color="hsl(var(--text-main))"
                               />
                             </View>
                           ) : (
                             <Ionicons
                               name="chevron-forward"
                               size={16}
-                              color="rgba(255,255,255,0.35)"
+                              color="hsl(var(--muted))"
                             />
                           )}
                         </View>
@@ -159,11 +152,10 @@ export function ModulePicker(props: {
 
                 <Separator />
 
-                {/* Footer */}
-                <View className="px-4 py-3 flex-row justify-end">
+                <View className="flex-row justify-end px-4 py-3">
                   <Pressable
                     onPress={() => setOpen(false)}
-                    className="rounded-lg border border-border bg-surface px-3 py-2"
+                    className="rounded-lg border border-shellLine bg-shellPanelSoft px-3 py-2"
                   >
                     <Text className="text-sm text-textMain">Close</Text>
                   </Pressable>

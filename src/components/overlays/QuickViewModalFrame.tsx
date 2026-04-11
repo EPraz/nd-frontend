@@ -90,8 +90,7 @@ export default function QuickViewModalFrame({
             style={{ maxWidth }}
             className={[
               "w-full rounded-[26px] border p-5",
-              "bg-surface border-border",
-              // shadow web + native friendly
+              "bg-shellPanel border-shellLine web:backdrop-blur-md",
               "shadow-[0_20px_80px_rgba(0,0,0,0.55)]",
             ].join(" ")}
           >

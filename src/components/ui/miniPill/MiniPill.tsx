@@ -11,11 +11,11 @@ export function MiniPill({ children, className }: MiniPillProps) {
   return (
     <View
       className={cn(
-        "rounded-full border border-border bg-baseBg/35 px-3 py-1 items-center justify-center",
+        "items-center justify-center rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1 web:backdrop-blur-md",
         className,
       )}
     >
-      <Text className="text-textMain/80 text-[11px]">{children}</Text>
+      <Text className="text-[11px] text-muted">{children}</Text>
     </View>
   );
 }

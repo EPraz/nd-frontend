@@ -104,7 +104,7 @@ export default function NewVesselScreen() {
               onPress={() => goBackOrTo(backHref)}
               disabled={isBusy}
               className={[
-                "rounded-full border border-accent/40 bg-surface px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
+                "rounded-full border border-accent/40 bg-shellPanel px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
                 "active:opacity-80",
                 isBusy ? "opacity-50" : "hover:scale-105",
               ].join(" ")}
@@ -132,7 +132,7 @@ export default function NewVesselScreen() {
         {/* Grid */}
         <View className="gap-5 web:lg:flex-row">
           {/* Left */}
-          <View className="flex-1 rounded-3xl border border-white/10 bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[60%]">
+          <View className="flex-1 rounded-3xl border border-shellLine bg-shellPanel p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[60%]">
             <View className="mb-4">
               <Text className="text-textMain text-[18px] font-semibold">
                 Vessel Details
@@ -150,7 +150,7 @@ export default function NewVesselScreen() {
                 onChangeText={setName}
               />
 
-              <View className="rounded-3xl border border-white/10 bg-black/10 p-4 gap-4">
+              <View className="rounded-3xl border border-shellLine bg-shellPanelSoft p-4 gap-4">
                 <View className="flex-row items-center justify-between">
                   <View className="gap-1">
                     <Text className="text-textMain font-semibold">
@@ -203,7 +203,7 @@ export default function NewVesselScreen() {
           </View>
 
           {/* Right */}
-          <View className="flex-1 rounded-3xl border border-white/10 bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[40%]">
+          <View className="flex-1 rounded-3xl border border-shellLine bg-shellPanel p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[40%]">
             <View className="mb-4">
               <Text className="text-textMain text-[18px] font-semibold">
                 Preview
@@ -213,7 +213,7 @@ export default function NewVesselScreen() {
               </Text>
             </View>
 
-            <View className="rounded-3xl border border-white/10 bg-black/10 p-4 gap-3">
+            <View className="rounded-3xl border border-shellLine bg-shellPanelSoft p-4 gap-3">
               <View className="flex-row items-center justify-between">
                 <Text className="text-textMain/70 text-[12px]">Name</Text>
                 <Text className="text-textMain font-semibold">
@@ -242,7 +242,7 @@ export default function NewVesselScreen() {
               </View>
             </View>
 
-            <View className="mt-4 rounded-3xl border border-white/10 bg-black/10 p-4">
+            <View className="mt-4 rounded-3xl border border-shellLine bg-shellPanelSoft p-4">
               <Text className="text-textMain/60 text-[12px]">
                 Tip: keep identifiers consistent to improve compliance workflows
                 later.

@@ -7,10 +7,10 @@ export const Card = ({
   ...props
 }: ViewProps & React.RefAttributes<View>) => {
   return (
-    <TextClassContext.Provider value="text-surface">
+    <TextClassContext.Provider value="text-textMain">
       <View
         className={cn(
-          "bg-surface border-border flex flex-col gap-6 rounded-xl border py-6 shadow-sm shadow-black/5 web:shadow-black/20",
+          "flex flex-col gap-6 rounded-xl border border-shellLine bg-shellPanel py-6 shadow-sm shadow-black/5 web:backdrop-blur-md web:shadow-black/20",
           className,
         )}
         {...props}

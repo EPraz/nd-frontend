@@ -168,3 +168,61 @@ export type ConfirmCrewCertificateIngestionResultDto = {
   certificate: CrewCertificateDto;
   requirement: CrewCertificateRequirementDto | null;
 };
+
+export type CrewComplianceRiskLevel =
+  | "UNKNOWN"
+  | "LOW"
+  | "MEDIUM"
+  | "HIGH"
+  | "CRITICAL";
+
+export type CrewComplianceIssueSeverity =
+  | "INFO"
+  | "MEDIUM"
+  | "HIGH"
+  | "CRITICAL";
+
+export type CrewComplianceIssueDto = {
+  code:
+    | "MSMC_NOT_CONFIGURED"
+    | "UNDER_CREWED"
+    | "MISSING_ROLE"
+    | "MISSING_STCW_CERTIFICATE"
+    | "EXPIRED_STCW_CERTIFICATE"
+    | "FLAG_ENDORSEMENT_REVIEW"
+    | "FLAG_STATE_MISMATCH";
+  severity: CrewComplianceIssueSeverity;
+  message: string;
+  role: string | null;
+  crewMemberId: string | null;
+  crewMemberName: string | null;
+  certificateTypeId: string | null;
+  certificateName: string | null;
+};
+
+export type CrewRoleGapDto = {
+  role: string;
+  normalizedRole: string;
+  department: "DECK" | "ENGINE" | "CATERING" | "OTHER" | null;
+  requiredCount: number;
+  currentCount: number;
+  missingCount: number;
+  certificateTypeId: string | null;
+  certificateName: string | null;
+};
+
+export type CrewComplianceSummaryDto = {
+  assetId: string;
+  assetName: string;
+  flagState: string | null;
+  vesselProfileFlag: string | null;
+  msmcConfigured: boolean;
+  fallbackMode: "MSMC" | "V1_RULES";
+  totalMinimumCrew: number | null;
+  currentCrewCount: number;
+  crewComplianceScore: number | null;
+  riskLevel: CrewComplianceRiskLevel;
+  roleGaps: CrewRoleGapDto[];
+  issues: CrewComplianceIssueDto[];
+  updatedAt: string | null;
+};

@@ -104,7 +104,7 @@ export default function CrewViewScreen() {
     return <ErrorState message="Crew member not found." onRetry={refresh} />;
 
   return (
-    <View className="flex-1 bg-baseBg p-4 web:p-6 gap-5">
+    <View className="flex-1 bg-shellCanvas p-4 web:p-6 gap-5">
       <View className="gap-3">
         <Pressable
           onPress={goBack}
@@ -352,7 +352,7 @@ export default function CrewViewScreen() {
 
             <CardContent className="px-6">
               <View className="gap-4">
-                <View className="rounded-[18px] border border-border bg-baseBg/40 p-4">
+                <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
                   <Text className="text-muted text-[12px]">Current State</Text>
                   <Text className="text-textMain text-[26px] font-semibold">
                     {formatMedical(crew.medicalCertificateValid)}
@@ -390,7 +390,7 @@ export default function CrewViewScreen() {
                 {certificatesLoading ? (
                   <Text className="text-muted text-[13px]">Loading certificates…</Text>
                 ) : certificatesError ? (
-                  <View className="gap-3 rounded-[18px] border border-border bg-baseBg/35 p-4">
+                  <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
                     <Text className="text-[13px] text-destructive">
                       {certificatesError}
                     </Text>
@@ -404,7 +404,7 @@ export default function CrewViewScreen() {
                     </Button>
                   </View>
                 ) : certificates.length === 0 ? (
-                  <View className="rounded-[18px] border border-border bg-baseBg/35 p-4 gap-3">
+                  <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
                     <Text className="text-[13px] text-textMain">
                       No crew certificates uploaded yet for this crew member.
                     </Text>
@@ -421,7 +421,7 @@ export default function CrewViewScreen() {
                         "rounded-[18px] border p-4 gap-3",
                         selectedCertificate?.id === item.id
                           ? "border-accent bg-accent/10"
-                          : "border-border bg-baseBg/35",
+                          : "border-shellLine bg-shellPanelSoft",
                       ].join(" ")}
                     >
                       <View className="gap-2">
@@ -441,7 +441,7 @@ export default function CrewViewScreen() {
                   ))
                 )}
 
-                <View className="rounded-[18px] border border-border bg-baseBg/35 p-4">
+                <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
                   <Text className="text-[12px] text-muted">
                     Operational Notes
                   </Text>

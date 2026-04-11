@@ -9,7 +9,7 @@ const SpecRow = ({ item }: { item: SpecItem }) => {
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           <Bullet />
-          <Text className="text-textMain/70 text-[12px]">{item.label}:</Text>
+          <Text className="text-[12px] text-muted">{item.label}:</Text>
         </View>
 
         <View className="flex-row items-center gap-2">
@@ -30,7 +30,7 @@ const SpecRow = ({ item }: { item: SpecItem }) => {
     <View className="flex-row items-center justify-between">
       <View className="flex-row items-center gap-2">
         <Bullet />
-        <Text className="text-textMain/70 text-[12px]">{item.label}:</Text>
+        <Text className="text-[12px] text-muted">{item.label}:</Text>
       </View>
 
       <Text className="text-textMain text-[12px] font-semibold">

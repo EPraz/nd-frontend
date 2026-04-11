@@ -24,7 +24,7 @@ export function FuelEventPill({ type }: { type: FuelEventType }) {
   return (
     <View
       className={[
-        "self-start rounded-full px-3 py-1 border border-border",
+        "self-start rounded-full px-3 py-1 border border-shellLine",
         tone.bg,
       ].join(" ")}
     >
@@ -64,7 +64,7 @@ export function FuelTypePill({ fuelType }: { fuelType: FuelType }) {
   return (
     <View
       className={[
-        "self-start rounded-full px-3 py-1 border border-border",
+        "self-start rounded-full px-3 py-1 border border-shellLine",
         tone.bg,
       ].join(" ")}
     >

@@ -24,20 +24,20 @@ const buttonVariants = cva(
         ),
 
         outline: cn(
-          "border border-border/70 bg-surface active:bg-surface/80",
-          Platform.select({ web: "hover:bg-surface/80" }),
+          "border border-shellLine bg-shellGlass active:bg-shellPanelSoft",
+          Platform.select({ web: "hover:bg-shellPanelSoft web:backdrop-blur-md" }),
         ),
 
         ghost: cn(
-          "bg-transparent active:bg-surface/60",
-          Platform.select({ web: "hover:bg-surface/60" }),
+          "bg-transparent active:bg-shellPanelSoft",
+          Platform.select({ web: "hover:bg-shellPanelSoft" }),
         ),
 
         link: cn("bg-transparent", Platform.select({ web: "hover:underline" })),
 
         icon: cn(
-          "border border-border/60 bg-surface/60",
-          Platform.select({ web: "hover:bg-surface/80 web:backdrop-blur-md" }),
+          "border border-shellLine bg-shellGlass",
+          Platform.select({ web: "hover:bg-shellPanelSoft web:backdrop-blur-md" }),
         ),
 
         iconAccent: cn(
@@ -47,8 +47,8 @@ const buttonVariants = cva(
 
         // ✅ NEW: soft/tinted pills (QuickView header actions)
         soft: cn(
-          "border border-border bg-baseBg/35 active:bg-baseBg/50",
-          Platform.select({ web: "hover:bg-baseBg/50" }),
+          "border border-shellLine bg-shellPanelSoft active:bg-shellSoft",
+          Platform.select({ web: "hover:bg-shellSoft web:backdrop-blur-md" }),
         ),
         softAccent: cn(
           "border border-accent/40 bg-accent/15 active:bg-accent/20",

@@ -1,4 +1,5 @@
 import type { CertificateTypeDto } from "@/src/features/certificates/contracts";
+import type { UseFormSetValue } from "react-hook-form";
 import type {
   ConfirmCrewCertificateIngestionInput,
   CrewCertificateDto,
@@ -25,6 +26,21 @@ export function emptyCrewCertificateFormValues(): CrewCertificateFormValues {
     expiryDate: "",
     notes: "",
   };
+}
+
+export function applyCrewCertificateFormPatch(
+  setValue: UseFormSetValue<CrewCertificateFormValues>,
+  patchValues: Partial<CrewCertificateFormValues>,
+) {
+  for (const key of Object.keys(patchValues) as (keyof CrewCertificateFormValues)[]) {
+    const value = patchValues[key];
+    if (value === undefined) continue;
+
+    setValue(key, value as never, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  }
 }
 
 function toDateOnly(value?: string | null): string {

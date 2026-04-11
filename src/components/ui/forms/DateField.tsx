@@ -59,7 +59,7 @@ export function DateField({
   if (Platform.OS === "web") {
     return (
       <View className="gap-2">
-        <Text className="text-textMain/80 text-sm font-medium">{label}</Text>
+        <Text className="text-sm font-medium text-muted">{label}</Text>
         <input
           type="date"
           value={value}
@@ -69,12 +69,11 @@ export function DateField({
             height: 48,
             width: "100%",
             borderRadius: 16,
-            border: "1px solid rgba(255,255,255,0.15)",
-            background: "rgba(15, 23, 42, 0.4)",
-            color: "#dde6ed",
+            border: "1px solid hsl(var(--shell-line))",
+            background: "hsl(var(--shell-panel-soft))",
+            color: "hsl(var(--text-main))",
             padding: "0 16px",
             outline: "none",
-            colorScheme: "dark",
           }}
         />
       </View>
@@ -83,21 +82,25 @@ export function DateField({
 
   return (
     <View className="gap-2">
-      <Text className="text-textMain/80 text-sm font-medium">{label}</Text>
+      <Text className="text-sm font-medium text-muted">{label}</Text>
 
       <Pressable
         onPress={() => setShowPicker(true)}
         disabled={disabled}
         className={[
-          "h-12 rounded-2xl border border-white/15 bg-baseBg/40 px-4 justify-center",
+          "h-12 justify-center rounded-[20px] border border-shellLine bg-shellPanelSoft px-4",
           disabled ? "opacity-60" : "",
         ].join(" ")}
       >
         <View className="flex-row items-center justify-between gap-3">
-          <Text className={value ? "text-textMain" : "text-textMain/40"}>
+          <Text className={value ? "text-textMain" : "text-muted"}>
             {value || placeholder}
           </Text>
-          <Ionicons name="calendar-outline" size={16} color="#ffffff" />
+          <Ionicons
+            name="calendar-outline"
+            size={16}
+            color="hsl(var(--muted))"
+          />
         </View>
       </Pressable>
 

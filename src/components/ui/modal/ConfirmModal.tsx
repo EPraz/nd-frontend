@@ -36,13 +36,13 @@ export function ConfirmModal({
       <View className="flex-1 items-center justify-center px-4">
         <Pressable className="absolute inset-0 bg-black/45" onPress={onCancel} />
 
-        <Card className="w-full max-w-[520px] rounded-[28px] border border-border bg-surface p-0 overflow-hidden">
-          <CardHeaderRow className="px-6 pt-6 pb-4 border-b border-border">
+        <Card className="w-full max-w-[520px] overflow-hidden rounded-[28px] p-0">
+          <CardHeaderRow className="border-b border-shellLine px-6 pt-6 pb-4">
             <CardTitle className="text-[18px] text-textMain">{title}</CardTitle>
           </CardHeaderRow>
 
           <CardContent className="px-6 py-6 gap-6">
-            <Text className="text-[14px] leading-[22px] text-textMain/85">
+            <Text className="text-[14px] leading-[22px] text-muted">
               {message}
             </Text>
 

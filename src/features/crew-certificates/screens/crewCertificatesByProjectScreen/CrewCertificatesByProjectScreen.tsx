@@ -4,9 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { View } from "react-native";
-import { CrewCertificateRequirementsTable } from "../../components";
+import {
+  CrewCertificateRequirementsTable,
+  CrewMsmcComplianceSummary,
+} from "../../components";
 import type { CrewCertificateRequirementDto } from "../../contracts";
 import {
+  useCrewComplianceSummaryByProject,
   useCrewCertificateRequirementsByProject,
   useGenerateCrewCertificateRequirements,
 } from "../../hooks";
@@ -19,6 +23,12 @@ export default function CrewCertificatesByProjectScreen() {
 
   const { requirements, loading, error, refresh } =
     useCrewCertificateRequirementsByProject(pid);
+  const {
+    summaries: msmcSummaries,
+    loading: msmcLoading,
+    error: msmcError,
+    refresh: refreshMsmc,
+  } = useCrewComplianceSummaryByProject(pid);
   const {
     generateProject,
     loading: generating,
@@ -47,7 +57,7 @@ export default function CrewCertificatesByProjectScreen() {
       <Button
         variant="icon"
         size="iconLg"
-        onPress={refresh}
+        onPress={refreshAll}
         leftIcon={
           <Ionicons
             name="refresh-outline"
@@ -95,10 +105,14 @@ export default function CrewCertificatesByProjectScreen() {
     };
   }, [requirements]);
 
+  async function refreshAll() {
+    await Promise.all([refresh(), refreshMsmc()]);
+  }
+
   async function onGenerate() {
     try {
       const result = await generateProject();
-      await refresh();
+      await refreshAll();
       show(
         `Requirements refreshed for ${result.processedCrewMembers} crew member${result.processedCrewMembers === 1 ? "" : "s"}.`,
         "success",
@@ -125,7 +139,7 @@ export default function CrewCertificatesByProjectScreen() {
       <PageHeader
         title="Crew Certificate Compliance"
         subTitle="Track crew requirements by rank and upload real evidence from each missing or outdated row."
-        onRefresh={refresh}
+        onRefresh={refreshAll}
         actions={headerActions}
       />
 
@@ -179,7 +193,7 @@ export default function CrewCertificatesByProjectScreen() {
         />
       </View>
 
-      <View className="rounded-[20px] border border-border bg-baseBg/35 p-4 gap-3">
+      <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
         <Text className="text-textMain font-semibold text-[14px]">
           Crew-first compliance flow
         </Text>
@@ -193,6 +207,14 @@ export default function CrewCertificatesByProjectScreen() {
           <Text className="text-[12px] text-destructive">{generationError}</Text>
         ) : null}
       </View>
+
+      <CrewMsmcComplianceSummary
+        title="MSMC fleet crew compliance"
+        summaries={msmcSummaries}
+        loading={msmcLoading}
+        error={msmcError}
+        onRetry={refreshMsmc}
+      />
 
       <CrewCertificateRequirementsTable
         projectId={pid}
