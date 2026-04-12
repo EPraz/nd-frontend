@@ -1,4 +1,4 @@
-import { useProjectData } from "@/src/context";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
 import { CertificateDto } from "@/src/features/certificates/contracts/certificates.contract";
 import { useMemo } from "react";
 
@@ -17,18 +17,16 @@ export type OverviewKpisData = {
 };
 
 export function useOverviewKpisData() {
-  const { certificates, crew, loading, error, refresh } = useProjectData();
+  const { vessels, certificates, crew, loading, error, refresh } =
+    useProjectData();
 
   const data = useMemo<OverviewKpisData>(() => {
-    const vesselSet = new Set<string>();
     let valid = 0;
     let expiringSoon = 0;
     let expired = 0;
     let pending = 0;
 
     for (const c of certificates) {
-      vesselSet.add(c.assetId);
-
       switch (c.status) {
         case "VALID":
           valid += 1;
@@ -51,7 +49,7 @@ export function useOverviewKpisData() {
     );
 
     return {
-      totalVessels: vesselSet.size,
+      totalVessels: vessels.length,
       certificates: {
         total: certificates.length,
         valid,
@@ -70,12 +68,12 @@ export function useOverviewKpisData() {
         })
         .slice(0, 10),
     };
-  }, [certificates, crew]);
+  }, [certificates, crew, vessels]);
 
   return {
     data,
-    isLoading: loading.certificates || loading.crew, // MVP: depende de ambos
-    error: error.certificates ?? error.crew,
+    isLoading: loading.vessels || loading.certificates || loading.crew,
+    error: error.vessels ?? error.certificates ?? error.crew,
     refetch: refresh.all,
   };
 }

@@ -1,4 +1,4 @@
-import { useProjectData } from "@/src/context";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
 
 export function useCertificatesData() {
   const { certificates, loading, error, refresh } = useProjectData();

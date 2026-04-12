@@ -1,25 +1,42 @@
-import { useDashboardScope, useProjectEntitlements } from "@/src/context";
-import { useCrewSummaryData } from "@/src/hooks";
+import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
+import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
+import { useCrewSummaryData } from "@/src/hooks/dashboard/useCrewSummaryData";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text } from "../../ui";
 
 const MAX_VESSELS = 10;
+type CrewCoverageFilter = "ALL" | "NEEDS_CREW" | "COVERED";
+
+const FILTERS: { key: CrewCoverageFilter; label: string }[] = [
+  { key: "ALL", label: "All" },
+  { key: "NEEDS_CREW", label: "No crew" },
+  { key: "COVERED", label: "Covered" },
+];
+
+function matchesFilter(activeCount: number, filter: CrewCoverageFilter) {
+  if (filter === "NEEDS_CREW") return activeCount === 0;
+  if (filter === "COVERED") return activeCount > 0;
+  return true;
+}
 
 export default function CrewSummaryModule() {
   const { projectId } = useDashboardScope();
   const { isModuleEnabled } = useProjectEntitlements();
   const { data, isLoading, error, refetch } = useCrewSummaryData();
   const router = useRouter();
+  const [filter, setFilter] = useState<CrewCoverageFilter>("ALL");
 
   const top = useMemo(() => {
-    return data.crewByVessel.slice(0, MAX_VESSELS);
-  }, [data.crewByVessel]);
+    return data.crewByVessel
+      .filter((v) => matchesFilter(v.activeCount, filter))
+      .slice(0, MAX_VESSELS);
+  }, [data.crewByVessel, filter]);
 
   const hasList = top.length > 0;
 
@@ -28,8 +45,8 @@ export default function CrewSummaryModule() {
       {!isModuleEnabled("crew") ? (
         <ModuleUnavailableState label="Crew" />
       ) : (
-      <View className="flex-1 p-3 border border-border">
-        <View className="flex-1 gap-3">
+        <View className="flex-1 p-3 border border-border">
+          <View className="flex-1 gap-3">
           {/* STATS */}
           {/* {compact ? (
             <View className="flex-row gap-3">
@@ -71,26 +88,50 @@ export default function CrewSummaryModule() {
             </View>
           )} */}
 
+          <View className="flex-row flex-wrap items-center justify-between gap-2">
+            <Text className="text-sm font-semibold text-textMain">
+              Crew coverage
+            </Text>
+
+            <View className="flex-row flex-wrap gap-2">
+              {FILTERS.map((item) => {
+                const active = item.key === filter;
+
+                return (
+                  <Pressable
+                    key={item.key}
+                    onPress={() => setFilter(item.key)}
+                    className={cn(
+                      "rounded-full border px-3 py-1",
+                      active
+                        ? "border-accent/60 bg-accent/15"
+                        : "border-border bg-baseBg/35",
+                    )}
+                  >
+                    <Text
+                      className={cn(
+                        "text-[10px] font-semibold",
+                        active ? "text-accent" : "text-muted",
+                      )}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
           {/* LIST */}
           {!hasList ? (
             <View className="flex-1">
-              <Text className="text-xs text-muted">No crew assigned.</Text>
+              <Text className="text-xs text-muted">
+                {filter === "ALL"
+                  ? "No vessels found."
+                  : "No vessels match this filter."}
+              </Text>
             </View>
           ) : (
-            <View className="flex-1 gap-2">
-              {/* <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-textMain">
-                  Crew by Vessel
-                </Text>
-
-                <MiniPill className="bg-baseBg/35">
-                  <Text className="text-[10px] text-textMain/80">
-                    Top {Math.min(MAX_VESSELS, data.crewByVessel.length)}{" "}
-                    Vessels
-                  </Text>
-                </MiniPill>
-              </View> */}
-
               <ScrollView
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
@@ -180,7 +221,6 @@ export default function CrewSummaryModule() {
                   );
                 })}
               </ScrollView>
-            </View>
           )}
 
           {/* CTA (fijo abajo) */}
@@ -204,8 +244,8 @@ export default function CrewSummaryModule() {
           >
             View All Crew
           </Button>
+          </View>
         </View>
-      </View>
       )}
     </ModuleFrame>
   );

@@ -1,4 +1,4 @@
-import { useProjectData } from "@/src/context";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
 import { useMemo } from "react";
 
 export type AlertSeverity = "CRITICAL" | "WARNING";
@@ -26,7 +26,7 @@ export function useAlertsFeedData() {
         alerts.push({
           id: `cert-${c.id}`,
           type: "CERTIFICATE",
-            title: c.certificateName,
+          title: c.certificateName,
           subtitle: c.assetName,
           severity: "CRITICAL",
           date: c.expiryDate,
@@ -37,7 +37,7 @@ export function useAlertsFeedData() {
         alerts.push({
           id: `cert-${c.id}`,
           type: "CERTIFICATE",
-            title: c.certificateName,
+          title: c.certificateName,
           subtitle: c.assetName,
           severity: "WARNING",
           date: c.expiryDate,
@@ -56,7 +56,7 @@ export function useAlertsFeedData() {
             id: `mnt-${m.id}`,
             type: "MAINTENANCE",
             title: m.title,
-            subtitle: m.asset.name,
+            subtitle: m.asset?.name ?? "Unknown asset",
             severity: "CRITICAL",
             date: m.dueDate,
           });
@@ -65,7 +65,7 @@ export function useAlertsFeedData() {
             id: `mnt-${m.id}`,
             type: "MAINTENANCE",
             title: m.title,
-            subtitle: m.asset.name,
+            subtitle: m.asset?.name ?? "Unknown asset",
             severity: "WARNING",
             date: m.dueDate,
           });

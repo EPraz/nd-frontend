@@ -1,11 +1,15 @@
-import { useDashboardScope, useProjectEntitlements } from "@/src/context";
-import { CertificateDto, CertificateStatus } from "@/src/features/certificates";
+import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
+import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
+import type {
+  CertificateDto,
+  CertificateStatus,
+} from "@/src/features/certificates/contracts/certificates.contract";
 import { formatDate } from "@/src/helpers";
-import { useCertificatesData } from "@/src/hooks";
+import { useCertificatesData } from "@/src/hooks/dashboard/useCertificatesData";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
@@ -60,17 +64,20 @@ export default function ExpiringCertificatesModule() {
       .slice(0, MAX_CERTS);
   }, [data]);
 
+  const emptyMessage =
+    data.length === 0
+      ? "No certificate records have been uploaded for this project yet."
+      : "Certificate records exist, but none have expiry dates to track here yet.";
+
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
       {!isModuleEnabled("certificates") ? (
         <ModuleUnavailableState label="Certificates" />
       ) : (
-      <View className="flex-1 border border-border p-3">
-        <View className="flex-1 gap-3">
+        <View className="flex-1 border border-border p-3">
+          <View className="flex-1 gap-3">
           {top.length === 0 ? (
-            <View className="flex-1">
-              <Text className="text-xs text-muted">No certificates found.</Text>
-            </View>
+            <EmptyCertificatesState message={emptyMessage} />
           ) : (
             <ScrollView
               className="flex-1"
@@ -165,9 +172,31 @@ export default function ExpiringCertificatesModule() {
           >
             View All Certificates
           </Button>
+          </View>
         </View>
-      </View>
       )}
     </ModuleFrame>
+  );
+}
+
+function EmptyCertificatesState({ message }: { message: string }) {
+  return (
+    <View className="flex-1 items-center justify-center gap-3 rounded-2xl border border-border bg-baseBg/25 px-4 py-6">
+      <View className="h-10 w-10 items-center justify-center rounded-2xl border border-info/25 bg-info/10">
+        <Ionicons
+          name="documents-outline"
+          size={20}
+          color="rgba(255,255,255,0.85)"
+        />
+      </View>
+      <View className="max-w-[280px] gap-1">
+        <Text className="text-center text-sm font-semibold text-textMain">
+          No expiring certificates
+        </Text>
+        <Text className="text-center text-xs leading-5 text-muted">
+          {message}
+        </Text>
+      </View>
+    </View>
   );
 }

@@ -1,4 +1,4 @@
-import { useProjectData } from "@/src/context";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
 import { useMemo } from "react";
 
 export type VesselHealthStatus = "OK" | "WARNING" | "CRITICAL";
@@ -16,11 +16,11 @@ export type VesselHealthRow = {
 
   activeCrew: number;
 
-  reasons: string[]; // top drivers (texto corto)
+  reasons: string[]; // top drivers
 };
 
 export type VesselsHealthData = {
-  status: VesselHealthStatus; // status global (el peor)
+  status: VesselHealthStatus; // worst project-level status
   totalVessels: number;
   critical: number;
   warning: number;
@@ -35,14 +35,21 @@ function statusRank(s: VesselHealthStatus) {
 }
 
 export function useVesselsHealthData() {
-  const { certificates, maintenance, crew, loading, error, refresh } =
-    useProjectData();
+  const {
+    vessels: projectVessels,
+    certificates,
+    maintenance,
+    crew,
+    loading,
+    error,
+    refresh,
+  } = useProjectData();
 
   const data = useMemo<VesselsHealthData>(() => {
     const now = Date.now();
     const in7days = now + 7 * 24 * 60 * 60 * 1000;
 
-    // base map por vessel (usamos certificados como fuente de “vessels del proyecto”)
+    // Start from project vessels so assets without certificates still appear.
     const map = new Map<string, VesselHealthRow>();
 
     const ensure = (assetId: string, assetName: string) => {
@@ -62,23 +69,27 @@ export function useVesselsHealthData() {
       return map.get(assetId)!;
     };
 
-    // CERTS
+    for (const vessel of projectVessels) {
+      ensure(vessel.id, vessel.name);
+    }
+
     for (const c of certificates) {
       const row = ensure(c.assetId, c.assetName);
       if (c.status === "EXPIRED") row.expiredCerts += 1;
       if (c.status === "EXPIRING_SOON") row.expiringCerts += 1;
     }
 
-    // CREW
     for (const m of crew) {
       const row = ensure(m.assetId, m.asset?.name ?? m.assetName ?? m.assetId);
       if (m.status === "ACTIVE") row.activeCrew += 1;
     }
 
-    // MAINTENANCE (asumo que maintenance tiene assetId y asset.name, ajusta si cambia)
     for (const m of maintenance as any[]) {
-      if (!m.assetId || !m.asset?.name) continue;
-      const row = ensure(m.assetId, m.asset.name);
+      if (!m.assetId) continue;
+      const row = ensure(
+        m.assetId,
+        m.asset?.name ?? map.get(m.assetId)?.assetName ?? m.assetId,
+      );
 
       if (m.status !== "DONE" && m.dueDate) {
         const t = new Date(m.dueDate).getTime();
@@ -87,7 +98,6 @@ export function useVesselsHealthData() {
       }
     }
 
-    // CALC STATUS + REASONS
     let critical = 0;
     let warning = 0;
     let ok = 0;
@@ -95,18 +105,17 @@ export function useVesselsHealthData() {
     for (const row of map.values()) {
       const reasons: string[] = [];
 
-      // CRITICAL triggers
       if (row.expiredCerts > 0)
         reasons.push(`${row.expiredCerts} expired certs`);
       if (row.overdueMaintenance > 0)
         reasons.push(`${row.overdueMaintenance} overdue maintenance`);
-      if (row.activeCrew === 0) reasons.push(`no active crew`);
+      if (row.activeCrew === 0) reasons.push("no active crew");
 
-      // WARNING triggers (solo si no es CRITICAL)
       const hasCritical =
         row.expiredCerts > 0 ||
         row.overdueMaintenance > 0 ||
         row.activeCrew === 0;
+
       if (!hasCritical) {
         if (row.expiringCerts > 0)
           reasons.push(`${row.expiringCerts} expiring soon`);
@@ -131,13 +140,11 @@ export function useVesselsHealthData() {
       const rb = statusRank(b.status);
       if (ra !== rb) return ra - rb;
 
-      // impacto: expired desc, overdue desc
       if (a.expiredCerts !== b.expiredCerts)
         return b.expiredCerts - a.expiredCerts;
       if (a.overdueMaintenance !== b.overdueMaintenance)
         return b.overdueMaintenance - a.overdueMaintenance;
 
-      // warning impact
       if (a.expiringCerts !== b.expiringCerts)
         return b.expiringCerts - a.expiringCerts;
       if (a.dueSoonMaintenance !== b.dueSoonMaintenance)
@@ -157,12 +164,17 @@ export function useVesselsHealthData() {
       ok,
       vessels,
     };
-  }, [certificates, maintenance, crew]);
+  }, [projectVessels, certificates, maintenance, crew]);
 
   return {
     data,
-    isLoading: loading.certificates || loading.maintenance || loading.crew,
-    error: error.certificates ?? error.maintenance ?? error.crew,
+    isLoading:
+      loading.vessels ||
+      loading.certificates ||
+      loading.maintenance ||
+      loading.crew,
+    error:
+      error.vessels ?? error.certificates ?? error.maintenance ?? error.crew,
     refetch: refresh.all,
   };
 }

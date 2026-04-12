@@ -1,4 +1,4 @@
-import { useProjectData } from "@/src/context";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
 import { useMemo } from "react";
 
 export type VesselCertStatus = "CRITICAL" | "WARNING" | "OK";
@@ -14,10 +14,23 @@ export type VesselListRow = {
 };
 
 export function useVesselsListData() {
-  const { certificates, crew, loading, error, refresh } = useProjectData();
+  const { vessels, certificates, crew, loading, error, refresh } =
+    useProjectData();
 
   const data = useMemo<VesselListRow[]>(() => {
     const map = new Map<string, VesselListRow>();
+
+    for (const vessel of vessels) {
+      map.set(vessel.id, {
+        assetId: vessel.id,
+        assetName: vessel.name,
+        totalCertificates: 0,
+        expired: 0,
+        expiringSoon: 0,
+        crewActive: 0,
+        certStatus: "OK",
+      });
+    }
 
     for (const c of certificates) {
       if (!map.has(c.assetId)) {
@@ -54,12 +67,12 @@ export function useVesselsListData() {
     }
 
     return Array.from(map.values());
-  }, [certificates, crew]);
+  }, [vessels, certificates, crew]);
 
   return {
     data,
-    isLoading: loading.certificates || loading.crew,
-    error: error.certificates ?? error.crew,
+    isLoading: loading.vessels || loading.certificates || loading.crew,
+    error: error.vessels ?? error.certificates ?? error.crew,
     refetch: refresh.all,
   };
 }

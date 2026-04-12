@@ -1,14 +1,32 @@
-import { useDashboardScope, useProjectEntitlements } from "@/src/context";
-import { useVesselsHealthData, VesselHealthStatus } from "@/src/hooks";
+import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
+import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
+import {
+  useVesselsHealthData,
+  type VesselHealthStatus,
+} from "@/src/hooks/dashboard/useVesselsHealthData";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { Button, MiniPill, Text, Tone, toneClasses } from "../../ui";
 
 const MAX = 10;
+type VesselHealthFilter = "ALL" | "AT_RISK" | "HEALTHY";
+
+const FILTERS: { key: VesselHealthFilter; label: string }[] = [
+  { key: "ALL", label: "All" },
+  { key: "AT_RISK", label: "At risk" },
+  { key: "HEALTHY", label: "Healthy" },
+];
+
+function matchesFilter(status: VesselHealthStatus, filter: VesselHealthFilter) {
+  if (filter === "AT_RISK") return status !== "OK";
+  if (filter === "HEALTHY") return status === "OK";
+  return true;
+}
 
 function toneFor(s: VesselHealthStatus): Tone {
   if (s === "CRITICAL") return "fail";
@@ -27,16 +45,21 @@ export default function VesselsHealthModule() {
   const { isModuleEnabled } = useProjectEntitlements();
   const { data, isLoading, error, refetch } = useVesselsHealthData();
   const router = useRouter();
+  const [filter, setFilter] = useState<VesselHealthFilter>("ALL");
 
-  const top = data.vessels.slice(0, MAX);
+  const top = useMemo(() => {
+    return data.vessels
+      .filter((v) => matchesFilter(v.status, filter))
+      .slice(0, MAX);
+  }, [data.vessels, filter]);
 
   return (
     <ModuleFrame isLoading={isLoading} error={error} onRetry={refetch}>
       {!isModuleEnabled("vessels") ? (
         <ModuleUnavailableState label="Vessels" />
       ) : (
-      <View className="flex-1 p-3 border border-border">
-        <View className="flex-1 gap-3">
+        <View className="flex-1 p-3 border border-border">
+          <View className="flex-1 gap-3">
           {/* Header (mini summary) */}
           <View className="flex-row items-center justify-between">
             <Text className="text-sm font-semibold text-textMain">
@@ -57,10 +80,42 @@ export default function VesselsHealthModule() {
             </View>
           </View>
 
+          <View className="flex-row flex-wrap gap-2">
+            {FILTERS.map((item) => {
+              const active = item.key === filter;
+
+              return (
+                <Pressable
+                  key={item.key}
+                  onPress={() => setFilter(item.key)}
+                  className={cn(
+                    "rounded-full border px-3 py-1",
+                    active
+                      ? "border-accent/60 bg-accent/15"
+                      : "border-border bg-baseBg/35",
+                  )}
+                >
+                  <Text
+                    className={cn(
+                      "text-[10px] font-semibold",
+                      active ? "text-accent" : "text-muted",
+                    )}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
           {/* List */}
           {top.length === 0 ? (
             <View className="flex-1">
-              <Text className="text-xs text-muted">No vessels found.</Text>
+              <Text className="text-xs text-muted">
+                {filter === "ALL"
+                  ? "No vessels found."
+                  : "No vessels match this filter."}
+              </Text>
             </View>
           ) : (
             <ScrollView
@@ -170,8 +225,8 @@ export default function VesselsHealthModule() {
           >
             View All Vessels
           </Button>
+          </View>
         </View>
-      </View>
       )}
     </ModuleFrame>
   );

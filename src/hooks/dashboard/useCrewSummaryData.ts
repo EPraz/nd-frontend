@@ -1,4 +1,4 @@
-import { useProjectData } from "@/src/context";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
 import { useMemo } from "react";
 
 export type CrewSummaryData = {
@@ -14,7 +14,7 @@ export type CrewSummaryData = {
 };
 
 export function useCrewSummaryData() {
-  const { crew, certificates, loading, error, refresh } = useProjectData();
+  const { vessels, crew, loading, error, refresh } = useProjectData();
 
   const data = useMemo<CrewSummaryData>(() => {
     let active = 0;
@@ -24,6 +24,13 @@ export function useCrewSummaryData() {
       string,
       { assetName: string; activeCount: number }
     >();
+
+    for (const vessel of vessels) {
+      vesselMap.set(vessel.id, {
+        assetName: vessel.name,
+        activeCount: 0,
+      });
+    }
 
     for (const member of crew) {
       if (!vesselMap.has(member.assetId)) {
@@ -41,14 +48,10 @@ export function useCrewSummaryData() {
       }
     }
 
-    // Detect vessels without active crew
-    const vesselsFromCertificates = new Set(certificates.map((c) => c.assetId));
-
     let vesselsWithoutActiveCrew = 0;
 
-    for (const vesselId of vesselsFromCertificates) {
-      const vessel = vesselMap.get(vesselId);
-      if (!vessel || vessel.activeCount === 0) {
+    for (const vessel of vesselMap.values()) {
+      if (vessel.activeCount === 0) {
         vesselsWithoutActiveCrew += 1;
       }
     }
@@ -59,8 +62,12 @@ export function useCrewSummaryData() {
         assetName: value.assetName,
         activeCount: value.activeCount,
       }))
-      .sort((a, b) => b.activeCount - a.activeCount)
-      .slice(0, 5);
+      .sort((a, b) => {
+        if (a.activeCount !== b.activeCount) {
+          return a.activeCount - b.activeCount;
+        }
+        return a.assetName.localeCompare(b.assetName);
+      });
 
     return {
       total: crew.length,
@@ -69,12 +76,12 @@ export function useCrewSummaryData() {
       vesselsWithoutActiveCrew,
       crewByVessel,
     };
-  }, [crew, certificates]);
+  }, [vessels, crew]);
 
   return {
     data,
-    isLoading: loading.crew,
-    error: error.crew,
-    refetch: refresh.crew,
+    isLoading: loading.vessels || loading.crew,
+    error: error.vessels ?? error.crew,
+    refetch: refresh.all,
   };
 }
