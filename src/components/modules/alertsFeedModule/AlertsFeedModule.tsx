@@ -1,5 +1,9 @@
-import { useDashboardScope } from "@/src/context";
-import { AlertSeverity, useAlertsFeedData } from "@/src/hooks";
+import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
+import {
+  type AlertItem,
+  type AlertSeverity,
+  useAlertsFeedData,
+} from "@/src/hooks/dashboard/useAlertsFeedData";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -27,6 +31,11 @@ function sevRank(sev: AlertSeverity) {
   return 2;
 }
 
+function alertRoute(type: AlertItem["type"]) {
+  if (type === "MAINTENANCE") return "/projects/[projectId]/maintenance";
+  return "/projects/[projectId]/certificates";
+}
+
 export default function AlertsFeedModule() {
   const { projectId } = useDashboardScope();
   const { data, isLoading, error, refetch } = useAlertsFeedData();
@@ -48,9 +57,7 @@ export default function AlertsFeedModule() {
       <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanel p-3 web:backdrop-blur-md">
         <View className="flex-1 gap-3">
           {data.length === 0 ? (
-            <View className="flex-1">
-              <Text className="text-xs text-muted">No alerts.</Text>
-            </View>
+            <EmptyAlertsState />
           ) : (
             <ScrollView
               className="flex-1"
@@ -70,7 +77,7 @@ export default function AlertsFeedModule() {
                     key={a.id}
                     onPress={() =>
                       router.push({
-                        pathname: "/projects/[projectId]/alerts",
+                        pathname: alertRoute(a.type),
                         params: { projectId },
                       })
                     }
@@ -143,12 +150,7 @@ export default function AlertsFeedModule() {
             size="sm"
             className="rounded-xl"
             disabled
-            onPress={() =>
-              router.push({
-                pathname: "/projects/[projectId]/alerts",
-                params: { projectId },
-              })
-            }
+            onPress={() => undefined}
             leftIcon={
               <Ionicons
                 name="folder-outline"
@@ -162,5 +164,28 @@ export default function AlertsFeedModule() {
         </View>
       </View>
     </ModuleFrame>
+  );
+}
+
+function EmptyAlertsState() {
+  return (
+    <View className="flex-1 items-center justify-center gap-3 rounded-2xl border border-border bg-baseBg/25 px-4 py-6">
+      <View className="h-10 w-10 items-center justify-center rounded-2xl border border-success/25 bg-success/10">
+        <Ionicons
+          name="checkmark-circle-outline"
+          size={20}
+          color="rgba(255,255,255,0.85)"
+        />
+      </View>
+      <View className="max-w-[260px] gap-1">
+        <Text className="text-center text-sm font-semibold text-textMain">
+          No active alerts
+        </Text>
+        <Text className="text-center text-xs leading-5 text-muted">
+          Certificates and maintenance items will appear here when they need
+          attention.
+        </Text>
+      </View>
+    </View>
   );
 }

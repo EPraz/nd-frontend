@@ -1,23 +1,27 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { CertificateDto } from "../features/certificates/contracts/certificates.contract";
+import type { AssetDto } from "../contracts/assets.contract";
+import type { CertificateDto } from "../features/certificates/contracts/certificates.contract";
 import { useCertificatesByProject } from "../features/certificates/hooks/useCertificatesByProject";
-import { CrewDto } from "../features/crew";
+import type { CrewDto } from "../features/crew/contracts";
 import { useCrewByProject } from "../features/crew/hooks/useCrewByProject";
-import { FuelDto } from "../features/fuel/contracts/fuel.contract";
+import type { FuelDto } from "../features/fuel/contracts/fuel.contract";
 import { useFuelByProject } from "../features/fuel/hooks/useFuelByProject";
-import { MaintenanceDto } from "../features/maintenance";
+import type { MaintenanceDto } from "../features/maintenance/contracts";
 import { useMaintenanceByProject } from "../features/maintenance/hooks/useMaintenanceByProject";
+import { useVessels } from "../features/vessels/hooks/useVessels";
 import { useProjectContext } from "./ProjectProvider";
 
 // Tipos: ajusta imports si ya tienes DTOs tipados
 
 type ProjectDataContextValue = {
+  vessels: AssetDto[];
   certificates: CertificateDto[];
   crew: CrewDto[];
   fuel: FuelDto[];
   maintenance: MaintenanceDto[];
 
   loading: {
+    vessels: boolean;
     certificates: boolean;
     crew: boolean;
     fuel: boolean;
@@ -25,6 +29,7 @@ type ProjectDataContextValue = {
   };
 
   error: {
+    vessels: string | null;
     certificates: string | null;
     crew: string | null;
     fuel: string | null;
@@ -32,6 +37,7 @@ type ProjectDataContextValue = {
   };
 
   refresh: {
+    vessels: () => void;
     certificates: () => void;
     crew: () => void;
     fuel: () => void;
@@ -49,6 +55,7 @@ export function ProjectDataProvider({
 }) {
   const { projectId } = useProjectContext();
 
+  const vessels = useVessels(projectId);
   const certs = useCertificatesByProject(projectId);
   const crew = useCrewByProject(projectId);
   const fuel = useFuelByProject(projectId);
@@ -56,12 +63,14 @@ export function ProjectDataProvider({
 
   const value = useMemo<ProjectDataContextValue>(
     () => ({
+      vessels: vessels.vessels ?? [],
       certificates: certs.certificates ?? [],
       crew: crew.crew ?? [],
       fuel: fuel.fuelLogs ?? [],
       maintenance: maintenance.maintenance ?? [],
 
       loading: {
+        vessels: vessels.loading,
         certificates: certs.loading,
         crew: crew.loading,
         fuel: fuel.loading,
@@ -69,6 +78,7 @@ export function ProjectDataProvider({
       },
 
       error: {
+        vessels: vessels.error,
         certificates: certs.error,
         crew: crew.error,
         fuel: fuel.error,
@@ -76,11 +86,13 @@ export function ProjectDataProvider({
       },
 
       refresh: {
+        vessels: vessels.refresh,
         certificates: certs.refresh,
         crew: crew.refresh,
         fuel: fuel.refresh,
         maintenance: maintenance.refresh,
         all: () => {
+          vessels.refresh();
           certs.refresh();
           crew.refresh();
           fuel.refresh();
@@ -89,6 +101,7 @@ export function ProjectDataProvider({
       },
     }),
     [
+      vessels,
       certs,
       crew,
       fuel,
