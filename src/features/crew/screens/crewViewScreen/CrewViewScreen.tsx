@@ -5,7 +5,6 @@ import {
   CardHeaderRow,
   CardTitle,
   ConfirmModal,
-  DocumentPreview,
   ErrorState,
   FieldDisplay,
   Loading,
@@ -13,15 +12,13 @@ import {
   Text,
 } from "@/src/components";
 import { useToast } from "@/src/context";
-import { getBaseUrl } from "@/src/api/baseUrl";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Linking, Pressable, View } from "react-native";
-import { useMemo, useState } from "react";
+import { Pressable, View } from "react-native";
+import { useState } from "react";
 import { CrewStatusPill } from "../../components";
 import { useCrewById, useDeleteCrew } from "../../hooks";
-import { useCrewCertificatesByCrew } from "@/src/features/crew-certificates/hooks";
-import { CertificateStatusPill, WorkflowStatusPill } from "@/src/features/certificates/components";
 
 function formatDate(value?: string | null): string {
   return value ? value.slice(0, 10) : "-";
@@ -47,20 +44,11 @@ export default function CrewViewScreen() {
 
   const { crew, loading, error, refresh } = useCrewById(pid, vid, cid);
   const {
-    certificates,
-    loading: certificatesLoading,
-    error: certificatesError,
-    refresh: refreshCertificates,
-  } = useCrewCertificatesByCrew(pid, vid, cid);
-  const {
     submit: deleteCrew,
     loading: deleting,
     error: deleteError,
   } = useDeleteCrew(pid, vid, cid);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedCertificateId, setSelectedCertificateId] = useState<string | null>(
-    null,
-  );
 
   const goBack = () => router.back();
   const goVessel = () => router.push(`/projects/${pid}/vessels/${vid}`);
@@ -79,49 +67,34 @@ export default function CrewViewScreen() {
       show("Failed to delete crew member", "error");
     }
   }
-  const assignedVesselName = crew?.assetName ?? crew?.asset?.name ?? "-";
-  const selectedCertificate = useMemo(
-    () =>
-      certificates.find((item) => item.id === selectedCertificateId) ??
-      certificates[0] ??
-      null,
-    [certificates, selectedCertificateId],
-  );
-  const selectedAttachment = selectedCertificate?.attachments[0] ?? null;
-
-  function toAbsoluteUrl(url: string) {
-    return url.startsWith("http") ? url : `${getBaseUrl()}${url}`;
-  }
-
-  async function openAttachment(url: string) {
-    const absoluteUrl = toAbsoluteUrl(url);
-    await Linking.openURL(absoluteUrl);
-  }
 
   if (loading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={refresh} />;
-  if (!crew)
+  if (!crew) {
     return <ErrorState message="Crew member not found." onRetry={refresh} />;
+  }
+
+  const assignedVesselName = crew.assetName ?? crew.asset?.name ?? "-";
 
   return (
-    <View className="flex-1 bg-shellCanvas p-4 web:p-6 gap-5">
+    <View className="flex-1 gap-5 bg-shellCanvas p-4 web:p-6">
       <View className="gap-3">
         <Pressable
           onPress={goBack}
           className="self-start flex-row items-center gap-2"
         >
           <Ionicons name="chevron-back" size={16} className="text-accent" />
-          <Text className="text-accent font-semibold">Back</Text>
+          <Text className="font-semibold text-accent">Back</Text>
         </Pressable>
 
         <View className="flex-row items-start justify-between gap-4">
-          <View className="gap-1 flex-1">
-            <Text className="text-textMain text-[34px] font-semibold leading-[110%]">
+          <View className="flex-1 gap-1">
+            <Text className="text-[34px] font-semibold leading-[110%] text-textMain">
               Crew Member - {crew.fullName}
             </Text>
-            <Text className="text-muted text-[14px]">
-              View identity, contract, experience, familiarization, and medical
-              readiness for this crew member.
+            <Text className="text-[14px] text-muted">
+              View identity, contract, leave planning, familiarization, and
+              medical readiness for this crew member.
             </Text>
           </View>
 
@@ -175,7 +148,7 @@ export default function CrewViewScreen() {
               onPress={goCertificates}
               className="rounded-full"
             >
-              Certificates
+              Crew Certificates
             </Button>
           </View>
         </View>
@@ -188,13 +161,16 @@ export default function CrewViewScreen() {
               <CardTitle className="text-[16px] text-textMain">
                 Crew Overview
               </CardTitle>
-              <CrewStatusPill status={crew.status} />
+              <CrewStatusPill
+                status={crew.status}
+                inactiveReason={crew.inactiveReason}
+              />
             </CardHeaderRow>
 
             <CardContent className="px-6">
               <View className="gap-4">
                 <View className="gap-2">
-                  <Text className="text-textMain text-[22px] font-semibold">
+                  <Text className="text-[22px] font-semibold text-textMain">
                     {crew.fullName}
                   </Text>
 
@@ -202,7 +178,7 @@ export default function CrewViewScreen() {
                     {crew.rank ? (
                       <MiniPill>
                         Rank:{" "}
-                        <Text className="text-textMain font-semibold">
+                        <Text className="font-semibold text-textMain">
                           {crew.rank}
                         </Text>
                       </MiniPill>
@@ -211,8 +187,17 @@ export default function CrewViewScreen() {
                     {crew.department ? (
                       <MiniPill>
                         Department:{" "}
-                        <Text className="text-textMain font-semibold">
+                        <Text className="font-semibold text-textMain">
                           {crew.department}
+                        </Text>
+                      </MiniPill>
+                    ) : null}
+
+                    {crew.inactiveReason ? (
+                      <MiniPill>
+                        Inactive Reason:{" "}
+                        <Text className="font-semibold text-textMain">
+                          {crew.inactiveReason}
                         </Text>
                       </MiniPill>
                     ) : null}
@@ -221,6 +206,16 @@ export default function CrewViewScreen() {
 
                 <View className="gap-4 web:flex-row">
                   <View className="flex-1 gap-4">
+                    <FieldDisplay
+                      label="Assigned Vessel"
+                      value={
+                        <Pressable onPress={goVessel}>
+                          <Text className="font-semibold text-accent">
+                            {assignedVesselName}
+                          </Text>
+                        </Pressable>
+                      }
+                    />
                     <FieldDisplay label="Nationality" value={crew.nationality ?? "-"} />
                     <FieldDisplay
                       label="Date of Birth"
@@ -237,16 +232,6 @@ export default function CrewViewScreen() {
                     <FieldDisplay
                       label="Personal Email"
                       value={crew.personalEmail ?? "-"}
-                    />
-                    <FieldDisplay
-                      label="Assigned Vessel"
-                      value={
-                        <Pressable onPress={goVessel}>
-                          <Text className="text-accent font-semibold">
-                            {assignedVesselName}
-                          </Text>
-                        </Pressable>
-                      }
                     />
                   </View>
 
@@ -270,6 +255,10 @@ export default function CrewViewScreen() {
                     <FieldDisplay
                       label="Disembarkation"
                       value={formatDate(crew.expectedDateOfDisembarkation)}
+                    />
+                    <FieldDisplay
+                      label="Next Vacation"
+                      value={formatDate(crew.nextVacationDate)}
                     />
                   </View>
                 </View>
@@ -342,7 +331,49 @@ export default function CrewViewScreen() {
           </Card>
         </View>
 
-        <View className="w-full web:lg:w-[380px] gap-5">
+        <View className="w-full gap-5 web:lg:w-[380px]">
+          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <CardTitle className="text-[16px] text-textMain">
+                Crew Photo
+              </CardTitle>
+            </CardHeaderRow>
+
+            <CardContent className="px-6">
+              <View className="gap-4">
+                <View className="h-[260px] overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft">
+                  {crew.photoUrl ? (
+                    <Image
+                      source={{ uri: crew.photoUrl }}
+                      contentFit="cover"
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <View className="flex-1 items-center justify-center gap-2 px-4">
+                      <Ionicons
+                        name="person-circle-outline"
+                        size={52}
+                        className="text-muted"
+                      />
+                      <Text className="font-semibold text-textMain">
+                        No crew photo
+                      </Text>
+                      <Text className="text-center text-[12px] leading-[18px] text-muted">
+                        Upload a crew image from edit mode to keep quick views
+                        and profile cards current.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <FieldDisplay
+                  label="Stored file"
+                  value={crew.photoFileName ?? "-"}
+                />
+              </View>
+            </CardContent>
+          </Card>
+
           <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
             <CardHeaderRow>
               <CardTitle className="text-[16px] text-textMain">
@@ -353,11 +384,11 @@ export default function CrewViewScreen() {
             <CardContent className="px-6">
               <View className="gap-4">
                 <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
-                  <Text className="text-muted text-[12px]">Current State</Text>
-                  <Text className="text-textMain text-[26px] font-semibold">
+                  <Text className="text-[12px] text-muted">Current State</Text>
+                  <Text className="text-[26px] font-semibold text-textMain">
                     {formatMedical(crew.medicalCertificateValid)}
                   </Text>
-                  <Text className="text-muted text-[12px] mt-1">
+                  <Text className="mt-1 text-[12px] text-muted">
                     Expiration: {formatDate(crew.medicalCertificateExpirationDate)}
                   </Text>
                 </View>
@@ -367,145 +398,6 @@ export default function CrewViewScreen() {
                   value={crew.medicalRestrictions ?? "-"}
                 />
               </View>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-            <CardHeaderRow>
-              <CardTitle className="text-[16px] text-textMain">
-                Crew Certificates
-              </CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onPress={goCertificates}
-                className="rounded-full"
-              >
-                Open Crew Certificates
-              </Button>
-            </CardHeaderRow>
-
-            <CardContent className="px-6">
-              <View className="gap-3">
-                {certificatesLoading ? (
-                  <Text className="text-muted text-[13px]">Loading certificates…</Text>
-                ) : certificatesError ? (
-                  <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
-                    <Text className="text-[13px] text-destructive">
-                      {certificatesError}
-                    </Text>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onPress={refreshCertificates}
-                      className="rounded-full self-start"
-                    >
-                      Retry
-                    </Button>
-                  </View>
-                ) : certificates.length === 0 ? (
-                  <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
-                    <Text className="text-[13px] text-textMain">
-                      No crew certificates uploaded yet for this crew member.
-                    </Text>
-                    <Text className="text-[12px] text-muted">
-                      Start from the crew certificates module to upload evidence or review requirements.
-                    </Text>
-                  </View>
-                ) : (
-                  certificates.map((item) => (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => setSelectedCertificateId(item.id)}
-                      className={[
-                        "rounded-[18px] border p-4 gap-3",
-                        selectedCertificate?.id === item.id
-                          ? "border-accent bg-accent/10"
-                          : "border-shellLine bg-shellPanelSoft",
-                      ].join(" ")}
-                    >
-                      <View className="gap-2">
-                        <Text className="text-textMain font-semibold text-[13px]">
-                          {item.certificateName}
-                        </Text>
-                        <Text className="text-muted text-[12px]">
-                          {item.number ?? item.certificateCode}
-                        </Text>
-                      </View>
-
-                      <View className="flex-row flex-wrap gap-2">
-                        <CertificateStatusPill status={item.status} />
-                        <WorkflowStatusPill status={item.workflowStatus} />
-                      </View>
-                    </Pressable>
-                  ))
-                )}
-
-                <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
-                  <Text className="text-[12px] text-muted">
-                    Operational Notes
-                  </Text>
-                  <Text className="text-textMain text-[13px] leading-[20px] mt-1">
-                    {crew.notes ?? "No operational notes recorded yet."}
-                  </Text>
-                </View>
-              </View>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-            <CardHeaderRow>
-              <CardTitle className="text-[16px] text-textMain">
-                Certificate Preview
-              </CardTitle>
-            </CardHeaderRow>
-
-            <CardContent className="px-6">
-              {selectedCertificate && selectedAttachment ? (
-                <View className="gap-4">
-                  <View className="gap-2">
-                    <Text className="text-textMain font-semibold text-[14px]">
-                      {selectedCertificate.certificateName}
-                    </Text>
-                    <View className="flex-row flex-wrap gap-2">
-                      <MiniPill>{selectedAttachment.fileName}</MiniPill>
-                      <MiniPill>{selectedAttachment.mimeType}</MiniPill>
-                    </View>
-                  </View>
-
-                  <DocumentPreview
-                    attachmentUrl={toAbsoluteUrl(selectedAttachment.url)}
-                    mimeType={selectedAttachment.mimeType}
-                  />
-
-                  <View className="flex-row flex-wrap gap-2">
-                    <Button
-                      variant="softAccent"
-                      size="sm"
-                      onPress={() => openAttachment(selectedAttachment.url)}
-                      className="rounded-full"
-                    >
-                      Open original
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onPress={() =>
-                        router.push(
-                          `/projects/${pid}/vessels/${vid}/crew/${cid}/certificates/${selectedCertificate.id}`,
-                        )
-                      }
-                      className="rounded-full"
-                    >
-                      Open certificate
-                    </Button>
-                  </View>
-                </View>
-              ) : (
-                <Text className="text-[13px] text-textMain">
-                  Select a crew certificate with an uploaded file to preview it here.
-                </Text>
-              )}
             </CardContent>
           </Card>
         </View>

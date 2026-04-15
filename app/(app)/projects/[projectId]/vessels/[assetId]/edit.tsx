@@ -1,304 +1,442 @@
-// app/projects/[projectId]/vessels/[assetId]/edit.tsx
-import { Field, RowInfo, Text } from "@/src/components";
-import { UpdateVesselProfileInput } from "@/src/features/vessels/contracts/vessel.contract";
-import { useUpdateVesselProfile } from "@/src/features/vessels/hooks/useUpdateVesselProfile";
-import { useVessel } from "@/src/features/vessels/hooks/useVessel"; // ya lo tienes (Asset)
-import { useVesselProfile } from "@/src/features/vessels/hooks/useVesselProfile";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeaderRow,
+  CardTitle,
+  ErrorState,
+  Field,
+  Loading,
+  Text,
+} from "@/src/components";
+import type { UploadFileInput } from "@/src/contracts/uploads.contract";
+import { useToast } from "@/src/context";
+import { pickImageUpload } from "@/src/helpers/pickImageUpload";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Switch, View } from "react-native";
+import { ScrollView, Switch, View } from "react-native";
+import { removeVesselImage, uploadVesselImage } from "@/src/features/vessels/api/vessel-profile.api";
+import { VesselImagePanel } from "@/src/features/vessels/components";
+import type { UpdateVesselProfileInput } from "@/src/features/vessels/contracts/vessel.contract";
+import {
+  useUpdateVesselProfile,
+  useVessel,
+  useVesselProfile,
+} from "@/src/features/vessels/hooks";
 
 type FormState = {
-  name: string; // asset.name (si lo editas aquí, sería otro endpoint; si no, pon readonly)
   identifierType: "IMO" | "LICENSE";
   imo: string;
   licenseNumber: string;
   flag: string;
-
+  email: string;
   callSign: string;
   mmsi: string;
   homePort: string;
-
   vesselType: string;
   classSociety: string;
   builder: string;
   yearBuilt: string;
 };
 
-function norm(v: string) {
-  return v.trim();
+function normalize(value: string) {
+  return value.trim();
+}
+
+function PreviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="flex-row items-center justify-between gap-4">
+      <Text className="text-[12px] text-muted">{label}</Text>
+      <Text className="text-right text-[13px] font-semibold text-textMain">
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+function buildInitialForm(profile: ReturnType<typeof useVesselProfile>["profile"]): FormState {
+  return {
+    identifierType: (profile?.identifierType ?? "IMO") as "IMO" | "LICENSE",
+    imo: profile?.imo ?? "",
+    licenseNumber: profile?.licenseNumber ?? "",
+    flag: profile?.flag ?? "",
+    email: profile?.email ?? "",
+    callSign: profile?.callSign ?? "",
+    mmsi: profile?.mmsi ?? "",
+    homePort: profile?.homePort ?? "",
+    vesselType: profile?.vesselType ?? "",
+    classSociety: profile?.classSociety ?? "",
+    builder: profile?.builder ?? "",
+    yearBuilt: profile?.yearBuilt ? String(profile.yearBuilt) : "",
+  };
 }
 
 export default function EditVesselScreen() {
   const router = useRouter();
+  const { show } = useToast();
   const { projectId, assetId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
   }>();
+
   const pid = String(projectId);
   const aid = String(assetId);
-
   const backHref = `/projects/${pid}/vessels/${aid}`;
 
-  const { vessel, loading: vesselLoading } = useVessel(pid, aid);
-  const {
-    profile,
-    loading: profileLoading,
-    error,
-    refresh,
-  } = useVesselProfile(pid, aid);
-  const {
-    submit,
-    loading: saving,
-    error: saveError,
-  } = useUpdateVesselProfile(pid, aid);
+  const vesselState = useVessel(pid, aid);
+  const profileState = useVesselProfile(pid, aid);
+  const updateState = useUpdateVesselProfile(pid, aid);
 
-  const loading = vesselLoading || profileLoading;
-  const isBusy = loading || saving;
-
-  const initial = useMemo<FormState>(() => {
-    const idType = (profile?.identifierType ?? "IMO") as "IMO" | "LICENSE";
-    return {
-      name: vessel?.name ?? "",
-      identifierType: idType,
-      imo: profile?.imo ?? "",
-      licenseNumber: profile?.licenseNumber ?? "",
-      flag: profile?.flag ?? "",
-
-      callSign: profile?.callSign ?? "",
-      mmsi: profile?.mmsi ?? "",
-      homePort: profile?.homePort ?? "",
-
-      vesselType: profile?.vesselType ?? "",
-      classSociety: profile?.classSociety ?? "",
-      builder: profile?.builder ?? "",
-      yearBuilt: profile?.yearBuilt ? String(profile.yearBuilt) : "",
-    };
-  }, [vessel?.name, profile]);
+  const loading = vesselState.loading || profileState.loading;
+  const initial = useMemo(() => buildInitialForm(profileState.profile), [profileState.profile]);
 
   const [form, setForm] = useState<FormState>(initial);
+  const [pendingImage, setPendingImage] = useState<UploadFileInput | null>(null);
+  const [removeStoredImage, setRemoveStoredImage] = useState(false);
+  const [mediaBusy, setMediaBusy] = useState(false);
 
-  // Re-sincroniza cuando llega data (primera carga)
   useEffect(() => {
     setForm(initial);
   }, [initial]);
 
+  const isBusy = loading || updateState.loading || mediaBusy;
   const useLicense = form.identifierType === "LICENSE";
+  const hasStoredImage = Boolean(vesselState.vessel?.imageUrl);
 
-  const dirty = useMemo(() => {
-    const a = JSON.stringify(initial);
-    const b = JSON.stringify(form);
-    return a !== b;
-  }, [initial, form]);
+  const profileDirty = useMemo(
+    () => JSON.stringify(initial) !== JSON.stringify(form),
+    [form, initial],
+  );
+  const dirty = profileDirty || Boolean(pendingImage) || removeStoredImage;
 
   const canSubmit = useMemo(() => {
-    if (isBusy) return false;
-    if (!dirty) return false;
+    if (isBusy || !dirty) return false;
+    if (useLicense) return Boolean(normalize(form.licenseNumber));
+    return Boolean(normalize(form.imo));
+  }, [dirty, form.imo, form.licenseNumber, isBusy, useLicense]);
 
-    if (useLicense) return Boolean(norm(form.licenseNumber));
-    return Boolean(norm(form.imo));
-  }, [isBusy, dirty, useLicense, form.licenseNumber, form.imo]);
+  const imagePreviewUrl = pendingImage?.uri ?? (removeStoredImage ? null : vesselState.vessel?.imageUrl ?? null);
+  const imageFileName = removeStoredImage ? null : vesselState.vessel?.imageFileName ?? null;
 
-  function goBackOrTo(fallbackHref: string) {
-    if (router.canGoBack?.()) return router.back();
-    router.replace(fallbackHref);
+  function goBack() {
+    if (router.canGoBack?.()) {
+      router.back();
+      return;
+    }
+
+    router.replace(backHref);
   }
 
-  function onToggleIdentifier(nextUseLicense: boolean) {
-    setForm((p) => ({
-      ...p,
-      identifierType: nextUseLicense ? "LICENSE" : "IMO",
-      imo: nextUseLicense ? "" : p.imo,
-      licenseNumber: nextUseLicense ? p.licenseNumber : "",
-    }));
+  async function handleSelectImage() {
+    const file = await pickImageUpload();
+    if (!file) return;
+    setPendingImage(file);
+    setRemoveStoredImage(false);
   }
 
-  async function onSave() {
+  function handleRemoveImage() {
+    if (pendingImage) {
+      setPendingImage(null);
+      return;
+    }
+
+    if (hasStoredImage) {
+      setRemoveStoredImage(true);
+    }
+  }
+
+  function handleReset() {
+    setForm(initial);
+    setPendingImage(null);
+    setRemoveStoredImage(false);
+  }
+
+  async function handleSave() {
     const input: UpdateVesselProfileInput = {
       identifierType: form.identifierType,
-      imo: form.identifierType === "IMO" ? norm(form.imo) : undefined,
+      imo: form.identifierType === "IMO" ? normalize(form.imo) : undefined,
       licenseNumber:
         form.identifierType === "LICENSE"
-          ? norm(form.licenseNumber)
+          ? normalize(form.licenseNumber)
           : undefined,
-      flag: norm(form.flag) || undefined,
-
-      callSign: norm(form.callSign) || undefined,
-      mmsi: norm(form.mmsi) || undefined,
-      homePort: norm(form.homePort) || undefined,
-
-      vesselType: norm(form.vesselType) || undefined,
-      classSociety: norm(form.classSociety) || undefined,
-      builder: norm(form.builder) || undefined,
+      flag: normalize(form.flag) || undefined,
+      email: normalize(form.email) || undefined,
+      callSign: normalize(form.callSign) || undefined,
+      mmsi: normalize(form.mmsi) || undefined,
+      homePort: normalize(form.homePort) || undefined,
+      vesselType: normalize(form.vesselType) || undefined,
+      classSociety: normalize(form.classSociety) || undefined,
+      builder: normalize(form.builder) || undefined,
       yearBuilt: form.yearBuilt.trim() ? Number(form.yearBuilt) : undefined,
     };
 
     try {
-      await submit(input);
+      await updateState.submit(input);
+
+      setMediaBusy(true);
+
+      try {
+        if (pendingImage) {
+          await uploadVesselImage(pid, aid, pendingImage);
+        } else if (removeStoredImage && hasStoredImage) {
+          await removeVesselImage(pid, aid);
+        }
+      } catch {
+        show(
+          "Vessel profile was saved, but the image update needs another try.",
+          "error",
+        );
+        await Promise.all([vesselState.refresh(), profileState.refresh()]);
+        setPendingImage(null);
+        setRemoveStoredImage(false);
+        return;
+      }
+
+      show("Vessel profile updated", "success");
       router.replace(backHref);
     } catch {
-      // hook sets error
+      // hook exposes the API error
+    } finally {
+      setMediaBusy(false);
     }
   }
 
-  function onReset() {
-    setForm(initial);
+  if (loading) return <Loading fullScreen />;
+
+  if (!vesselState.vessel || vesselState.error) {
+    return (
+      <ErrorState
+        message={vesselState.error ?? "Vessel not found."}
+        onRetry={async () => {
+          await Promise.all([vesselState.refresh(), profileState.refresh()]);
+        }}
+      />
+    );
   }
 
+  const identifierPreview = useLicense
+    ? normalize(form.licenseNumber)
+      ? `LIC ${normalize(form.licenseNumber)}`
+      : "-"
+    : normalize(form.imo)
+      ? `IMO ${normalize(form.imo)}`
+      : "-";
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
-        contentContainerClassName="gap-5 pb-10"
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View className="flex flex-col gap-4 web:flex-row web:items-center web:justify-between">
-          <View className="gap-2">
-            <Pressable
-              onPress={() => goBackOrTo(backHref)}
+        <View className="gap-4 web:flex-row web:items-start web:justify-between">
+          <View className="flex-1 gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={goBack}
               disabled={isBusy}
-              className={[
-                "flex-row items-center gap-2",
-                isBusy ? "opacity-50" : "hover:opacity-90",
-              ].join(" ")}
+              className="self-start rounded-full px-0"
+              leftIcon={
+                <Ionicons
+                  name="chevron-back"
+                  size={16}
+                  className="text-accent"
+                />
+              }
             >
-              <Ionicons name="arrow-back" size={18} color="white" />
-              <Text className="text-textMain/80">Back to Vessel</Text>
-            </Pressable>
+              Back to vessel
+            </Button>
 
-            <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
-              Edit {vessel?.name}
+            <Text className="text-[34px] font-semibold leading-[110%] text-textMain">
+              Edit {vesselState.vessel.name}
             </Text>
-
-            <Text className="text-textMain/60 text-[13px]">
-              Update vessel profile and identifiers.
+            <Text className="max-w-[760px] text-[14px] leading-[22px] text-muted">
+              Keep the vessel shell current with the right contact email,
+              identifier, and uploaded image. This is the source used by quick
+              views and overview presentation.
             </Text>
           </View>
 
-          <View className="flex-row items-center justify-end gap-3">
-            <Pressable
-              onPress={refresh}
+          <View className="flex-row flex-wrap items-center gap-2">
+            <Button
+              variant="icon"
+              size="iconLg"
+              onPress={async () => {
+                await Promise.all([vesselState.refresh(), profileState.refresh()]);
+              }}
               disabled={isBusy}
-              className={[
-                "h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-surface",
-                "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-                isBusy ? "opacity-50" : "hover:scale-105 active:opacity-80",
-              ].join(" ")}
-            >
-              <Ionicons name="refresh" size={18} color="white" />
-            </Pressable>
+              leftIcon={
+                <Ionicons
+                  name="refresh"
+                  size={18}
+                  className="text-textMain"
+                />
+              }
+              accessibilityLabel="Refresh vessel"
+            />
 
-            <Pressable
-              onPress={onReset}
-              disabled={isBusy || !dirty}
-              className={[
-                "rounded-full border border-white/10 bg-surface px-6 py-3",
-                "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-                isBusy || !dirty
-                  ? "opacity-50"
-                  : "hover:scale-105 active:opacity-80",
-              ].join(" ")}
+            <Button
+              variant="outline"
+              size="lg"
+              onPress={handleReset}
+              disabled={!dirty || isBusy}
+              className="rounded-full"
             >
-              <Text className="text-textMain">Reset</Text>
-            </Pressable>
+              Reset
+            </Button>
 
-            <Pressable
-              onPress={onSave}
+            <Button
+              variant="default"
+              size="lg"
+              onPress={handleSave}
               disabled={!canSubmit}
-              className={[
-                "flex-row items-center gap-2 rounded-full px-6 py-3 bg-accent",
-                "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-                !canSubmit ? "opacity-50" : "hover:scale-105 active:opacity-90",
-              ].join(" ")}
+              className="rounded-full"
+              rightIcon={
+                <Ionicons
+                  name="save-outline"
+                  size={16}
+                  className="text-textMain"
+                />
+              }
             >
-              <Ionicons name="save-outline" size={18} color="#27374D" />
-              <Text className="text-baseBg font-bold">
-                {saving ? "Saving..." : "Save Changes"}
-              </Text>
-            </Pressable>
+              {isBusy ? "Saving..." : "Save changes"}
+            </Button>
           </View>
         </View>
 
-        {/* Grid */}
         <View className="gap-5 web:lg:flex-row">
-          {/* Left */}
-          <View className="flex-1 rounded-3xl border border-white/10 bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[60%]">
-            <View className="mb-4">
-              <Text className="text-textMain text-[18px] font-semibold">
-                Vessel Details
-              </Text>
-              <Text className="text-textMain/60 text-[13px]">
-                Core profile fields. (Asset name lives on Asset; profile lives
-                on vessel-profile.)
-              </Text>
-            </View>
+          <Card className="flex-1 rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <View className="gap-1">
+                <CardTitle className="text-[16px] text-textMain">
+                  Vessel Profile
+                </CardTitle>
+                <Text className="text-[13px] text-muted">
+                  Update the operational details that matter now, without
+                  surfacing technical clutter that the client does not need.
+                </Text>
+              </View>
+            </CardHeaderRow>
 
-            <View className="gap-4">
-              {/* Identifier */}
-              <View className="rounded-3xl border border-white/10 bg-black/10 p-4 gap-4">
-                <View className="flex-row items-center justify-between">
-                  <View className="gap-1">
-                    <Text className="text-textMain font-semibold">
-                      Identifier
-                    </Text>
-                    <Text className="text-textMain/60 text-[12px]">
-                      Use IMO when available. Otherwise use License.
-                    </Text>
+            <CardContent className="px-6">
+              <View className="gap-5">
+                <View className="gap-2 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
+                  <Text className="text-[12px] text-muted">Asset name</Text>
+                  <Text className="text-[18px] font-semibold text-textMain">
+                    {vesselState.vessel.name}
+                  </Text>
+                  <Text className="text-[12px] leading-[18px] text-muted">
+                    The asset name stays managed at asset level. This screen is
+                    focused on vessel profile details.
+                  </Text>
+                </View>
+
+                <View className="gap-4 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
+                  <View className="flex-row items-center justify-between gap-4">
+                    <View className="flex-1 gap-1">
+                      <Text className="font-semibold text-textMain">
+                        Identifier
+                      </Text>
+                      <Text className="text-[12px] leading-[18px] text-muted">
+                        Keep the main vessel identifier consistent so
+                        compliance, crew, and future integrations can resolve
+                        the same asset cleanly.
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center gap-3">
+                      <Text className="text-[12px] text-muted">
+                        Use license
+                      </Text>
+                      <Switch
+                        value={useLicense}
+                        onValueChange={(value) =>
+                          setForm((current) => ({
+                            ...current,
+                            identifierType: value ? "LICENSE" : "IMO",
+                            imo: value ? "" : current.imo,
+                            licenseNumber: value ? current.licenseNumber : "",
+                          }))
+                        }
+                        disabled={isBusy}
+                      />
+                    </View>
                   </View>
 
-                  <View className="flex-row items-center gap-3">
-                    <Text className="text-textMain/70 text-[12px]">
-                      Use License
-                    </Text>
-                    <Switch
-                      value={useLicense}
-                      onValueChange={onToggleIdentifier}
-                      disabled={isBusy}
+                  {useLicense ? (
+                    <Field
+                      label="License Number *"
+                      placeholder="e.g. LIC-PA-001"
+                      value={form.licenseNumber}
+                      onChangeText={(value) =>
+                        setForm((current) => ({
+                          ...current,
+                          licenseNumber: value,
+                        }))
+                      }
+                      editable={!isBusy}
+                    />
+                  ) : (
+                    <Field
+                      label="IMO *"
+                      placeholder="e.g. 9876543"
+                      value={form.imo}
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, imo: value }))
+                      }
+                      keyboardType="numeric"
+                      editable={!isBusy}
+                    />
+                  )}
+
+                  <Field
+                    label="Flag"
+                    placeholder="e.g. PA"
+                    value={form.flag}
+                    onChangeText={(value) =>
+                      setForm((current) => ({ ...current, flag: value }))
+                    }
+                    editable={!isBusy}
+                  />
+                </View>
+
+                <View className="gap-4 web:flex-row">
+                  <View className="flex-1">
+                    <Field
+                      label="Vessel Email"
+                      placeholder="e.g. master@vesselmail.com"
+                      value={form.email}
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, email: value }))
+                      }
+                      keyboardType="email-address"
+                      editable={!isBusy}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Field
+                      label="Home Port"
+                      placeholder="e.g. Balboa"
+                      value={form.homePort}
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, homePort: value }))
+                      }
+                      editable={!isBusy}
                     />
                   </View>
                 </View>
 
-                {!useLicense ? (
-                  <Field
-                    label="IMO *"
-                    placeholder="e.g. 1234567"
-                    value={form.imo}
-                    onChangeText={(v) => setForm((p) => ({ ...p, imo: v }))}
-                    keyboardType="numeric"
-                  />
-                ) : (
-                  <Field
-                    label="License Number *"
-                    placeholder="e.g. LIC-PA-001"
-                    value={form.licenseNumber}
-                    onChangeText={(v) =>
-                      setForm((p) => ({ ...p, licenseNumber: v }))
-                    }
-                  />
-                )}
-
-                <Field
-                  label="Flag"
-                  placeholder="e.g. PA"
-                  value={form.flag}
-                  onChangeText={(v) => setForm((p) => ({ ...p, flag: v }))}
-                />
-              </View>
-
-              {/* Operations */}
-              <View className="rounded-3xl border border-white/10 bg-black/10 p-4 gap-4">
-                <Text className="text-textMain font-semibold">Operational</Text>
-
-                <View className="web:flex-row gap-4">
+                <View className="gap-4 web:flex-row">
                   <View className="flex-1">
                     <Field
                       label="Call Sign"
                       placeholder="e.g. HPXY"
                       value={form.callSign}
-                      onChangeText={(v) =>
-                        setForm((p) => ({ ...p, callSign: v }))
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, callSign: value }))
                       }
+                      editable={!isBusy}
                     />
                   </View>
                   <View className="flex-1">
@@ -306,33 +444,28 @@ export default function EditVesselScreen() {
                       label="MMSI"
                       placeholder="e.g. 123456789"
                       value={form.mmsi}
-                      onChangeText={(v) => setForm((p) => ({ ...p, mmsi: v }))}
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, mmsi: value }))
+                      }
                       keyboardType="numeric"
+                      editable={!isBusy}
                     />
                   </View>
                 </View>
 
-                <Field
-                  label="Home Port"
-                  placeholder="e.g. Balboa"
-                  value={form.homePort}
-                  onChangeText={(v) => setForm((p) => ({ ...p, homePort: v }))}
-                />
-              </View>
-
-              {/* Technical */}
-              <View className="rounded-3xl border border-white/10 bg-black/10 p-4 gap-4">
-                <Text className="text-textMain font-semibold">Technical</Text>
-
-                <View className="web:flex-row gap-4">
+                <View className="gap-4 web:flex-row">
                   <View className="flex-1">
                     <Field
                       label="Vessel Type"
                       placeholder="e.g. Bulk Carrier"
                       value={form.vesselType}
-                      onChangeText={(v) =>
-                        setForm((p) => ({ ...p, vesselType: v }))
+                      onChangeText={(value) =>
+                        setForm((current) => ({
+                          ...current,
+                          vesselType: value,
+                        }))
                       }
+                      editable={!isBusy}
                     />
                   </View>
                   <View className="flex-1">
@@ -340,22 +473,27 @@ export default function EditVesselScreen() {
                       label="Class Society"
                       placeholder="e.g. ABS"
                       value={form.classSociety}
-                      onChangeText={(v) =>
-                        setForm((p) => ({ ...p, classSociety: v }))
+                      onChangeText={(value) =>
+                        setForm((current) => ({
+                          ...current,
+                          classSociety: value,
+                        }))
                       }
+                      editable={!isBusy}
                     />
                   </View>
                 </View>
 
-                <View className="web:flex-row gap-4">
+                <View className="gap-4 web:flex-row">
                   <View className="flex-1">
                     <Field
                       label="Builder"
                       placeholder="e.g. Hyundai"
                       value={form.builder}
-                      onChangeText={(v) =>
-                        setForm((p) => ({ ...p, builder: v }))
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, builder: value }))
                       }
+                      editable={!isBusy}
                     />
                   </View>
                   <View className="flex-1">
@@ -363,66 +501,71 @@ export default function EditVesselScreen() {
                       label="Year Built"
                       placeholder="e.g. 2009"
                       value={form.yearBuilt}
-                      onChangeText={(v) =>
-                        setForm((p) => ({ ...p, yearBuilt: v }))
+                      onChangeText={(value) =>
+                        setForm((current) => ({ ...current, yearBuilt: value }))
                       }
                       keyboardType="numeric"
+                      editable={!isBusy}
                     />
                   </View>
                 </View>
+
+                {profileState.error ? (
+                  <Text className="text-destructive">{profileState.error}</Text>
+                ) : null}
+                {updateState.error ? (
+                  <Text className="text-destructive">{updateState.error}</Text>
+                ) : null}
               </View>
+            </CardContent>
+          </Card>
 
-              {error ? <Text className="text-destructive">{error}</Text> : null}
-              {saveError ? (
-                <Text className="text-destructive">{saveError}</Text>
-              ) : null}
-            </View>
-          </View>
+          <Card className="flex-1 rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <View className="gap-1">
+                <CardTitle className="text-[16px] text-textMain">
+                  Preview
+                </CardTitle>
+                <Text className="text-[13px] text-muted">
+                  Keep the quick view and vessel shell aligned with what the
+                  client actually sees.
+                </Text>
+              </View>
+            </CardHeaderRow>
 
-          {/* Right */}
-          <View className="flex-1 rounded-3xl border border-white/10 bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[40%]">
-            <View className="mb-4">
-              <Text className="text-textMain text-[18px] font-semibold">
-                Preview
-              </Text>
-              <Text className="text-textMain/60 text-[13px]">
-                Quick summary before saving.
-              </Text>
-            </View>
+            <CardContent className="px-6">
+              <View className="gap-5">
+                <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
+                  <PreviewRow label="Name" value={vesselState.vessel.name} />
+                  <PreviewRow label="Identifier" value={identifierPreview} />
+                  <PreviewRow label="Flag" value={normalize(form.flag) || "-"} />
+                  <PreviewRow
+                    label="Vessel Email"
+                    value={normalize(form.email) || "-"}
+                  />
+                  <PreviewRow
+                    label="Home Port"
+                    value={normalize(form.homePort) || "-"}
+                  />
+                  <PreviewRow
+                    label="Type"
+                    value={normalize(form.vesselType) || "-"}
+                  />
+                </View>
 
-            <View className="rounded-3xl border border-white/10 bg-black/10 p-4 gap-3">
-              <RowInfo label="Asset" value={vessel?.name ?? "—"} />
-              <RowInfo
-                label="Identifier"
-                value={
-                  form.identifierType === "IMO"
-                    ? norm(form.imo)
-                      ? `IMO ${norm(form.imo)}`
-                      : "—"
-                    : norm(form.licenseNumber)
-                      ? `LIC ${norm(form.licenseNumber)}`
-                      : "—"
-                }
-              />
-              <RowInfo label="Flag" value={norm(form.flag) || "—"} />
-              <RowInfo label="Call Sign" value={norm(form.callSign) || "—"} />
-              <RowInfo label="MMSI" value={norm(form.mmsi) || "—"} />
-              <RowInfo label="Home Port" value={norm(form.homePort) || "—"} />
-              <RowInfo label="Type" value={norm(form.vesselType) || "—"} />
-              <RowInfo label="Class" value={norm(form.classSociety) || "—"} />
-              <RowInfo
-                label="Year Built"
-                value={form.yearBuilt.trim() || "—"}
-              />
-            </View>
-
-            <View className="mt-4 rounded-3xl border border-white/10 bg-black/10 p-4">
-              <Text className="text-textMain/60 text-[12px]">
-                Tip: Identifiers consistent → mejores flujos de compliance y
-                certificados.
-              </Text>
-            </View>
-          </View>
+                <VesselImagePanel
+                  imagePreviewUrl={imagePreviewUrl}
+                  storedFileName={imageFileName}
+                  pendingFileName={pendingImage?.name ?? null}
+                  onSelectImage={handleSelectImage}
+                  onRemoveImage={handleRemoveImage}
+                  canManageImage
+                  busy={isBusy}
+                  disabled={isBusy}
+                />
+              </View>
+            </CardContent>
+          </Card>
         </View>
       </ScrollView>
     </View>

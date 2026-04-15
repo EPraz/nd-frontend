@@ -7,7 +7,8 @@ import {
 } from "@/src/components";
 import { useToast } from "@/src/context";
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import { Stat } from "@/src/helpers";
+import { formatDate, Stat } from "@/src/helpers";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -21,6 +22,16 @@ type Props = {
   onClose: () => void;
 };
 
+function displayIdentifier(vessel: AssetDto) {
+  if (vessel.vessel?.identifierType === "LICENSE") {
+    return vessel.vessel?.licenseNumber
+      ? `License ${vessel.vessel.licenseNumber}`
+      : "-";
+  }
+
+  return vessel.vessel?.imo ? `IMO ${vessel.vessel.imo}` : "-";
+}
+
 export default function VesselQuickViewModal({
   vessel,
   projectId,
@@ -33,12 +44,13 @@ export default function VesselQuickViewModal({
     projectId,
     vessel.id,
   );
-
   const {
     data: summary,
     loading: summaryLoading,
     error: summaryError,
   } = useVesselSummary(projectId, vessel.id);
+
+  const profile = vessel.vessel;
 
   const handleOpenPage = () => {
     onClose();
@@ -62,61 +74,13 @@ export default function VesselQuickViewModal({
     }
   };
 
-  const profile = vessel.vessel;
-  const identifier =
-    profile?.identifierType === "LICENSE"
-      ? profile.licenseNumber
-        ? `LIC ${profile.licenseNumber}`
-        : "—"
-      : profile?.imo
-        ? `IMO ${profile.imo}`
-        : "—";
-
-  const flag = profile?.flag ?? "—";
-
-  const crewOnboard = summaryLoading ? "…" : String(summary?.crew.active ?? 0);
-
-  const openWorkOrders = summaryLoading
-    ? "…"
-    : String(
-        (summary?.maintenance.open ?? 0) +
-          (summary?.maintenance.inProgress ?? 0),
-      );
-
-  const overdue = summaryLoading
-    ? "…"
-    : String(summary?.maintenance.overdue ?? 0);
-
-  const certificates = summaryLoading
-    ? "…"
-    : String(summary?.certificates.total ?? 0);
-
-  const expiring90 = summaryLoading
-    ? "…"
-    : String(summary?.certificates.expiringSoon ?? 0);
-
-  const lastFuel = summaryLoading
-    ? "…"
-    : summary?.fuel.lastEventAt
-      ? summary.fuel.lastEventAt.slice(0, 10)
-      : "—";
-
-  const stats = {
-    crewOnboard,
-    openWorkOrders,
-    pscRisk: overdue !== "…" && Number(overdue) > 0 ? "ATTN" : "OK",
-    certificates,
-    expiring90,
-    classRemarks: lastFuel,
-  };
-
   return (
     <QuickViewModalFrame
       portalName={vessel.name}
-      open={true}
+      open
       onClose={onClose}
-      title="Vessel Details"
-      subtitle="Quick operational snapshot. Use “Open Full Page” for full modules (certificates, crew, maintenance)."
+      title="Vessel"
+      subtitle="Quick operational snapshot for the vessel profile. Open the full page to work on certificates, crew, maintenance, and the vessel shell."
       headerActions={
         <>
           <Button
@@ -175,88 +139,126 @@ export default function VesselQuickViewModal({
       scroll
       maxWidth={980}
     >
-      {/* Top content */}
       <View className="mt-1 gap-5 web:flex-row">
-        {/* Left info */}
-        <View className="flex-1 gap-3 shrink-0">
-          <View className="gap-1">
-            <Text className="text-textMain text-[24px] font-semibold">
+        <View className="flex-1 gap-3">
+          <View className="gap-2">
+            <Text className="text-[22px] font-semibold text-textMain">
               {vessel.name}
             </Text>
-            <Text className="text-accent text-[13px]">
-              {profile?.vesselType ?? "Vessel"}
-            </Text>
+
+            <View className="flex-row flex-wrap items-center gap-2">
+              <MiniPill>{`Status: ${vessel.status ?? "-"}`}</MiniPill>
+              <MiniPill>{`Flag: ${profile?.flag ?? "-"}`}</MiniPill>
+              <MiniPill>{displayIdentifier(vessel)}</MiniPill>
+              {profile?.vesselType ? (
+                <MiniPill>{`Type: ${profile.vesselType}`}</MiniPill>
+              ) : null}
+            </View>
           </View>
 
-          <View className="mt-2 flex-row flex-wrap gap-2">
-            <MiniPill>{`Vessel ID: ${vessel.id}`}</MiniPill>
-            <MiniPill>{`Status: ${vessel.status ?? "—"}`}</MiniPill>
-            <MiniPill>{`Flag: ${flag}`}</MiniPill>
-            <MiniPill>{identifier}</MiniPill>
-          </View>
+          <Text className="text-[13px] leading-[18px] text-muted">
+            Use this quick view to confirm the vessel identity, operational
+            contact, and current readiness before opening the full vessel shell.
+          </Text>
 
-          {/* Meta row */}
-          <View className="mt-3 flex-row gap-4">
-            <View className="flex-1">
-              <Text className="text-accent text-[11px]">Identifier Type</Text>
-              <Text className="text-textMain/75 text-[13px]">
-                {profile?.identifierType ?? "—"}
-              </Text>
-            </View>
-
-            <View className="flex-1">
-              <Text className="text-accent text-[11px]">Home Port</Text>
-              <Text className="text-textMain/75 text-[13px]">
-                {profile?.homePort ?? "—"}
-              </Text>
-            </View>
-
-            <View className="flex-1">
-              <Text className="text-accent text-[11px]">Year Built</Text>
-              <Text className="text-textMain/75 text-[13px]">
-                {profile?.yearBuilt ? String(profile.yearBuilt) : "—"}
-              </Text>
+          <View className="gap-3 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
+            <Text className="font-semibold text-textMain">Profile at a glance</Text>
+            <View className="gap-4 web:flex-row">
+              <Stat label="Vessel Email" value={profile?.email ?? "-"} />
+              <Stat label="Home Port" value={profile?.homePort ?? "-"} />
+              <Stat label="Call Sign" value={profile?.callSign ?? "-"} />
+              <Stat
+                label="Year Built"
+                value={profile?.yearBuilt ? String(profile.yearBuilt) : "-"}
+              />
             </View>
           </View>
         </View>
 
-        {/* Right image placeholder */}
-        <View className="w-full web:w-[360px] shrink-0">
-          <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-shellLine bg-shellPanelSoft items-center justify-center">
-            <Text className="text-textMain text-[28px] font-semibold">
-              Image Here
-            </Text>
+        <View className="w-full shrink-0 web:w-[360px]">
+          <View className="h-[260px] w-full overflow-hidden rounded-[22px] border border-shellLine bg-shellPanelSoft">
+            {vessel.imageUrl ? (
+              <Image
+                source={{ uri: vessel.imageUrl }}
+                contentFit="cover"
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <View className="flex-1 items-center justify-center gap-2 px-4">
+                <Ionicons
+                  name="boat-outline"
+                  size={48}
+                  className="text-muted"
+                />
+                <Text className="font-semibold text-textMain">
+                  No vessel image
+                </Text>
+                <Text className="text-center text-[12px] leading-[18px] text-muted">
+                  Upload a vessel image from edit mode to replace this fallback.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
 
-      {/* Bottom stats */}
-      <View className="mt-2 gap-4 flex-col web:flex-row">
+      <View className="mt-2 flex-col gap-4 web:flex-row">
         <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-textMain font-semibold">
-              Operational Insight
-            </Text>
-          </View>
+          <Text className="mb-3 font-semibold text-textMain">
+            Operational Insight
+          </Text>
 
           <View className="gap-4 web:flex-row">
-            <Stat label="Crew Onboard" value={stats.crewOnboard} />
-            <Stat label="Open Work Orders" value={stats.openWorkOrders} />
-            <Stat label="Overdue Maint." value={overdue} />
+            <Stat
+              label="Crew onboard"
+              value={summaryLoading ? "..." : String(summary?.crew.active ?? 0)}
+            />
+            <Stat
+              label="Open maintenance"
+              value={
+                summaryLoading
+                  ? "..."
+                  : String(
+                      (summary?.maintenance.open ?? 0) +
+                        (summary?.maintenance.inProgress ?? 0),
+                    )
+              }
+            />
+            <Stat
+              label="Overdue"
+              value={
+                summaryLoading ? "..." : String(summary?.maintenance.overdue ?? 0)
+              }
+            />
           </View>
         </View>
 
         <View className="flex-1 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-textMain font-semibold">
-              Compliance Performance
-            </Text>
-          </View>
+          <Text className="mb-3 font-semibold text-textMain">
+            Compliance Snapshot
+          </Text>
 
           <View className="gap-4 web:flex-row">
-            <Stat label="Certificates" value={stats.certificates} />
-            <Stat label="Expiring (90d)" value={stats.expiring90} />
-            <Stat label="Class Remarks" value={stats.classRemarks} />
+            <Stat
+              label="Certificates"
+              value={summaryLoading ? "..." : String(summary?.certificates.total ?? 0)}
+            />
+            <Stat
+              label="Expiring soon"
+              value={
+                summaryLoading
+                  ? "..."
+                  : String(summary?.certificates.expiringSoon ?? 0)
+              }
+            />
+            <Stat
+              label="Last fuel event"
+              value={
+                summaryLoading
+                  ? "..."
+                  : formatDate(summary?.fuel.lastEventAt ?? null)
+              }
+            />
           </View>
         </View>
       </View>

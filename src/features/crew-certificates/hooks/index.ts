@@ -9,3 +9,4 @@ export * from "./useCrewCertificatesById";
 export * from "./useCrewCertificateWorkflowActions";
 export * from "./useCrewComplianceSummary";
 export * from "./useGenerateCrewCertificateRequirements";
+export * from "./useCrewCertificateOverviewStatsByProject";

@@ -7,6 +7,7 @@ export type VesselProfileDto = {
   imo: string | null;
   licenseNumber: string | null;
   flag: string | null;
+  email: string | null;
 
   callSign: string | null;
   mmsi: string | null;
@@ -33,6 +34,7 @@ export type UpdateVesselProfileInput = Partial<{
   imo: string;
   licenseNumber: string;
   flag: string;
+  email: string;
 
   callSign: string;
   mmsi: string;

@@ -77,6 +77,17 @@ export default function CrewByProjectScreen() {
           badgeColor={page.stats.inactive > 0 ? "fail" : "success"}
           badgeLabel="status"
         />
+
+        <StatCard
+          iconName="calendar-outline"
+          iconLib="ion"
+          title="Vacation Due"
+          value={String(page.stats.vacationDueNext30Days)}
+          suffix="next 30 days"
+          badgeValue={page.stats.vacationDueNext30Days > 0 ? "PLAN" : "CLEAR"}
+          badgeColor={page.stats.vacationDueNext30Days > 0 ? "fail" : "success"}
+          badgeLabel="leave planning"
+        />
       </View>
 
       <View className="flex-1 gap-4">

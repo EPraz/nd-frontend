@@ -2,6 +2,7 @@ export * from "./useCreateVessel";
 export * from "./useDeleteVessel";
 export * from "./useUpdateVesselProfile";
 export * from "./useVessel";
+export * from "./useVesselAlertsFeedData";
 export * from "./useVesselProfile";
 export * from "./useVessels";
 export * from "./useVesselsPageData";

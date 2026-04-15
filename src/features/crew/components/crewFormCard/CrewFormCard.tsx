@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   CardContent,
   CardHeaderRow,
@@ -11,10 +12,14 @@ import {
   VesselPill,
 } from "@/src/components";
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, Switch, View } from "react-native";
-import type { CrewDepartment } from "../../contracts";
+import type {
+  CrewDepartment,
+  CrewInactiveReason,
+} from "../../contracts";
 import { CrewFormValues } from "../crewFormTypes";
 
 const departmentOptions: {
@@ -23,7 +28,17 @@ const departmentOptions: {
 }[] = [
   { value: "DECK", label: "Deck" },
   { value: "ENGINE", label: "Engine" },
+  { value: "ELECTRICAL", label: "Electrical" },
   { value: "CATERING", label: "Catering" },
+  { value: "OTHER", label: "Other" },
+];
+
+const inactiveReasonOptions: {
+  value: CrewInactiveReason;
+  label: string;
+}[] = [
+  { value: "VACATION", label: "Vacation" },
+  { value: "INJURED", label: "Injured" },
   { value: "OTHER", label: "Other" },
 ];
 
@@ -36,6 +51,13 @@ type Props = {
   onCreateVessel: () => void;
   values: CrewFormValues;
   onChange: (patch: Partial<CrewFormValues>) => void;
+  photoPreviewUrl?: string | null;
+  photoFileName?: string | null;
+  pendingPhotoName?: string | null;
+  onSelectPhoto?: () => void;
+  onRemovePhoto?: () => void;
+  canManagePhoto?: boolean;
+  photoBusy?: boolean;
   localError?: string | null;
   apiError?: string | null;
   disabled?: boolean;
@@ -51,10 +73,10 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
+    <View className="gap-4 rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
       <View className="gap-1">
-        <Text className="text-textMain font-semibold text-[14px]">{title}</Text>
-        <Text className="text-muted text-[12px] leading-[18px]">
+        <Text className="text-[14px] font-semibold text-textMain">{title}</Text>
+        <Text className="text-[12px] leading-[18px] text-muted">
           {description}
         </Text>
       </View>
@@ -80,16 +102,117 @@ function SelectorOption({
       disabled={disabled}
       className={[
         "rounded-full border px-3 py-2",
-        selected ? "border-accent bg-accent/10" : "border-shellLine bg-shellPanelSoft",
+        selected
+          ? "border-accent bg-accent/10"
+          : "border-shellLine bg-shellPanelSoft",
         disabled ? "opacity-60" : "",
       ].join(" ")}
     >
-      <Text
-        className={selected ? "text-accent font-semibold" : "text-textMain"}
-      >
+      <Text className={selected ? "font-semibold text-accent" : "text-textMain"}>
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+function CrewPhotoPanel({
+  photoPreviewUrl,
+  photoFileName,
+  pendingPhotoName,
+  onSelectPhoto,
+  onRemovePhoto,
+  canManagePhoto,
+  photoBusy,
+  disabled,
+}: {
+  photoPreviewUrl?: string | null;
+  photoFileName?: string | null;
+  pendingPhotoName?: string | null;
+  onSelectPhoto?: () => void;
+  onRemovePhoto?: () => void;
+  canManagePhoto: boolean;
+  photoBusy: boolean;
+  disabled: boolean;
+}) {
+  const resolvedPhotoLabel =
+    pendingPhotoName ?? photoFileName ?? "No image selected yet";
+
+  return (
+    <View className="gap-4 rounded-[18px] border border-shellLine bg-shellCanvas p-4">
+      <View className="gap-1">
+        <Text className="font-semibold text-textMain">Crew Photo</Text>
+        <Text className="text-[12px] leading-[18px] text-muted">
+          Use a real uploaded portrait so quick views and profile cards stop
+          relying on placeholders or manual URLs.
+        </Text>
+      </View>
+
+      <View className="gap-4 web:flex-row">
+        <View className="h-[220px] flex-1 overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft">
+          {photoPreviewUrl ? (
+            <Image
+              source={{ uri: photoPreviewUrl }}
+              contentFit="cover"
+              style={{ width: "100%", height: "100%" }}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center gap-2 px-4">
+              <Ionicons
+                name="person-circle-outline"
+                size={48}
+                className="text-muted"
+              />
+              <Text className="font-semibold text-textMain">No crew photo</Text>
+              <Text className="text-center text-[12px] leading-[18px] text-muted">
+                Add a portrait to make crew quick views and cards feel current.
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View className="flex-1 gap-3">
+          <View className="gap-1 rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3">
+            <Text className="text-[12px] text-muted">Selected file</Text>
+            <Text className="font-semibold text-textMain">{resolvedPhotoLabel}</Text>
+            <Text className="text-[12px] text-muted">JPG, PNG or WEBP</Text>
+          </View>
+
+          <View className="flex-row flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={onSelectPhoto}
+              disabled={disabled || !canManagePhoto || photoBusy}
+              className="rounded-full"
+            >
+              {photoPreviewUrl ? "Change photo" : "Select photo"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={onRemovePhoto}
+              disabled={
+                disabled ||
+                !canManagePhoto ||
+                photoBusy ||
+                (!photoPreviewUrl && !pendingPhotoName)
+              }
+              className="rounded-full"
+            >
+              Remove photo
+            </Button>
+          </View>
+
+          {!canManagePhoto ? (
+            <Text className="text-[12px] leading-[18px] text-muted">
+              Save the crew member first if you want the image persisted to
+              storage.
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -102,6 +225,13 @@ export default function CrewFormCard({
   onCreateVessel,
   values,
   onChange,
+  photoPreviewUrl,
+  photoFileName,
+  pendingPhotoName,
+  onSelectPhoto,
+  onRemovePhoto,
+  canManagePhoto = false,
+  photoBusy = false,
   localError,
   apiError,
   disabled = false,
@@ -115,7 +245,7 @@ export default function CrewFormCard({
           <CardTitle className="text-[16px] text-textMain">
             Crew Profile
           </CardTitle>
-          <Text className="text-muted text-[13px]">
+          <Text className="text-[13px] text-muted">
             Capture operational crew data in a way that later supports
             certificates, compliance, and contract visibility.
           </Text>
@@ -132,7 +262,7 @@ export default function CrewFormCard({
               currentVessel ? (
                 <VesselPill vessel={currentVessel} />
               ) : (
-                <Text className="text-muted text-[12px]">Loading vessel...</Text>
+                <Text className="text-[12px] text-muted">Loading vessel...</Text>
               )
             ) : (
               <View className="gap-2">
@@ -157,7 +287,7 @@ export default function CrewFormCard({
                 )}
 
                 {vesselsLoading ? (
-                  <Text className="text-muted text-[12px]">
+                  <Text className="text-[12px] text-muted">
                     Loading vessels...
                   </Text>
                 ) : null}
@@ -167,7 +297,7 @@ export default function CrewFormCard({
 
           <Section
             title="2. Basic Info"
-            description="Core identity and onboard role data for the crew member."
+            description="Core identity, onboard role data, and a real portrait for the crew member."
           >
             <Field
               label="Full Name *"
@@ -227,30 +357,28 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="gap-4 web:flex-row">
-              <View className="flex-1">
-                <Field
-                  label="Personal Email"
-                  placeholder="e.g. crew.member@email.com"
-                  value={values.personalEmail}
-                  onChangeText={(value) => onChange({ personalEmail: value })}
-                  keyboardType="email-address"
-                  editable={!disabled}
-                />
-              </View>
-              <View className="flex-1">
-                <Field
-                  label="Photo URL"
-                  placeholder="Optional photo URL"
-                  value={values.photoUrl}
-                  onChangeText={(value) => onChange({ photoUrl: value })}
-                  editable={!disabled}
-                />
-              </View>
-            </View>
+            <Field
+              label="Personal Email"
+              placeholder="e.g. crew.member@email.com"
+              value={values.personalEmail}
+              onChangeText={(value) => onChange({ personalEmail: value })}
+              keyboardType="email-address"
+              editable={!disabled}
+            />
+
+            <CrewPhotoPanel
+              photoPreviewUrl={photoPreviewUrl}
+              photoFileName={photoFileName}
+              pendingPhotoName={pendingPhotoName}
+              onSelectPhoto={onSelectPhoto}
+              onRemovePhoto={onRemovePhoto}
+              canManagePhoto={canManagePhoto}
+              photoBusy={photoBusy}
+              disabled={disabled}
+            />
 
             <View className="gap-2">
-              <Text className="text-textMain/80 text-sm font-medium">
+              <Text className="text-sm font-medium text-textMain/80">
                 Department
               </Text>
               <View className="flex-row flex-wrap gap-2">
@@ -276,7 +404,7 @@ export default function CrewFormCard({
 
           <Section
             title="3. Contract"
-            description="Track the current embarkation cycle and operating context."
+            description="Track the current embarkation cycle and the reason behind any inactive period."
           >
             <View className="gap-4 web:flex-row">
               <View className="flex-1">
@@ -349,27 +477,70 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 flex-row items-center justify-between">
+            <View className="flex-row items-center justify-between rounded-[18px] border border-shellLine bg-shellCanvas p-4">
               <View className="gap-1">
-                <Text className="text-textMain font-semibold">Status</Text>
-                <Text className="text-muted text-[12px]">
-                  Inactive crew should not count toward available manning.
+                <Text className="font-semibold text-textMain">Status</Text>
+                <Text className="text-[12px] text-muted">
+                  Inactive crew should stop counting as available manning, and
+                  the reason should stay explicit.
                 </Text>
               </View>
 
               <View className="flex-row items-center gap-3">
-                <Text className="text-muted text-[12px]">
+                <Text className="text-[12px] text-muted">
                   {isActive ? "ACTIVE" : "INACTIVE"}
                 </Text>
                 <Switch
                   value={isActive}
                   onValueChange={(value) =>
-                    onChange({ status: value ? "ACTIVE" : "INACTIVE" })
+                    onChange({
+                      status: value ? "ACTIVE" : "INACTIVE",
+                      inactiveReason: value ? null : values.inactiveReason,
+                    })
                   }
                   disabled={disabled}
                 />
               </View>
             </View>
+
+            {!isActive ? (
+              <View className="gap-2">
+                <Text className="text-sm font-medium text-textMain/80">
+                  Inactive Reason
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {inactiveReasonOptions.map((option) => (
+                    <SelectorOption
+                      key={option.value}
+                      selected={values.inactiveReason === option.value}
+                      label={option.label}
+                      disabled={disabled}
+                      onPress={() =>
+                        onChange({
+                          inactiveReason:
+                            values.inactiveReason === option.value
+                              ? null
+                              : option.value,
+                        })
+                      }
+                    />
+                  ))}
+                </View>
+              </View>
+            ) : null}
+
+            <DateField
+              label="Next Planned Vacation"
+              value={values.nextVacationDate}
+              onChange={(value) => onChange({ nextVacationDate: value })}
+              placeholder="Select next vacation date"
+              disabled={disabled}
+            />
+
+            <Text className="text-[12px] leading-[18px] text-muted">
+              This date powers the QA request to surface who should go on
+              vacation in the next 30 days.
+            </Text>
           </Section>
 
           <Section
@@ -467,12 +638,12 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 flex-row items-center justify-between">
+            <View className="flex-row items-center justify-between rounded-[18px] border border-shellLine bg-shellCanvas p-4">
               <View className="gap-1">
-                <Text className="text-textMain font-semibold">
+                <Text className="font-semibold text-textMain">
                   Familiarization Checklist
                 </Text>
-                <Text className="text-muted text-[12px]">
+                <Text className="text-[12px] text-muted">
                   Mark this when the onboard checklist has been completed.
                 </Text>
               </View>
@@ -502,7 +673,7 @@ export default function CrewFormCard({
             description="Track medical readiness now; certificate-level detail will come in the crew-certificates branch."
           >
             <View className="gap-2">
-              <Text className="text-textMain/80 text-sm font-medium">
+              <Text className="text-sm font-medium text-textMain/80">
                 Medical Certificate Status
               </Text>
               <View className="flex-row flex-wrap gap-2">
@@ -559,30 +730,26 @@ export default function CrewFormCard({
               editable={!disabled}
             />
 
-            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-2">
+            <View className="gap-2 rounded-[18px] border border-shellLine bg-shellCanvas p-4">
               <View className="flex-row items-center gap-2">
                 <Ionicons
                   name="information-circle-outline"
                   size={16}
                   className="text-textMain"
                 />
-                <Text className="text-textMain font-semibold text-[13px]">
+                <Text className="text-[13px] font-semibold text-textMain">
                   Next branch reminder
                 </Text>
               </View>
-              <Text className="text-muted text-[12px] leading-[18px]">
-                Crew certificates, training records, evaluations, and document
-                uploads are intentionally left for follow-up branches.
+              <Text className="text-[12px] leading-[18px] text-muted">
+                Crew certificates, training records, evaluations, and bulk
+                import stay intentionally separated from this crew-core profile.
               </Text>
             </View>
           </Section>
 
-          {localError ? (
-            <Text className="text-destructive">{localError}</Text>
-          ) : null}
-          {apiError ? (
-            <Text className="text-destructive">{apiError}</Text>
-          ) : null}
+          {localError ? <Text className="text-destructive">{localError}</Text> : null}
+          {apiError ? <Text className="text-destructive">{apiError}</Text> : null}
         </View>
       </CardContent>
     </Card>

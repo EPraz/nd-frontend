@@ -1,6 +1,8 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
 import { useToast } from "@/src/context";
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import type { UploadFileInput } from "@/src/contracts/uploads.contract";
+import { pickImageUpload } from "@/src/helpers/pickImageUpload";
 import { useVessels } from "@/src/features/vessels";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,6 +16,7 @@ import {
   emptyCrewFormValues,
   toUpdateCrewInput,
 } from "../../components";
+import { deleteCrewPhoto, uploadCrewPhoto } from "../../api/crew.api";
 import { useCrewById } from "../../hooks";
 import { useUpdateCrew } from "../../hooks/useUpdateCrew";
 
@@ -46,36 +49,48 @@ export default function EditCrewScreen() {
   const [values, setValues] = useState<CrewFormValues>(emptyCrewFormValues());
   const [dirty, setDirty] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [pendingPhoto, setPendingPhoto] = useState<UploadFileInput | null>(null);
+  const [removeStoredPhoto, setRemoveStoredPhoto] = useState(false);
 
-  // hydrate form cuando llega crew
   useEffect(() => {
-    if (!crew) return;
-    // Si el user ya editó algo, no sobre-escribimos
-    if (dirty) return;
-
+    if (!crew || dirty) return;
     setValues(crewFormFromDto(crew));
   }, [crew, dirty]);
 
-  // resolve current vessel from vessels list (para pill/preview)
   const currentVessel = useMemo<AssetDto | null>(() => {
     const effective = values.assetId ?? vid;
     return vessels.find((v) => v.id === effective) ?? null;
   }, [vessels, values.assetId, vid]);
 
   const effectiveAssetId = values.assetId ?? vid;
+  const photoChanged = Boolean(pendingPhoto || removeStoredPhoto);
 
   const canSubmit = useMemo(() => {
     if (saving) return false;
     if (!effectiveAssetId) return false;
     if (values.fullName.trim().length < 3) return false;
-    if (!dirty) return false; // evita submit si no cambió nada (opcional)
+    if (!dirty && !photoChanged) return false;
     return true;
-  }, [saving, effectiveAssetId, values.fullName, dirty]);
+  }, [saving, effectiveAssetId, values.fullName, dirty, photoChanged]);
 
   function patch(p: Partial<CrewFormValues>) {
     setLocalError(null);
     setDirty(true);
     setValues((prev) => ({ ...prev, ...p }));
+  }
+
+  async function handlePickPhoto() {
+    const file = await pickImageUpload();
+    if (!file) return;
+    setPendingPhoto(file);
+    setRemoveStoredPhoto(false);
+  }
+
+  function handleRemovePhoto() {
+    setPendingPhoto(null);
+    if (crew?.photoUrl) {
+      setRemoveStoredPhoto(true);
+    }
   }
 
   function goBackOrTo(fallbackHref: string) {
@@ -85,8 +100,8 @@ export default function EditCrewScreen() {
       router.replace(fallbackHref);
     }
   }
-  const nextAssetId = effectiveAssetId;
-  const viewHref = `/projects/${pid}/vessels/${nextAssetId}/crew/${cid}`;
+
+  const viewHref = `/projects/${pid}/vessels/${effectiveAssetId}/crew/${cid}`;
   const crewListHref = `/projects/${pid}/vessels/${effectiveAssetId}/crew`;
 
   async function onSave() {
@@ -96,7 +111,8 @@ export default function EditCrewScreen() {
       setLocalError("Full Name debe tener al menos 3 caracteres.");
       return;
     }
-    if (!(effectiveAssetId ?? values.assetId)) {
+
+    if (!effectiveAssetId) {
       setLocalError("Selecciona un vessel.");
       return;
     }
@@ -108,6 +124,15 @@ export default function EditCrewScreen() {
       });
 
       await submit(input);
+
+      if (removeStoredPhoto) {
+        await deleteCrewPhoto(pid, effectiveAssetId, cid);
+      }
+
+      if (pendingPhoto) {
+        await uploadCrewPhoto(pid, effectiveAssetId, cid, pendingPhoto);
+      }
+
       show("Crew member updated successfully", "success");
       router.replace(viewHref);
     } catch {
@@ -117,16 +142,16 @@ export default function EditCrewScreen() {
 
   if (loading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={refresh} />;
-  if (!crew)
+  if (!crew) {
     return <ErrorState message="Crew member not found." onRetry={refresh} />;
+  }
 
   return (
     <View className="flex-1 bg-shellCanvas">
       <ScrollView
-        contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View className="gap-3">
           <Pressable
             onPress={() => goBackOrTo(viewHref)}
@@ -137,16 +162,17 @@ export default function EditCrewScreen() {
             ].join(" ")}
           >
             <Ionicons name="chevron-back" size={16} className="text-accent" />
-            <Text className="text-accent font-semibold">Back</Text>
+            <Text className="font-semibold text-accent">Back</Text>
           </Pressable>
 
-          <View className="web:flex-row web:items-start web:justify-between gap-4">
-            <View className="gap-1 flex-1">
-              <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
+          <View className="gap-4 web:flex-row web:items-start web:justify-between">
+            <View className="flex-1 gap-1">
+              <Text className="text-[34px] font-semibold leading-[110%] text-textMain web:text-[44px]">
                 Edit Crew Member
               </Text>
-              <Text className="text-muted text-[14px]">
-                Update profile information, vessel assignment and status.
+              <Text className="text-[14px] text-muted">
+                Update profile information, operational status, and the real
+                portrait used across quick views.
               </Text>
             </View>
 
@@ -181,14 +207,10 @@ export default function EditCrewScreen() {
           </View>
         </View>
 
-        {/* Content grid */}
         <View className="gap-5 web:lg:flex-row">
-          {/* Left */}
           <View className="flex-1 gap-5 web:lg:w-[60%]">
             <CrewFormCard
-              fixedAssetId={
-                null /* edit permite mover de vessel, si quieres bloquearlo pon vid */
-              }
+              fixedAssetId={null}
               currentVessel={currentVessel}
               vessels={vessels}
               vesselsLoading={vesselsLoading}
@@ -200,23 +222,31 @@ export default function EditCrewScreen() {
                 selectedVessel: values.selectedVessel ?? currentVessel,
               }}
               onChange={patch}
+              photoPreviewUrl={
+                pendingPhoto?.uri ??
+                (removeStoredPhoto ? null : crew.photoUrl)
+              }
+              photoFileName={removeStoredPhoto ? null : crew.photoFileName}
+              pendingPhotoName={pendingPhoto?.name ?? null}
+              onSelectPhoto={handlePickPhoto}
+              onRemovePhoto={handleRemovePhoto}
+              canManagePhoto={!saving}
+              photoBusy={saving}
               localError={localError}
               apiError={saveError}
               disabled={saving}
             />
 
-            {/* Extra: acciones rápidas */}
             <Pressable
               onPress={() => router.replace(crewListHref)}
               className="self-start"
             >
-              <Text className="text-accent font-semibold">
+              <Text className="font-semibold text-accent">
                 Go to vessel crew list →
               </Text>
             </Pressable>
           </View>
 
-          {/* Right: Preview */}
           <View className="flex-1 gap-5 web:lg:w-[40%]">
             <CrewPreviewCard
               values={{

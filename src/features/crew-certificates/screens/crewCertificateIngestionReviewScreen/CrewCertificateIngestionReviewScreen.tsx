@@ -23,6 +23,19 @@ import {
   useCrewCertificateWorkflowActions,
 } from "../../hooks";
 
+function getExtractionMethodLabel(method: string) {
+  switch (method) {
+    case "OCR_TEXT":
+      return "OCR text extraction";
+    case "PDF_TEXT":
+      return "PDF text extraction";
+    case "MANUAL_REVIEW":
+      return "Manual review";
+    default:
+      return method;
+  }
+}
+
 export default function CrewCertificateIngestionReviewScreen() {
   const router = useRouter();
   const { show } = useToast();
@@ -38,23 +51,21 @@ export default function CrewCertificateIngestionReviewScreen() {
   const cid = String(crewId);
   const iid = String(ingestionId);
 
-  const { crew, loading: crewLoading, error: crewError, refresh: refreshCrew } =
-    useCrewById(pid, aid, cid);
-  const { ingestion, loading, error, refresh } = useCrewCertificateIngestionById(
-    pid,
-    aid,
-    cid,
-    iid,
-  );
+  const {
+    crew,
+    loading: crewLoading,
+    error: crewError,
+    refresh: refreshCrew,
+  } = useCrewById(pid, aid, cid);
+  const { ingestion, loading, error, refresh } =
+    useCrewCertificateIngestionById(pid, aid, cid, iid);
   const {
     submit,
     loading: confirming,
     error: confirmError,
   } = useConfirmCrewCertificateIngestion(pid, aid, cid, iid);
-  const {
-    cancelIngestion,
-    loading: workflowLoading,
-  } = useCrewCertificateWorkflowActions(pid, aid, cid, undefined, iid);
+  const { cancelIngestion, loading: workflowLoading } =
+    useCrewCertificateWorkflowActions(pid, aid, cid, undefined, iid);
   const {
     certificateTypes,
     loading: certificateTypesLoading,
@@ -79,9 +90,9 @@ export default function CrewCertificateIngestionReviewScreen() {
 
   const hasStructuredCandidate = Boolean(
     ingestion?.candidateNumber ||
-      ingestion?.candidateIssuer ||
-      ingestion?.candidateIssueDate ||
-      ingestion?.candidateExpiryDate,
+    ingestion?.candidateIssuer ||
+    ingestion?.candidateIssueDate ||
+    ingestion?.candidateExpiryDate,
   );
 
   async function openUploadedFile() {
@@ -136,7 +147,9 @@ export default function CrewCertificateIngestionReviewScreen() {
     try {
       await cancelIngestion();
       show("Upload cancelled", "success");
-      router.replace(`/projects/${pid}/vessels/${aid}/crew/${cid}/certificates`);
+      router.replace(
+        `/projects/${pid}/vessels/${aid}/crew/${cid}/certificates`,
+      );
     } catch {
       show("Failed to cancel upload", "error");
     }
@@ -144,7 +157,8 @@ export default function CrewCertificateIngestionReviewScreen() {
 
   if (loading || crewLoading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={refresh} />;
-  if (crewError) return <ErrorState message={crewError} onRetry={refreshCrew} />;
+  if (crewError)
+    return <ErrorState message={crewError} onRetry={refreshCrew} />;
   if (!ingestion) {
     return (
       <ErrorState
@@ -163,13 +177,17 @@ export default function CrewCertificateIngestionReviewScreen() {
         <View className="gap-3">
           <Pressable
             onPress={() =>
-              router.replace(`/projects/${pid}/vessels/${aid}/crew/${cid}/certificates`)
+              router.replace(
+                `/projects/${pid}/vessels/${aid}/crew/${cid}/certificates`,
+              )
             }
             disabled={confirming}
             className="self-start flex-row items-center gap-2"
           >
             <Ionicons name="chevron-back" size={16} className="text-accent" />
-            <Text className="text-accent font-semibold">Back to crew certificates</Text>
+            <Text className="text-accent font-semibold">
+              Back to crew certificates
+            </Text>
           </Pressable>
 
           <View className="web:flex-row web:items-start web:justify-between gap-4">
@@ -198,7 +216,9 @@ export default function CrewCertificateIngestionReviewScreen() {
                 variant="default"
                 size="lg"
                 onPress={onConfirm}
-                disabled={!values.certificateTypeId || confirming || workflowLoading}
+                disabled={
+                  !values.certificateTypeId || confirming || workflowLoading
+                }
                 className="rounded-full"
                 rightIcon={
                   <Ionicons
@@ -220,8 +240,9 @@ export default function CrewCertificateIngestionReviewScreen() {
               Candidate extraction
             </Text>
             <Text className="text-muted text-[12px] leading-[18px]">
-              Crew: {crew?.fullName ?? "—"} | Method: {ingestion.extractionMethod}
-              {" | "}Confidence: {ingestion.extractionConfidence}
+              Crew: {crew?.fullName ?? "Unknown"} | Method:{" "}
+              {getExtractionMethodLabel(ingestion.extractionMethod)} {" | "}
+              Confidence: {ingestion.extractionConfidence}
             </Text>
             {ingestion.extractionWarnings.map((warning) => (
               <Text key={warning} className="text-warning text-[12px]">
@@ -231,12 +252,19 @@ export default function CrewCertificateIngestionReviewScreen() {
             <Text className="text-muted text-[12px]">
               File: <Text className="text-textMain">{ingestion.fileName}</Text>
             </Text>
+            <Text className="text-muted text-[12px] leading-[18px]">
+              If no expiry date is detected for a crew certificate, the system
+              defaults to issue date + 5 years. If the issue date is also
+              missing, it uses the upload created date + 5 years.
+            </Text>
             {ingestion.certificateName || ingestion.certificateCode ? (
               <Text className="text-muted text-[12px]">
                 Detected type:{" "}
                 <Text className="text-textMain">
                   {ingestion.certificateName ?? "Unassigned"}
-                  {ingestion.certificateCode ? ` (${ingestion.certificateCode})` : ""}
+                  {ingestion.certificateCode
+                    ? ` (${ingestion.certificateCode})`
+                    : ""}
                 </Text>
               </Text>
             ) : null}
@@ -247,7 +275,7 @@ export default function CrewCertificateIngestionReviewScreen() {
               disabled={confirming || !ingestion.url}
               className="rounded-full self-start"
             >
-              Open uploaded file
+              Open source document
             </Button>
             {!ingestion.url ? (
               <Text className="text-warning text-[12px]">
@@ -294,15 +322,19 @@ export default function CrewCertificateIngestionReviewScreen() {
               </View>
             ) : (
               <Text className="text-warning text-[12px] leading-[18px]">
-                This file uploaded correctly, but the extractor could not
-                confidently prefill the main certificate fields. Review the text
-                preview below and complete the metadata manually.
+                This document was processed, but the extracted fields were not
+                confident enough to prefill the certificate metadata. Review the
+                text preview below and complete the fields manually if needed.
               </Text>
             )}
 
             {ingestion.extractedTextPreview ? (
               <View className="rounded-[16px] border border-shellLine bg-shellPanelSoft p-3 gap-2">
-                <Text className="text-muted text-[12px]">Extracted text preview</Text>
+                <Text className="text-muted text-[12px]">
+                  {ingestion.extractionMethod === "OCR_TEXT"
+                    ? "Extracted OCR text"
+                    : "Extracted text preview"}
+                </Text>
                 <Text className="text-textMain text-[12px] leading-[18px]">
                   {ingestion.extractedTextPreview}
                 </Text>

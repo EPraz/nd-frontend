@@ -1,254 +1,347 @@
-import { Field, Text } from "@/src/components";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeaderRow,
+  CardTitle,
+  Field,
+  Text,
+} from "@/src/components";
 import type { CreateAssetInput } from "@/src/contracts/assets.contract";
-import { useCreateVessel } from "@/src/features/vessels/hooks/useCreateVessel";
+import type { UploadFileInput } from "@/src/contracts/uploads.contract";
+import { useToast } from "@/src/context";
+import { pickImageUpload } from "@/src/helpers/pickImageUpload";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Switch, View } from "react-native";
+import { ScrollView, Switch, View } from "react-native";
+import { patchVesselProfile, uploadVesselImage } from "../../api/vessel-profile.api";
+import { VesselImagePanel } from "../../components";
+import { useCreateVessel } from "../../hooks/useCreateVessel";
+
+function normalize(value: string) {
+  return value.trim();
+}
+
+function PreviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="flex-row items-center justify-between gap-4">
+      <Text className="text-[12px] text-muted">{label}</Text>
+      <Text className="text-right text-[13px] font-semibold text-textMain">
+        {value}
+      </Text>
+    </View>
+  );
+}
 
 export default function NewVesselScreen() {
   const router = useRouter();
+  const { show } = useToast();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const pid = String(projectId);
-
   const { submit, loading, error } = useCreateVessel(pid);
 
   const [name, setName] = useState("");
   const [flag, setFlag] = useState("PA");
-  const [noImo, setNoImo] = useState(false);
+  const [email, setEmail] = useState("");
+  const [useLicense, setUseLicense] = useState(false);
   const [imo, setImo] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
+  const [pendingImage, setPendingImage] = useState<UploadFileInput | null>(null);
+  const [finishingCreate, setFinishingCreate] = useState(false);
 
-  const isBusy = loading;
+  const isBusy = loading || finishingCreate;
 
   const canSubmit = useMemo(() => {
-    if (!name.trim()) return false;
-    if (!noImo) return Boolean(imo.trim());
-    return Boolean(licenseNumber.trim());
-  }, [name, noImo, imo, licenseNumber]);
+    if (!normalize(name)) return false;
+    if (useLicense) return Boolean(normalize(licenseNumber));
+    return Boolean(normalize(imo));
+  }, [imo, licenseNumber, name, useLicense]);
 
-  const backHref = `/projects/${pid}/vessels`; // AJUSTA
-  const successHref = (assetId: string) =>
-    `/projects/${pid}/vessels/${assetId}`; // tu actual
+  const identifierPreview = useLicense
+    ? normalize(licenseNumber)
+      ? `LIC ${normalize(licenseNumber)}`
+      : "-"
+    : normalize(imo)
+      ? `IMO ${normalize(imo)}`
+      : "-";
 
-  function goBackOrTo(fallbackHref: string) {
-    if (router.canGoBack?.()) return router.back();
-    router.replace(fallbackHref);
+  async function handleSelectImage() {
+    const file = await pickImageUpload();
+    if (!file) return;
+    setPendingImage(file);
   }
 
-  function onToggleNoImo(next: boolean) {
-    setNoImo(next);
-    setImo("");
-    setLicenseNumber("");
+  function handleRemoveImage() {
+    setPendingImage(null);
   }
 
-  async function onCreate() {
-    const input: CreateAssetInput = noImo
+  function goBack() {
+    if (router.canGoBack?.()) {
+      router.back();
+      return;
+    }
+
+    router.replace(`/projects/${pid}/vessels`);
+  }
+
+  async function handleCreate() {
+    const input: CreateAssetInput = useLicense
       ? {
           type: "VESSEL",
-          name: name.trim(),
+          name: normalize(name),
           identifierType: "LICENSE",
-          licenseNumber: licenseNumber.trim(),
-          flag: flag.trim() || undefined,
+          licenseNumber: normalize(licenseNumber),
+          flag: normalize(flag) || undefined,
         }
       : {
           type: "VESSEL",
-          name: name.trim(),
+          name: normalize(name),
           identifierType: "IMO",
-          imo: imo.trim(),
-          flag: flag.trim() || undefined,
+          imo: normalize(imo),
+          flag: normalize(flag) || undefined,
         };
 
     try {
       const created = await submit(input);
-      if (!created?.id)
+      if (!created?.id) {
         throw new Error("Create vessel succeeded but response is missing id");
-      router.replace(successHref(created.id));
+      }
+
+      setFinishingCreate(true);
+
+      const followUpFailures: string[] = [];
+
+      if (normalize(email)) {
+        try {
+          await patchVesselProfile(pid, created.id, { email: normalize(email) });
+        } catch {
+          followUpFailures.push("email");
+        }
+      }
+
+      if (pendingImage) {
+        try {
+          await uploadVesselImage(pid, created.id, pendingImage);
+        } catch {
+          followUpFailures.push("image");
+        }
+      }
+
+      if (followUpFailures.length > 0) {
+        show(
+          "Vessel created, but the contact email or image still needs review from edit mode.",
+          "error",
+        );
+        router.replace(`/projects/${pid}/vessels/${created.id}/edit`);
+        return;
+      }
+
+      show("Vessel created", "success");
+      router.replace(`/projects/${pid}/vessels/${created.id}`);
     } catch {
-      // hook sets error
+      // hook exposes the main API error
+    } finally {
+      setFinishingCreate(false);
     }
   }
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-shellCanvas">
       <ScrollView
-        contentContainerClassName="gap-5 pb-10"
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View className="flex flex-col gap-4 web:flex-row web:items-center web:justify-between">
-          <View className="gap-2">
-            <Pressable
-              onPress={() => goBackOrTo(backHref)}
+        <View className="gap-4 web:flex-row web:items-start web:justify-between">
+          <View className="flex-1 gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={goBack}
               disabled={isBusy}
-              className={[
-                "flex-row items-center gap-2",
-                isBusy ? "opacity-50" : "hover:opacity-90",
-              ].join(" ")}
+              className="self-start rounded-full px-0"
+              leftIcon={
+                <Ionicons
+                  name="chevron-back"
+                  size={16}
+                  className="text-accent"
+                />
+              }
             >
-              <Ionicons name="arrow-back" size={18} color="white" />
-              <Text className="text-textMain/80">Back to Vessels</Text>
-            </Pressable>
+              Back to vessels
+            </Button>
 
-            <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
-              Add New Vessel
+            <Text className="text-[34px] font-semibold leading-[110%] text-textMain">
+              Add Vessel
             </Text>
-
-            <Text className="text-textMain/60 text-[13px]">
-              Create a vessel and set its identifier (IMO or License).
+            <Text className="max-w-[760px] text-[14px] leading-[22px] text-muted">
+              Create the vessel identity first, then persist the operational
+              contact and uploaded image in the same flow so the shell and quick
+              view start from a real baseline.
             </Text>
           </View>
 
-          <View className="flex-row items-center justify-end gap-3">
-            <Pressable
-              onPress={() => goBackOrTo(backHref)}
+          <View className="flex-row flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              onPress={goBack}
               disabled={isBusy}
-              className={[
-                "rounded-full border border-accent/40 bg-shellPanel px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-                "active:opacity-80",
-                isBusy ? "opacity-50" : "hover:scale-105",
-              ].join(" ")}
+              className="rounded-full"
             >
-              <Text className="text-textMain">Cancel</Text>
-            </Pressable>
+              Cancel
+            </Button>
 
-            <Pressable
-              onPress={onCreate}
+            <Button
+              variant="default"
+              size="lg"
+              onPress={handleCreate}
               disabled={!canSubmit || isBusy}
-              className={[
-                "flex-row items-center gap-2 rounded-full px-6 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-                "bg-accent active:opacity-90",
-                !canSubmit || isBusy ? "opacity-50" : "hover:scale-105",
-              ].join(" ")}
+              className="rounded-full"
+              rightIcon={
+                <Ionicons
+                  name="save-outline"
+                  size={16}
+                  className="text-textMain"
+                />
+              }
             >
-              <Ionicons name="save-outline" size={18} color="#27374D" />
-              <Text className="text-baseBg font-bold">
-                {isBusy ? "Saving..." : "Save"}
-              </Text>
-            </Pressable>
+              {isBusy ? "Saving..." : "Save vessel"}
+            </Button>
           </View>
         </View>
 
-        {/* Grid */}
         <View className="gap-5 web:lg:flex-row">
-          {/* Left */}
-          <View className="flex-1 rounded-3xl border border-shellLine bg-shellPanel p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[60%]">
-            <View className="mb-4">
-              <Text className="text-textMain text-[18px] font-semibold">
-                Vessel Details
-              </Text>
-              <Text className="text-textMain/60 text-[13px]">
-                Basic information for the vessel.
-              </Text>
-            </View>
+          <Card className="flex-1 rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <View className="gap-1">
+                <CardTitle className="text-[16px] text-textMain">
+                  Vessel Details
+                </CardTitle>
+                <Text className="text-[13px] text-muted">
+                  Define the main identifier and the operating contact details
+                  that QA requested for the vessel profile.
+                </Text>
+              </View>
+            </CardHeaderRow>
 
-            <View className="gap-4">
-              <Field
-                label="Vessel Name *"
-                placeholder="e.g. MV Navigate One"
-                value={name}
-                onChangeText={setName}
-              />
+            <CardContent className="px-6">
+              <View className="gap-5">
+                <Field
+                  label="Vessel Name *"
+                  placeholder="e.g. MV Navigate One"
+                  value={name}
+                  onChangeText={setName}
+                  editable={!isBusy}
+                />
 
-              <View className="rounded-3xl border border-shellLine bg-shellPanelSoft p-4 gap-4">
-                <View className="flex-row items-center justify-between">
-                  <View className="gap-1">
-                    <Text className="text-textMain font-semibold">
-                      Identifier
-                    </Text>
-                    <Text className="text-textMain/60 text-[12px]">
-                      Use IMO when available. Otherwise use License.
-                    </Text>
+                <View className="gap-4 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
+                  <View className="flex-row items-center justify-between gap-4">
+                    <View className="flex-1 gap-1">
+                      <Text className="font-semibold text-textMain">
+                        Identifier
+                      </Text>
+                      <Text className="text-[12px] leading-[18px] text-muted">
+                        Use IMO when available. Fall back to license only when
+                        the vessel has no IMO.
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center gap-3">
+                      <Text className="text-[12px] text-muted">
+                        Use license
+                      </Text>
+                      <Switch
+                        value={useLicense}
+                        onValueChange={(value) => {
+                          setUseLicense(value);
+                          setImo("");
+                          setLicenseNumber("");
+                        }}
+                        disabled={isBusy}
+                      />
+                    </View>
                   </View>
 
-                  <View className="flex-row items-center gap-3">
-                    <Text className="text-textMain/70 text-[12px]">
-                      Use License
-                    </Text>
-                    <Switch
-                      value={noImo}
-                      onValueChange={onToggleNoImo}
-                      disabled={isBusy}
+                  {useLicense ? (
+                    <Field
+                      label="License Number *"
+                      placeholder="e.g. LIC-PA-001"
+                      value={licenseNumber}
+                      onChangeText={setLicenseNumber}
+                      editable={!isBusy}
                     />
-                  </View>
+                  ) : (
+                    <Field
+                      label="IMO *"
+                      placeholder="e.g. 9876543"
+                      value={imo}
+                      onChangeText={setImo}
+                      keyboardType="numeric"
+                      editable={!isBusy}
+                    />
+                  )}
+
+                  <Field
+                    label="Flag"
+                    placeholder="e.g. PA"
+                    value={flag}
+                    onChangeText={setFlag}
+                    editable={!isBusy}
+                  />
                 </View>
 
-                {!noImo ? (
-                  <Field
-                    label="IMO *"
-                    placeholder="e.g. 1234567"
-                    value={imo}
-                    onChangeText={setImo}
-                    keyboardType="numeric"
+                <Field
+                  label="Vessel Email"
+                  placeholder="e.g. master@vesselmail.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  editable={!isBusy}
+                />
+
+                {error ? <Text className="text-destructive">{error}</Text> : null}
+              </View>
+            </CardContent>
+          </Card>
+
+          <Card className="flex-1 rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
+            <CardHeaderRow>
+              <View className="gap-1">
+                <CardTitle className="text-[16px] text-textMain">
+                  Preview
+                </CardTitle>
+                <Text className="text-[13px] text-muted">
+                  The selected image becomes the visual baseline for vessel
+                  overview and quick view once the create flow completes.
+                </Text>
+              </View>
+            </CardHeaderRow>
+
+            <CardContent className="px-6">
+              <View className="gap-5">
+                <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
+                  <PreviewRow label="Name" value={normalize(name) || "-"} />
+                  <PreviewRow label="Identifier" value={identifierPreview} />
+                  <PreviewRow label="Flag" value={normalize(flag) || "-"} />
+                  <PreviewRow
+                    label="Vessel Email"
+                    value={normalize(email) || "-"}
                   />
-                ) : (
-                  <Field
-                    label="License Number *"
-                    placeholder="e.g. LIC-PA-001"
-                    value={licenseNumber}
-                    onChangeText={setLicenseNumber}
-                  />
-                )}
+                </View>
+
+                <VesselImagePanel
+                  imagePreviewUrl={pendingImage?.uri ?? null}
+                  pendingFileName={pendingImage?.name ?? null}
+                  onSelectImage={handleSelectImage}
+                  onRemoveImage={handleRemoveImage}
+                  canManageImage
+                  busy={isBusy}
+                  disabled={isBusy}
+                />
               </View>
-
-              <Field
-                label="Flag (optional)"
-                placeholder="e.g. PA"
-                value={flag}
-                onChangeText={setFlag}
-              />
-
-              {error ? <Text className="text-destructive">{error}</Text> : null}
-            </View>
-          </View>
-
-          {/* Right */}
-          <View className="flex-1 rounded-3xl border border-shellLine bg-shellPanel p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] web:lg:w-[40%]">
-            <View className="mb-4">
-              <Text className="text-textMain text-[18px] font-semibold">
-                Preview
-              </Text>
-              <Text className="text-textMain/60 text-[13px]">
-                Quick summary before saving.
-              </Text>
-            </View>
-
-            <View className="rounded-3xl border border-shellLine bg-shellPanelSoft p-4 gap-3">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-textMain/70 text-[12px]">Name</Text>
-                <Text className="text-textMain font-semibold">
-                  {name.trim() || "—"}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-textMain/70 text-[12px]">Identifier</Text>
-                <Text className="text-textMain font-semibold">
-                  {!noImo
-                    ? imo.trim()
-                      ? `IMO ${imo.trim()}`
-                      : "—"
-                    : licenseNumber.trim()
-                      ? `LIC ${licenseNumber.trim()}`
-                      : "—"}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-textMain/70 text-[12px]">Flag</Text>
-                <Text className="text-textMain font-semibold">
-                  {flag.trim() || "—"}
-                </Text>
-              </View>
-            </View>
-
-            <View className="mt-4 rounded-3xl border border-shellLine bg-shellPanelSoft p-4">
-              <Text className="text-textMain/60 text-[12px]">
-                Tip: keep identifiers consistent to improve compliance workflows
-                later.
-              </Text>
-            </View>
-          </View>
+            </CardContent>
+          </Card>
         </View>
       </ScrollView>
     </View>

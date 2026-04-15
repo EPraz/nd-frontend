@@ -3,6 +3,7 @@ import {
   CreateCrewInput,
   CrewDepartment,
   CrewDto,
+  CrewInactiveReason,
   CrewStatus,
 } from "../contracts";
 
@@ -27,11 +28,12 @@ export type CrewFormValues = {
   personalEmail: string;
   rank: string;
   department: CrewDepartment | null;
-  photoUrl: string;
   status: CrewStatus;
+  inactiveReason: CrewInactiveReason | null;
   dateOfEmbarkation: string;
   portOfEmbarkation: string;
   expectedDateOfDisembarkation: string;
+  nextVacationDate: string;
   contractType: string;
   operatingCompany: string;
   crewManagementAgency: string;
@@ -62,11 +64,12 @@ export function emptyCrewFormValues(): CrewFormValues {
     personalEmail: "",
     rank: "",
     department: null,
-    photoUrl: "",
     status: "ACTIVE",
+    inactiveReason: null,
     dateOfEmbarkation: "",
     portOfEmbarkation: "",
     expectedDateOfDisembarkation: "",
+    nextVacationDate: "",
     contractType: "",
     operatingCompany: "",
     crewManagementAgency: "",
@@ -98,13 +101,14 @@ export function crewFormFromDto(dto: CrewDto): CrewFormValues {
     personalEmail: dto.personalEmail ?? "",
     rank: dto.rank ?? "",
     department: dto.department ?? null,
-    photoUrl: dto.photoUrl ?? "",
     status: dto.status,
+    inactiveReason: dto.inactiveReason ?? null,
     dateOfEmbarkation: toDateOnly(dto.dateOfEmbarkation),
     portOfEmbarkation: dto.portOfEmbarkation ?? "",
     expectedDateOfDisembarkation: toDateOnly(
       dto.expectedDateOfDisembarkation,
     ),
+    nextVacationDate: toDateOnly(dto.nextVacationDate),
     contractType: dto.contractType ?? "",
     operatingCompany: dto.operatingCompany ?? "",
     crewManagementAgency: dto.crewManagementAgency ?? "",
@@ -146,12 +150,14 @@ export function toCreateCrewInput(v: CrewFormValues): CreateCrewInput {
     personalEmail: v.personalEmail.trim() || undefined,
     rank: v.rank.trim() || undefined,
     department: v.department ?? undefined,
-    photoUrl: v.photoUrl.trim() || undefined,
     status: v.status,
+    inactiveReason:
+      v.status === "INACTIVE" ? v.inactiveReason ?? undefined : undefined,
     dateOfEmbarkation: v.dateOfEmbarkation.trim() || undefined,
     portOfEmbarkation: v.portOfEmbarkation.trim() || undefined,
     expectedDateOfDisembarkation:
       v.expectedDateOfDisembarkation.trim() || undefined,
+    nextVacationDate: v.nextVacationDate.trim() || undefined,
     contractType: v.contractType.trim() || undefined,
     operatingCompany: v.operatingCompany.trim() || undefined,
     crewManagementAgency: v.crewManagementAgency.trim() || undefined,

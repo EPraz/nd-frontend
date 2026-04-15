@@ -47,6 +47,14 @@ export default function CrewPreviewCard({
             label="Disembarkation"
             value={values.expectedDateOfDisembarkation || "—"}
           />
+          <RowInfo
+            label="Next Vacation"
+            value={values.nextVacationDate || "—"}
+          />
+          <RowInfo
+            label="Inactive Reason"
+            value={values.status === "INACTIVE" ? values.inactiveReason ?? "—" : "—"}
+          />
           <RowInfo label="Medical" value={medicalStatus} />
           <RowInfo label="Status" value={values.status} />
         </View>

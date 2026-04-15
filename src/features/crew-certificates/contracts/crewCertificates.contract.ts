@@ -24,7 +24,10 @@ export type CrewCertificateIngestionStatus =
   | "READY_FOR_REVIEW"
   | "CONFIRMED"
   | "CANCELLED";
-export type CrewCertificateExtractionMethod = "PDF_TEXT" | "MANUAL_REVIEW";
+export type CrewCertificateExtractionMethod =
+  | "PDF_TEXT"
+  | "OCR_TEXT"
+  | "MANUAL_REVIEW";
 export type CrewCertificateExtractionConfidence = "HIGH" | "MEDIUM" | "LOW";
 
 export type CrewCertificateAttachmentDto = {

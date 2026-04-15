@@ -1,4 +1,5 @@
 import { apiClient } from "../../../api/client";
+import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { CreateCrewInput, CrewDto } from "../contracts";
 
 export async function fetchCrew(
@@ -52,5 +53,45 @@ export async function deleteCrew(
 ): Promise<CrewDto> {
   return apiClient.delete<CrewDto>(
     `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
+  );
+}
+
+function appendUploadFile(formData: FormData, file: UploadFileInput) {
+  const normalizedType = file.mimeType || "application/octet-stream";
+
+  if (file.file) {
+    formData.append("file", file.file as Blob, file.name);
+    return;
+  }
+
+  formData.append("file", {
+    uri: file.uri,
+    name: file.name,
+    type: normalizedType,
+  } as never);
+}
+
+export async function uploadCrewPhoto(
+  projectId: string,
+  assetId: string,
+  crewId: string,
+  file: UploadFileInput,
+): Promise<CrewDto> {
+  const formData = new FormData();
+  appendUploadFile(formData, file);
+
+  return apiClient.post<CrewDto>(
+    `/projects/${projectId}/assets/${assetId}/crew/${crewId}/photo`,
+    formData,
+  );
+}
+
+export async function deleteCrewPhoto(
+  projectId: string,
+  assetId: string,
+  crewId: string,
+): Promise<CrewDto> {
+  return apiClient.delete<CrewDto>(
+    `/projects/${projectId}/assets/${assetId}/crew/${crewId}/photo`,
   );
 }

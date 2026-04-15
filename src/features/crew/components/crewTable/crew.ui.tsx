@@ -1,23 +1,40 @@
 import { Text } from "@/src/components";
 import { View } from "react-native";
-import { CrewStatus } from "../../contracts";
+import { CrewInactiveReason, CrewStatus } from "../../contracts";
 
-export function CrewStatusPill(props: { status: CrewStatus }) {
-  const s = props.status;
+export function crewStatusLabel(
+  status: CrewStatus,
+  inactiveReason?: CrewInactiveReason | null,
+) {
+  if (status === "ACTIVE") return "ACTIVE";
+  if (inactiveReason === "VACATION") return "VACATION";
+  if (inactiveReason === "INJURED") return "INJURED";
+  return "INACTIVE";
+}
 
-  const bg: Record<CrewStatus, string> = {
+export function CrewStatusPill(props: {
+  status: CrewStatus;
+  inactiveReason?: CrewInactiveReason | null;
+}) {
+  const label = crewStatusLabel(props.status, props.inactiveReason);
+
+  const bg: Record<typeof label, string> = {
     ACTIVE: "bg-success/15",
+    VACATION: "bg-info/15",
+    INJURED: "bg-warning/15",
     INACTIVE: "bg-muted/15",
   };
 
-  const text: Record<CrewStatus, string> = {
+  const text: Record<typeof label, string> = {
     ACTIVE: "text-success",
+    VACATION: "text-info",
+    INJURED: "text-warning",
     INACTIVE: "text-info",
   };
 
   return (
-    <View className={`px-3 py-1 rounded-full w-fit ${bg[s]}`}>
-      <Text className={`text-xs font-medium ${text[s]}`}>{s}</Text>
+    <View className={`w-fit rounded-full px-3 py-1 ${bg[label]}`}>
+      <Text className={`text-xs font-medium ${text[label]}`}>{label}</Text>
     </View>
   );
 }

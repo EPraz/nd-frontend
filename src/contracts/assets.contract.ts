@@ -7,6 +7,8 @@ export type AssetDto = {
   projectId: string;
   type: AssetType;
   name: string;
+  imageUrl: string | null;
+  imageFileName: string | null;
   status: string;
   isDeleted: boolean;
   deletedAt: string | null;

@@ -85,7 +85,12 @@ export function CrewTable(props: Props) {
         key: "status",
         header: "Status",
         flex: 1,
-        render: (row) => <CrewStatusPill status={row.status} />,
+        render: (row) => (
+          <CrewStatusPill
+            status={row.status}
+            inactiveReason={row.inactiveReason}
+          />
+        ),
       },
       {
         key: "medical",

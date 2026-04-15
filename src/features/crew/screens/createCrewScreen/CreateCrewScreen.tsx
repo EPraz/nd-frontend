@@ -1,5 +1,8 @@
 import { Button, Text } from "@/src/components";
+import { useToast } from "@/src/context";
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import type { UploadFileInput } from "@/src/contracts/uploads.contract";
+import { pickImageUpload } from "@/src/helpers/pickImageUpload";
 import { useVessels } from "@/src/features/vessels";
 import { useCreateCrew } from "@/src/hooks";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,9 +16,11 @@ import {
   emptyCrewFormValues,
   toCreateCrewInput,
 } from "../../components";
+import { uploadCrewPhoto } from "../../api/crew.api";
 
 export default function CreateCrewScreen() {
   const router = useRouter();
+  const { show } = useToast();
   const { projectId, assetId } = useLocalSearchParams<{
     projectId: string;
     assetId?: string;
@@ -28,6 +33,7 @@ export default function CreateCrewScreen() {
 
   const [values, setValues] = useState<CrewFormValues>(emptyCrewFormValues());
   const [localError, setLocalError] = useState<string | null>(null);
+  const [pendingPhoto, setPendingPhoto] = useState<UploadFileInput | null>(null);
 
   const {
     vessels,
@@ -40,10 +46,8 @@ export default function CreateCrewScreen() {
     return vessels.find((v) => v.id === fixedAssetId) ?? null;
   }, [fixedAssetId, vessels]);
 
-  // Si vienes en ruta /vessels/:assetId/crew/new => fija el assetId en el form
   useEffect(() => {
     if (!fixedAssetId) return;
-    // Si ya está seteado, no re-patches
     if (values.assetId === fixedAssetId) return;
 
     setValues((prev) => ({
@@ -51,8 +55,7 @@ export default function CreateCrewScreen() {
       assetId: fixedAssetId,
       selectedVessel: currentVessel ?? prev.selectedVessel,
     }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fixedAssetId, currentVessel?.id]);
+  }, [fixedAssetId, currentVessel, values.assetId]);
 
   const effectiveAssetId = fixedAssetId ?? values.assetId;
 
@@ -71,6 +74,16 @@ export default function CreateCrewScreen() {
 
   function patch(p: Partial<CrewFormValues>) {
     setValues((prev) => ({ ...prev, ...p }));
+  }
+
+  async function handlePickPhoto() {
+    const file = await pickImageUpload();
+    if (!file) return;
+    setPendingPhoto(file);
+  }
+
+  function handleRemovePhoto() {
+    setPendingPhoto(null);
   }
 
   function goBackOrTo(fallbackHref: string) {
@@ -95,26 +108,33 @@ export default function CreateCrewScreen() {
     }
 
     try {
-      // asegúrate de que el input use el assetId efectivo
       const input = toCreateCrewInput({
         ...values,
         assetId: effectiveAssetId,
       });
 
-      await submit(input);
+      const created = await submit(input);
+
+      if (pendingPhoto) {
+        try {
+          await uploadCrewPhoto(pid, effectiveAssetId, created.id, pendingPhoto);
+        } catch {
+          show("Crew profile saved, but the photo upload failed.", "error");
+        }
+      }
+
       router.replace(crewHref);
     } catch {
-      // error ya lo maneja el hook (error string)
+      // hook handles primary error state
     }
   }
 
   return (
     <View className="flex-1 bg-shellCanvas">
       <ScrollView
-        contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View className="gap-3">
           <Pressable
             onPress={() => goBackOrTo(crewHref)}
@@ -125,16 +145,17 @@ export default function CreateCrewScreen() {
             ].join(" ")}
           >
             <Ionicons name="chevron-back" size={16} className="text-accent" />
-            <Text className="text-accent font-semibold">Back to Crew</Text>
+            <Text className="font-semibold text-accent">Back to Crew</Text>
           </Pressable>
 
-          <View className="web:flex-row web:items-start web:justify-between gap-4">
-            <View className="gap-1 flex-1">
-              <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
+          <View className="gap-4 web:flex-row web:items-start web:justify-between">
+            <View className="flex-1 gap-1">
+              <Text className="text-[34px] font-semibold leading-[110%] text-textMain web:text-[44px]">
                 Add Crew Member
               </Text>
-              <Text className="text-muted text-[14px]">
-                Register a crew member and assign them to a vessel.
+              <Text className="text-[14px] text-muted">
+                Register a crew member, capture their operational status, and
+                attach a real portrait from the start.
               </Text>
             </View>
 
@@ -169,9 +190,7 @@ export default function CreateCrewScreen() {
           </View>
         </View>
 
-        {/* Content grid */}
         <View className="gap-5 web:lg:flex-row">
-          {/* Left */}
           <View className="flex-1 gap-5 web:lg:w-[60%]">
             <CrewFormCard
               fixedAssetId={fixedAssetId}
@@ -182,26 +201,29 @@ export default function CreateCrewScreen() {
               onCreateVessel={() => router.push(createVesselHref)}
               values={{
                 ...values,
-                // si estás en ruta con assetId fijo, forzamos assetId en values para consistencia
                 assetId: effectiveAssetId,
               }}
-              onChange={(p) => {
+              onChange={(patchValue) => {
                 setLocalError(null);
-                patch(p);
+                patch(patchValue);
               }}
+              photoPreviewUrl={pendingPhoto?.uri ?? null}
+              pendingPhotoName={pendingPhoto?.name ?? null}
+              onSelectPhoto={handlePickPhoto}
+              onRemovePhoto={handleRemovePhoto}
+              canManagePhoto={!loading}
+              photoBusy={loading}
               localError={localError}
               apiError={error}
               disabled={loading}
             />
           </View>
 
-          {/* Right: Preview */}
           <View className="flex-1 gap-5 web:lg:w-[40%]">
             <CrewPreviewCard
               values={{
                 ...values,
                 assetId: effectiveAssetId,
-                // si viene fijo, preferimos el currentVessel como display
                 selectedVessel: fixedAssetId
                   ? currentVessel
                   : values.selectedVessel,

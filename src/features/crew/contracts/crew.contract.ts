@@ -1,7 +1,13 @@
 import { AssetDto } from "@/src/contracts/assets.contract";
 
 export type CrewStatus = "ACTIVE" | "INACTIVE";
-export type CrewDepartment = "DECK" | "ENGINE" | "CATERING" | "OTHER";
+export type CrewInactiveReason = "VACATION" | "INJURED" | "OTHER";
+export type CrewDepartment =
+  | "DECK"
+  | "ENGINE"
+  | "ELECTRICAL"
+  | "CATERING"
+  | "OTHER";
 
 export type CrewDto = {
   id: string;
@@ -16,10 +22,13 @@ export type CrewDto = {
   rank: string | null;
   department: CrewDepartment | null;
   photoUrl: string | null;
+  photoFileName: string | null;
   status: CrewStatus;
+  inactiveReason: CrewInactiveReason | null;
   dateOfEmbarkation: string | null;
   portOfEmbarkation: string | null;
   expectedDateOfDisembarkation: string | null;
+  nextVacationDate: string | null;
   contractType: string | null;
   operatingCompany: string | null;
   crewManagementAgency: string | null;
@@ -55,11 +64,12 @@ export type CreateCrewInput = {
   personalEmail?: string;
   rank?: string;
   department?: CrewDepartment;
-  photoUrl?: string;
   status?: CrewStatus;
+  inactiveReason?: CrewInactiveReason;
   dateOfEmbarkation?: string;
   portOfEmbarkation?: string;
   expectedDateOfDisembarkation?: string;
+  nextVacationDate?: string;
   contractType?: string;
   operatingCompany?: string;
   crewManagementAgency?: string;

@@ -3,7 +3,6 @@ import { useToast } from "@/src/context";
 import { useCrewById } from "@/src/features/crew";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo } from "react";
 import { View } from "react-native";
 import {
   CrewCertificateRequirementsTable,
@@ -17,6 +16,10 @@ import {
   useCrewCertificatesByCrew,
   useGenerateCrewCertificateRequirements,
 } from "../../hooks";
+import {
+  summarizeCrewCertificateRequirements,
+  summarizeCrewCertificates,
+} from "../../helpers";
 
 export default function CrewCertificatesByCrewScreen() {
   const router = useRouter();
@@ -57,28 +60,9 @@ export default function CrewCertificatesByCrewScreen() {
     error: generationError,
   } = useGenerateCrewCertificateRequirements(pid, aid, cid);
 
-  const stats = useMemo(() => {
-    let missing = 0;
-    let underReview = 0;
-    let provided = 0;
-    let expired = 0;
-
-    for (const row of requirements) {
-      if (row.status === "MISSING") missing += 1;
-      if (row.status === "UNDER_REVIEW") underReview += 1;
-      if (row.status === "PROVIDED") provided += 1;
-      if (row.status === "EXPIRED") expired += 1;
-    }
-
-    return {
-      total: requirements.length,
-      missing,
-      underReview,
-      provided,
-      expired,
-      uploaded: certificates.length,
-    };
-  }, [certificates.length, requirements]);
+  const requirementStats = summarizeCrewCertificateRequirements(requirements);
+  const certificateStats = summarizeCrewCertificates(certificates);
+  const statsLoading = requirementsLoading || certificatesLoading;
 
   async function refreshAll() {
     await Promise.all([
@@ -104,6 +88,18 @@ export default function CrewCertificatesByCrewScreen() {
     } catch {
       show("Failed to refresh crew certificate requirements", "error");
     }
+  }
+
+  function openUpload(row: CrewCertificateRequirementDto) {
+    router.push({
+      pathname: "/projects/[projectId]/crew-certificates/upload",
+      params: {
+        projectId: pid,
+        assetId: aid,
+        crewId: cid,
+        requirementId: row.id,
+      },
+    });
   }
 
   const headerActions = (
@@ -159,18 +155,6 @@ export default function CrewCertificatesByCrewScreen() {
     </>
   );
 
-  function openUpload(row: CrewCertificateRequirementDto) {
-    router.push({
-      pathname: "/projects/[projectId]/crew-certificates/upload",
-      params: {
-        projectId: pid,
-        assetId: aid,
-        crewId: cid,
-        requirementId: row.id,
-      },
-    });
-  }
-
   if (crewLoading) return <Loading fullScreen />;
   if (crewError) return <ErrorState message={crewError} onRetry={refreshCrew} />;
   if (!crew) return <ErrorState message="Crew member not found." onRetry={refreshCrew} />;
@@ -186,51 +170,54 @@ export default function CrewCertificatesByCrewScreen() {
 
       <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
         <StatCard
-          loading={requirementsLoading}
+          loading={statsLoading}
           iconName="documents-outline"
           iconLib="ion"
           title="Requirements"
-          value={String(stats.total)}
+          value={String(requirementStats.totalRequirements)}
           suffix="active compliance items"
-          badgeValue={String(stats.uploaded)}
-          badgeColor={stats.uploaded > 0 ? "success" : "fail"}
+          badgeValue={String(requirementStats.uploadedRequirements)}
+          badgeColor={requirementStats.uploadedRequirements > 0 ? "success" : "fail"}
           badgeLabel="uploaded"
         />
 
         <StatCard
-          loading={requirementsLoading}
+          loading={statsLoading}
           iconName="alert-circle-outline"
           iconLib="ion"
           title="Missing"
-          value={String(stats.missing)}
+          value={String(requirementStats.missingRequirements)}
           suffix="need certificate evidence"
-          badgeValue={stats.missing > 0 ? "ACTION" : "OK"}
-          badgeColor={stats.missing > 0 ? "fail" : "success"}
+          badgeValue={requirementStats.missingRequirements > 0 ? "ACTION" : "OK"}
+          badgeColor={requirementStats.missingRequirements > 0 ? "fail" : "success"}
           badgeLabel="status"
         />
 
         <StatCard
-          loading={requirementsLoading}
+          loading={statsLoading}
           iconName="search-outline"
           iconLib="ion"
           title="Under Review"
-          value={String(stats.underReview)}
+          value={String(requirementStats.underReviewRequirements)}
           suffix="uploaded and pending confirmation"
-          badgeValue={stats.underReview > 0 ? "QUEUE" : "CLEAR"}
-          badgeColor={stats.underReview > 0 ? "fail" : "success"}
-          badgeLabel="queue"
         />
 
         <StatCard
-          loading={requirementsLoading}
+          loading={statsLoading}
           iconName="checkmark-circle-outline"
           iconLib="ion"
-          title="Provided"
-          value={String(stats.provided)}
-          suffix="currently covered"
-          badgeValue={String(stats.expired)}
-          badgeColor={stats.expired > 0 ? "fail" : "success"}
-          badgeLabel="expired"
+          title="Active Certificates"
+          value={String(certificateStats.activeCertificates)}
+          suffix="currently valid or approved"
+        />
+
+        <StatCard
+          loading={statsLoading}
+          iconName="time-outline"
+          iconLib="ion"
+          title="Expiring in 30 days"
+          value={String(certificateStats.expiringSoonCertificates)}
+          suffix="need attention soon"
         />
       </View>
 

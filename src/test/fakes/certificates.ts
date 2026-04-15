@@ -13,6 +13,8 @@ export function fakeVesselAsset(overrides: Partial<AssetDto> = {}): AssetDto {
     projectId: "project-atlantic",
     type: "VESSEL",
     name: "MV Navigate One",
+    imageUrl: null,
+    imageFileName: null,
     status: "ACTIVE",
     isDeleted: false,
     deletedAt: null,
