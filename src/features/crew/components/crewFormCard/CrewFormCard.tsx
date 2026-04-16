@@ -1,16 +1,16 @@
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardHeaderRow,
   CardTitle,
-  DateField,
-  EmptyVesselsState,
-  Field,
-  SearchableVesselSelect,
-  Text,
-  VesselPill,
-} from "@/src/components";
+} from "@/src/components/ui/card/Card";
+import { DateField } from "@/src/components/ui/forms/DateField";
+import { EmptyVesselsState } from "@/src/components/ui/forms/EmptyVesselsState";
+import { Field } from "@/src/components/ui/forms/Field";
+import { SearchableVesselSelect } from "@/src/components/ui/forms/SearchableVesselSelect";
+import { VesselPill } from "@/src/components/ui/forms/VesselPill";
+import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";

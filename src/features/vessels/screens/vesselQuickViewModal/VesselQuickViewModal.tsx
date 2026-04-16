@@ -1,11 +1,9 @@
-import {
-  Button,
-  ConfirmModal,
-  MiniPill,
-  QuickViewModalFrame,
-  Text,
-} from "@/src/components";
-import { useToast } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { Text } from "@/src/components/ui/text/Text";
+import QuickViewModalFrame from "@/src/components/overlays/QuickViewModalFrame";
+import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { formatDate, Stat } from "@/src/helpers";
 import { Image } from "expo-image";
@@ -13,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import { useDeleteVessel } from "../../hooks";
+import { useDeleteVessel } from "../../hooks/useDeleteVessel";
 import { useVesselSummary } from "../../hooks/useVesselSummary";
 
 type Props = {

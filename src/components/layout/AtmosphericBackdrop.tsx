@@ -88,7 +88,10 @@ export function AtmosphericBackdrop({
   const config = BACKDROP_CONFIG[variant][theme];
 
   return (
-    <View className="absolute inset-0 -z-10" pointerEvents="none">
+    <View
+      className="absolute inset-0 -z-10"
+      style={{ pointerEvents: "none" }}
+    >
       <LinearGradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}

@@ -1,4 +1,3 @@
-import { Card, CardContent, Text } from "@/src/components";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { Portal } from "@rn-primitives/portal";
@@ -11,6 +10,8 @@ import React, {
   useState,
 } from "react";
 import { Animated, Pressable, View, ViewStyle } from "react-native";
+import { Card, CardContent } from "../components/ui/card/Card";
+import { Text } from "../components/ui/text/Text";
 
 type ToastType = "default" | "success" | "error" | "warning" | "info";
 
@@ -135,9 +136,12 @@ function ToastCard({
 
   return (
     <Animated.View
-      style={{ opacity, transform: [{ translateX }, { translateY }] }}
+      style={{
+        opacity,
+        transform: [{ translateX }, { translateY }],
+        pointerEvents: "box-none",
+      }}
       className="w-full"
-      pointerEvents="box-none"
     >
       <Card
         className={cn(
@@ -214,7 +218,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       <Portal name="toast">
-        <View pointerEvents="box-none" style={TOAST_STACK_STYLE}>
+        <View style={[TOAST_STACK_STYLE, { pointerEvents: "box-none" }]}>
           {items.map((item, idx) => (
             <View key={item.id} style={{ marginTop: idx === 0 ? 0 : 16 }}>
               <ToastCard item={item} onDismiss={() => dismiss(item.id)} />

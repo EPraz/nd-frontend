@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { useSession } from "../hooks";
+import { useSession } from "../hooks/useSession";
 
 const SessionCtx = createContext<ReturnType<typeof useSession> | null>(null);
 

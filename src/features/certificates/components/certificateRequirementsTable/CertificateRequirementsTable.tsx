@@ -1,8 +1,11 @@
-import { Column, DataTable, TableActionIcon, TableLink, Text } from "@/src/components";
+import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
+import { TableActionIcon } from "@/src/components/ui/table/TableActionIcon";
+import { TableLink } from "@/src/components/ui/table/TableLink";
+import { Text } from "@/src/components/ui/text/Text";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { View } from "react-native";
-import { CertificateRequirementDto } from "../../contracts";
+import type { CertificateRequirementDto } from "../../contracts";
 import { RequirementStatusPill } from "../certificateTable/certificates.ui";
 
 type Props = {

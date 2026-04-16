@@ -1,4 +1,6 @@
-import { Column, DataTable, TableLink, Text } from "@/src/components";
+import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
+import { TableLink } from "@/src/components/ui/table/TableLink";
+import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";

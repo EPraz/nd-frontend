@@ -1,5 +1,5 @@
-import { useProjectData } from "@/src/context";
-import { MaintenanceStatus } from "@/src/features/maintenance";
+import { useProjectData } from "@/src/context/ProjectDataProvider";
+import type { MaintenanceStatus } from "@/src/features/maintenance/contracts/maintenance.contract";
 import { useMemo } from "react";
 
 export type MaintenanceUpcomingRow = {

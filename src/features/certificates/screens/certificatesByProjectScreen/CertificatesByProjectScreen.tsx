@@ -1,6 +1,9 @@
-import { Button, PageHeader, StatCard, Text } from "@/src/components";
-import { ToolbarSelect } from "@/src/components/ui";
-import { useToast } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
+import StatCard from "@/src/components/ui/statCard/StatCard";
+import { Text } from "@/src/components/ui/text/Text";
+import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
+import { useToast } from "@/src/context/ToastProvider";
 import { humanizeTechnicalLabel } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -8,19 +11,17 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import {
   CertificateRequirementsTable,
-  CertificatesTable,
-} from "../../components";
+} from "../../components/certificateRequirementsTable/CertificateRequirementsTable";
+import { CertificatesTable } from "../../components/certificateTable/CertificatesTable";
 import { ENABLE_MANUAL_CERTIFICATE_CREATE } from "../../config";
 import {
   CertificateRequirementDto,
   CertificateStatus,
   RequirementStatus,
 } from "../../contracts";
-import {
-  useCertificatesByProject,
-  useCertificateRequirementsByProject,
-  useGenerateCertificateRequirements,
-} from "../../hooks";
+import { useCertificatesByProject } from "../../hooks/useCertificatesByProject";
+import { useCertificateRequirementsByProject } from "../../hooks/useCertificateRequirementsByProject";
+import { useGenerateCertificateRequirements } from "../../hooks/useGenerateCertificateRequirements";
 
 const REQUIREMENT_FILTERS: ("ALL" | RequirementStatus)[] = [
   "ALL",

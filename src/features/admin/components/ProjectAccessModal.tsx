@@ -1,12 +1,12 @@
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeaderRow,
   CardTitle,
-  Text,
-} from "@/src/components";
+} from "@/src/components/ui/card/Card";
+import { Text } from "@/src/components/ui/text/Text";
 import type {
   AdminProjectDto,
   AdminUserDto,

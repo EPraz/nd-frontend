@@ -1,16 +1,18 @@
-import { useDashboardScope, useProjectEntitlements } from "@/src/context";
-import { MaintenanceStatus } from "@/src/features/maintenance";
+import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
+import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
+import type { MaintenanceStatus } from "@/src/features/maintenance/contracts/maintenance.contract";
 import { formatDate } from "@/src/helpers";
-import {
-  MaintenanceOverviewData,
-  useMaintenanceOverviewData,
-} from "@/src/hooks";
+import { useMaintenanceOverviewData } from "@/src/hooks/dashboard/useMaintenanceOverviewData";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
-import { Button, MiniPill, MiniStat, Text, Tone, toneClasses } from "../../ui";
+import { Button } from "../../ui/button/Button";
+import { MiniPill } from "../../ui/miniPill/MiniPill";
+import { MiniStat } from "../../ui/miniStat/MiniStat";
+import { Text } from "../../ui/text/Text";
+import { toneClasses, type Tone } from "../../ui/toneClasses/ToneClasses";
 import { ModuleUnavailableState } from "../ModuleUnavailableState";
 
 const MAX_NEXT = 10;
@@ -35,7 +37,7 @@ export default function MaintenanceOverviewModule() {
   const { data, isLoading, error, refetch } = useMaintenanceOverviewData();
   const router = useRouter();
 
-  const upcoming = (data as MaintenanceOverviewData)?.upcoming as
+  const upcoming = data.upcoming as
     | {
         id: string;
         title: string;

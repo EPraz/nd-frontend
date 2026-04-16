@@ -1,4 +1,4 @@
-import { Text } from "@/src/components";
+import { Text } from "@/src/components/ui/text/Text";
 import { Feather } from "@expo/vector-icons";
 import { Pressable, View } from "react-native";
 

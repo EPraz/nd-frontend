@@ -1,5 +1,6 @@
-import { Button, Text } from "@/src/components";
-import { useSessionContext } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import { Text } from "@/src/components/ui/text/Text";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import {
   ArrowRight,
   LockKeyhole,
@@ -36,7 +37,7 @@ export default function LoginScreen() {
   } = useForm<LoginFormValues>({
     defaultValues: {
       email: "admin@navigate.test",
-      password: "NavigateAdminAccess2026!",
+      password: "",
     },
   });
 

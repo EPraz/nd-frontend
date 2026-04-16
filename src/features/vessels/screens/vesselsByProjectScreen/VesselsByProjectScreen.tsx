@@ -1,11 +1,13 @@
-import { Button, PageHeader, StatCard } from "@/src/components";
-import { AssetDto } from "@/src/contracts/assets.contract";
+import { Button } from "@/src/components/ui/button/Button";
+import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
+import StatCard from "@/src/components/ui/statCard/StatCard";
+import type { AssetDto } from "@/src/contracts/assets.contract";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import { VesselsTable } from "../../components";
-import { useVesselsPageData } from "../../hooks";
-import { VesselQuickViewModal } from "../vesselQuickViewModal";
+import { VesselsTable } from "../../components/vesselTable/VesselsTable";
+import { useVesselsPageData } from "../../hooks/useVesselsPageData";
+import VesselQuickViewModal from "../vesselQuickViewModal/VesselQuickViewModal";
 
 export default function VesselsByProjectScreen() {
   const router = useRouter();

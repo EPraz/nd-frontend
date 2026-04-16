@@ -1,5 +1,6 @@
-import { Button, Text } from "@/src/components";
-import { useCertificateTypes } from "@/src/features/certificates";
+import { Button } from "@/src/components/ui/button/Button";
+import { Text } from "@/src/components/ui/text/Text";
+import { useCertificateTypes } from "@/src/features/certificates/hooks/useCertificateTypes";
 import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -8,8 +9,8 @@ import { useForm } from "react-hook-form";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 import { useVessels } from "@/src/features/vessels/hooks/useVessels";
-import { useCreateCertificate } from "@/src/hooks";
-import { CertificateFormCard } from "../../components";
+import { useCreateCertificate } from "@/src/features/certificates/hooks/useCreateCertificate";
+import CertificateFormCard from "../../components/certificateFormCard/CertificateFormCard";
 import {
   CertificateFormValues,
   emptyCertificateFormValues,

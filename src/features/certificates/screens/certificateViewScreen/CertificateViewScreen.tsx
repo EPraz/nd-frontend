@@ -1,19 +1,19 @@
 import { getBaseUrl } from "@/src/api/baseUrl";
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardHeaderRow,
   CardTitle,
-  DocumentPreview,
-  ErrorState,
-  FieldDisplay,
-  Loading,
-  MiniPill,
-  Text,
-} from "@/src/components";
-import { ConfirmModal } from "@/src/components/ui";
-import { useToast } from "@/src/context";
+} from "@/src/components/ui/card/Card";
+import { DocumentPreview } from "@/src/components/ui/documentPreview/DocumentPreview";
+import ErrorState from "@/src/components/ui/errorState/ErrorState";
+import { FieldDisplay } from "@/src/components/ui/forms/FieldDisplay";
+import Loading from "@/src/components/ui/loading/Loading";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import { Text } from "@/src/components/ui/text/Text";
+import { useToast } from "@/src/context/ToastProvider";
 import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";

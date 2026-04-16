@@ -1,21 +1,22 @@
-import { Button, Text } from "@/src/components";
-import { useToast } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import { Text } from "@/src/components/ui/text/Text";
+import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { pickImageUpload } from "@/src/helpers/pickImageUpload";
-import { useVessels } from "@/src/features/vessels";
-import { useCreateCrew } from "@/src/hooks";
+import { useVessels } from "@/src/features/vessels/hooks/useVessels";
+import { useCreateCrew } from "@/src/features/crew/hooks/useCreateCrew";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import CrewFormCard from "../../components/crewFormCard/CrewFormCard";
+import CrewPreviewCard from "../../components/crewPreviewCard/CrewPreviewCard";
 import {
-  CrewFormCard,
-  CrewFormValues,
-  CrewPreviewCard,
   emptyCrewFormValues,
   toCreateCrewInput,
-} from "../../components";
+  type CrewFormValues,
+} from "../../components/crewFormTypes";
 import { uploadCrewPhoto } from "../../api/crew.api";
 
 export default function CreateCrewScreen() {
@@ -203,7 +204,7 @@ export default function CreateCrewScreen() {
                 ...values,
                 assetId: effectiveAssetId,
               }}
-              onChange={(patchValue) => {
+              onChange={(patchValue: Partial<CrewFormValues>) => {
                 setLocalError(null);
                 patch(patchValue);
               }}

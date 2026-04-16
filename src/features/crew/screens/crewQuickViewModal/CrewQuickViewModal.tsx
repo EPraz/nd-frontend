@@ -1,11 +1,9 @@
-import {
-  Button,
-  ConfirmModal,
-  MiniPill,
-  QuickViewModalFrame,
-  Text,
-} from "@/src/components";
-import { useToast } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { Text } from "@/src/components/ui/text/Text";
+import QuickViewModalFrame from "@/src/components/overlays/QuickViewModalFrame";
+import { useToast } from "@/src/context/ToastProvider";
 import { formatDate, Stat } from "@/src/helpers";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,7 +11,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import type { CrewDto } from "../../contracts";
-import { useDeleteCrew } from "../../hooks";
+import { useDeleteCrew } from "../../hooks/useDeleteCrew";
 import { crewStatusLabel } from "../../components/crewTable/crew.ui";
 
 type Props = {

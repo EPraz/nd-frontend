@@ -1,4 +1,4 @@
-import { Text } from "@/src/components";
+import { Text } from "@/src/components/ui/text/Text";
 import { humanizeTechnicalLabel } from "@/src/helpers";
 import type {
   CertificateStatus,

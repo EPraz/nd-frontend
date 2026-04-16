@@ -1,8 +1,10 @@
-import { Button, PageHeader, StatCard } from "@/src/components";
+import { Button } from "@/src/components/ui/button/Button";
+import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
+import StatCard from "@/src/components/ui/statCard/StatCard";
 import type { CrewDto } from "@/src/features/crew/contracts";
-import { CrewQuickViewModal } from "@/src/features/crew/screens/crewQuickViewModal";
-import { CrewTable } from "@/src/features/crew";
-import { useCrewByAsset } from "@/src/hooks";
+import CrewQuickViewModal from "@/src/features/crew/screens/crewQuickViewModal/CrewQuickViewModal";
+import { CrewTable } from "@/src/features/crew/components/crewTable/CrewTable";
+import { useCrewByAsset } from "@/src/features/crew/hooks/useCrewByAsset";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { View } from "react-native";

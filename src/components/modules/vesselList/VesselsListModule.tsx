@@ -1,12 +1,17 @@
-import { useDashboardScope, useProjectEntitlements } from "@/src/context";
-import { useVesselsListData, VesselCertStatus } from "@/src/hooks";
+import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
+import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
+import { useVesselsListData } from "@/src/hooks/dashboard/useVesselsListData";
+import type { VesselCertStatus } from "@/src/hooks/dashboard/useVesselsListData";
 import { cn } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, ScrollView, View } from "react-native";
 import { ModuleUnavailableState } from "../ModuleUnavailableState";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
-import { Button, MiniPill, Text, Tone, toneClasses } from "../../ui";
+import { Button } from "../../ui/button/Button";
+import { MiniPill } from "../../ui/miniPill/MiniPill";
+import { Text } from "../../ui/text/Text";
+import { toneClasses, type Tone } from "../../ui/toneClasses/ToneClasses";
 
 const MAX_VESSELS = 6;
 

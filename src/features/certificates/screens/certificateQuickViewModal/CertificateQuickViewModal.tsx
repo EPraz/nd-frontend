@@ -1,4 +1,8 @@
-import { Button, MiniPill, QuickViewModalFrame, Stat, Text } from "@/src/components";
+import { Button } from "@/src/components/ui/button/Button";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { Stat } from "@/src/components/ui/miniStat/MiniStat";
+import { Text } from "@/src/components/ui/text/Text";
+import QuickViewModalFrame from "@/src/components/overlays/QuickViewModalFrame";
 import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";

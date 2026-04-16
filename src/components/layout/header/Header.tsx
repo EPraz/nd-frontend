@@ -1,4 +1,6 @@
-import { useProjectContext, useSessionContext, useToast } from "@/src/context";
+import { useProjectContext } from "@/src/context/ProjectProvider";
+import { useSessionContext } from "@/src/context/SessionProvider";
+import { useToast } from "@/src/context/ToastProvider";
 import { humanizeTechnicalLabel } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
@@ -11,7 +13,9 @@ import {
   type View as RNView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, MiniPill, Text } from "../../ui";
+import { Button } from "../../ui/button/Button";
+import { MiniPill } from "../../ui/miniPill/MiniPill";
+import { Text } from "../../ui/text/Text";
 
 type Props = {
   collapsed: boolean;

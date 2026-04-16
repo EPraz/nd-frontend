@@ -1,7 +1,10 @@
-import { Button, Loading, Text, WorkspaceBackdrop } from "@/src/components";
-import { useSessionContext } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import Loading from "@/src/components/ui/loading/Loading";
+import { Text } from "@/src/components/ui/text/Text";
+import { WorkspaceBackdrop } from "@/src/components/layout/AtmosphericBackdrop";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { ProjectDto, ProjectKind } from "@/src/contracts/projects.contract";
-import { useProjects } from "@/src/hooks";
+import { useProjects } from "@/src/hooks/useProjects";
 import { useRouter } from "expo-router";
 import { ChevronRight, LogOut, RefreshCw, Search } from "lucide-react-native";
 import { useMemo, useState } from "react";

@@ -1,24 +1,25 @@
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardHeaderRow,
   CardTitle,
-  ConfirmModal,
-  ErrorState,
-  FieldDisplay,
-  Loading,
-  MiniPill,
-  Text,
-} from "@/src/components";
-import { useToast } from "@/src/context";
+} from "@/src/components/ui/card/Card";
+import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import ErrorState from "@/src/components/ui/errorState/ErrorState";
+import { FieldDisplay } from "@/src/components/ui/forms/FieldDisplay";
+import Loading from "@/src/components/ui/loading/Loading";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { Text } from "@/src/components/ui/text/Text";
+import { useToast } from "@/src/context/ToastProvider";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 import { useState } from "react";
-import { CrewStatusPill } from "../../components";
-import { useCrewById, useDeleteCrew } from "../../hooks";
+import { CrewStatusPill } from "../../components/crewTable/crew.ui";
+import { useCrewById } from "../../hooks/useCrewById";
+import { useDeleteCrew } from "../../hooks/useDeleteCrew";
 
 function formatDate(value?: string | null): string {
   return value ? value.slice(0, 10) : "-";

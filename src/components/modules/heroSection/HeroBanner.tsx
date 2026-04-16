@@ -1,4 +1,3 @@
-import { Text } from "@/src/components";
 import { BlurView } from "expo-blur";
 import React from "react";
 import {
@@ -9,6 +8,7 @@ import {
 } from "react-native";
 import { SpecItem, toWebUri } from "./hero.ui";
 import RightPanel from "./RightPanel";
+import { Text } from "../../ui/text/Text";
 
 type Props = {
   title: string;

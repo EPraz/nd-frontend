@@ -3,9 +3,9 @@ import {
   CardContent,
   CardHeaderRow,
   CardTitle,
-  RowInfo,
-  Text,
-} from "@/src/components";
+} from "@/src/components/ui/card/Card";
+import { RowInfo } from "@/src/components/ui/forms/RowInfo";
+import { Text } from "@/src/components/ui/text/Text";
 import { View } from "react-native";
 import { CertificateFormValues } from "../../contracts";
 

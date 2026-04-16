@@ -1,14 +1,14 @@
+import { Badge } from "@/src/components/ui/badge/Badge";
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Badge,
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeaderRow,
   CardTitle,
-  Field,
-  Text,
-} from "@/src/components";
+} from "@/src/components/ui/card/Card";
+import { Field } from "@/src/components/ui/forms/Field";
+import { Text } from "@/src/components/ui/text/Text";
 import type {
   AdminProjectDto,
   AdminUserDto,

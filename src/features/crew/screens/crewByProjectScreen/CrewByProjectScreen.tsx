@@ -1,11 +1,13 @@
-import { Button, PageHeader, StatCard } from "@/src/components";
+import { Button } from "@/src/components/ui/button/Button";
+import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
+import StatCard from "@/src/components/ui/statCard/StatCard";
 import { useCrewPageData } from "@/src/features/crew/hooks/useCrewPageData";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import { CrewTable } from "../../components";
+import { CrewTable } from "../../components/crewTable/CrewTable";
 import type { CrewDto } from "../../contracts";
-import { CrewQuickViewModal } from "../crewQuickViewModal";
+import CrewQuickViewModal from "../crewQuickViewModal/CrewQuickViewModal";
 
 export default function CrewByProjectScreen() {
   const router = useRouter();
@@ -30,6 +32,15 @@ export default function CrewByProjectScreen() {
               onPress={() => router.push(`/projects/${pid}/crew-certificates`)}
             >
               Crew Certificates
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onPress={() => router.push(`/projects/${pid}/crew/bulk-upload`)}
+            >
+              Bulk Upload
             </Button>
 
             <Button

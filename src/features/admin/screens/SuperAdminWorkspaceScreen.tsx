@@ -1,14 +1,15 @@
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardTitle,
-  PageHeader,
-  Text,
-  WorkspaceBackdrop,
-} from "@/src/components";
-import { useSessionContext, useToast } from "@/src/context";
+} from "@/src/components/ui/card/Card";
+import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
+import { Text } from "@/src/components/ui/text/Text";
+import { WorkspaceBackdrop } from "@/src/components/layout/AtmosphericBackdrop";
+import { useSessionContext } from "@/src/context/SessionProvider";
+import { useToast } from "@/src/context/ToastProvider";
 import type {
   AdminProjectDto,
   UserRole,

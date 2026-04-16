@@ -1,13 +1,13 @@
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Field,
-  Text,
-} from "@/src/components";
+} from "@/src/components/ui/card/Card";
+import { Field } from "@/src/components/ui/forms/Field";
+import { Text } from "@/src/components/ui/text/Text";
 import type { AdminProjectDto, UserRole } from "@/src/contracts/admin.contract";
 import type { ProjectKind } from "@/src/contracts/projects.contract";
 import { Controller, useForm } from "react-hook-form";

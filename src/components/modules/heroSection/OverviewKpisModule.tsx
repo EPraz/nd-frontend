@@ -1,6 +1,6 @@
 import banner from "@/src/assets/ship-banner-2.jpg";
-import { useProjectContext } from "@/src/context";
-import { useOverviewKpisData } from "@/src/hooks";
+import { useProjectContext } from "@/src/context/ProjectProvider";
+import { useOverviewKpisData } from "@/src/hooks/dashboard/useOverviewKpisData";
 import { ModuleFrame } from "../../dashboard/ModuleFrame";
 import { HeroBanner } from "./HeroBanner";
 

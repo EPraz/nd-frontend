@@ -1,23 +1,26 @@
-import { Button, ErrorState, Loading, Text } from "@/src/components";
-import { useToast } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import ErrorState from "@/src/components/ui/errorState/ErrorState";
+import Loading from "@/src/components/ui/loading/Loading";
+import { Text } from "@/src/components/ui/text/Text";
+import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { pickImageUpload } from "@/src/helpers/pickImageUpload";
-import { useVessels } from "@/src/features/vessels";
+import { useVessels } from "@/src/features/vessels/hooks/useVessels";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import CrewFormCard from "../../components/crewFormCard/CrewFormCard";
+import CrewPreviewCard from "../../components/crewPreviewCard/CrewPreviewCard";
 import {
-  CrewFormCard,
   crewFormFromDto,
-  CrewFormValues,
-  CrewPreviewCard,
   emptyCrewFormValues,
   toUpdateCrewInput,
-} from "../../components";
+  type CrewFormValues,
+} from "../../components/crewFormTypes";
 import { deleteCrewPhoto, uploadCrewPhoto } from "../../api/crew.api";
-import { useCrewById } from "../../hooks";
+import { useCrewById } from "../../hooks/useCrewById";
 import { useUpdateCrew } from "../../hooks/useUpdateCrew";
 
 export default function EditCrewScreen() {

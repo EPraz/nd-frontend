@@ -1,7 +1,7 @@
-import { Text } from "@/src/components";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
+import { Text } from "../text/Text";
 
 export function VesselPill({ vessel }: { vessel: AssetDto }) {
   const profile = vessel.vessel;

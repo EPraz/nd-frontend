@@ -76,7 +76,10 @@ export default function QuickViewModalFrame({
 
   return (
     <Portal name={portalName}>
-      <View className="absolute inset-0 z-50" pointerEvents="box-none">
+      <View
+        className="absolute inset-0 z-50"
+        style={{ pointerEvents: "box-none" }}
+      >
         {/* Backdrop */}
         <Pressable onPress={onClose} className="absolute inset-0">
           <BlurView intensity={20} tint="dark" className="absolute inset-0" />
@@ -86,7 +89,6 @@ export default function QuickViewModalFrame({
         {/* Modal Container */}
         <View className="flex-1 items-center justify-center p-4 web:p-6">
           <View
-            pointerEvents="auto"
             style={{ maxWidth }}
             className={[
               "w-full rounded-[26px] border p-5",

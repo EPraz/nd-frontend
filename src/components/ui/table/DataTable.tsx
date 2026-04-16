@@ -182,8 +182,8 @@ function RowItem<Row>(props: {
 
           {props.selected ? (
             <View
-              pointerEvents="none"
               className="absolute inset-0 border border-accent/25"
+              style={{ pointerEvents: "none" }}
             />
           ) : null}
         </View>

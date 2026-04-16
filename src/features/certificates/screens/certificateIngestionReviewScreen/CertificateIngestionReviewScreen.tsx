@@ -1,16 +1,19 @@
 import { getBaseUrl } from "@/src/api/baseUrl";
-import { Button, ErrorState, Loading, Text } from "@/src/components";
-import { useToast } from "@/src/context";
+import { Button } from "@/src/components/ui/button/Button";
+import ErrorState from "@/src/components/ui/errorState/ErrorState";
+import Loading from "@/src/components/ui/loading/Loading";
+import { Text } from "@/src/components/ui/text/Text";
+import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import { useCertificateTypes } from "@/src/features/certificates";
-import { useVessels } from "@/src/features/vessels";
+import { useCertificateTypes } from "@/src/features/certificates/hooks/useCertificateTypes";
+import { useVessels } from "@/src/features/vessels/hooks/useVessels";
 import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Linking, Pressable, ScrollView, View } from "react-native";
-import { CertificateFormCard } from "../../components";
+import CertificateFormCard from "../../components/certificateFormCard/CertificateFormCard";
 import { CertificateFormValues, emptyCertificateFormValues } from "../../contracts";
 import {
   applyCertificateFormPatch,
@@ -19,9 +22,9 @@ import {
 } from "../../helpers";
 import {
   useCertificateWorkflowActions,
-  useCertificateIngestionById,
-  useConfirmCertificateIngestion,
-} from "../../hooks";
+} from "../../hooks/useCertificateWorkflowActions";
+import { useCertificateIngestionById } from "../../hooks/useCertificateIngestionById";
+import { useConfirmCertificateIngestion } from "../../hooks/useConfirmCertificateIngestion";
 
 export default function CertificateIngestionReviewScreen() {
   const router = useRouter();
@@ -329,7 +332,7 @@ export default function CertificateIngestionReviewScreen() {
             certificateTypesLoading={certificateTypesLoading}
             certificateTypesError={certificateTypesError}
             values={values}
-            onChange={(patch) => {
+            onChange={(patch: Partial<CertificateFormValues>) => {
               setLocalError(null);
               applyCertificateFormPatch(setValue, patch);
             }}

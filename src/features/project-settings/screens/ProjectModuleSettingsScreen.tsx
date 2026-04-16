@@ -1,15 +1,18 @@
+import { Button } from "@/src/components/ui/button/Button";
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardHeaderRow,
   CardTitle,
-  PageHeader,
-  Text,
-} from "@/src/components";
-import { useProjectContext, useProjectEntitlements, useSessionContext, useToast } from "@/src/context";
+} from "@/src/components/ui/card/Card";
+import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
+import { Text } from "@/src/components/ui/text/Text";
+import { useProjectContext } from "@/src/context/ProjectProvider";
+import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
+import { useSessionContext } from "@/src/context/SessionProvider";
+import { useToast } from "@/src/context/ToastProvider";
 import type {
   ProjectModuleEntitlementDto,
   UpdateProjectModuleEntitlementsDto,
