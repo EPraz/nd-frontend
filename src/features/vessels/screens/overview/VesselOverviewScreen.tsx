@@ -4,7 +4,10 @@ import { HeroBanner } from "@/src/components/modules/heroSection";
 import type { SpecItem } from "@/src/components/modules/heroSection/hero.ui";
 import { MiniPill } from "@/src/components/ui";
 import { useProjectContext, useProjectEntitlements } from "@/src/context";
-import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
+import {
+  formatDate,
+  humanizeTechnicalLabel,
+} from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Platform, Pressable, View } from "react-native";
@@ -38,7 +41,7 @@ function alertUi(severity: "CRITICAL" | "WARNING") {
 export default function VesselOverviewScreen() {
   const router = useRouter();
   const { projectName } = useProjectContext();
-  const { isSubmoduleEnabled } = useProjectEntitlements();
+  const { isModuleEnabled } = useProjectEntitlements();
   const { projectId, assetId, vessel, summary } = useVesselShell();
   const alertsState = useVesselAlertsFeedData(projectId, assetId);
   const isWeb = Platform.OS === "web";
@@ -155,9 +158,9 @@ export default function VesselOverviewScreen() {
     },
   ];
 
-  const showCertificates = isSubmoduleEnabled("vessels", "certificates");
-  const showCrew = isSubmoduleEnabled("vessels", "crew");
-  const showMaintenance = isSubmoduleEnabled("vessels", "maintenance");
+  const showCertificates = isModuleEnabled("certificates");
+  const showCrew = isModuleEnabled("crew");
+  const showMaintenance = isModuleEnabled("maintenance");
   const showAlerts = showCertificates || showMaintenance;
   const heroSource = vessel.imageUrl ? { uri: vessel.imageUrl } : vesselBanner;
 

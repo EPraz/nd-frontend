@@ -1,5 +1,4 @@
 import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
-import { TableLink } from "@/src/components/ui/table/TableLink";
 import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { useRouter } from "expo-router";
@@ -48,16 +47,7 @@ export function VesselsTable(props: Props) {
         key: "name",
         header: "Vessel",
         flex: 2,
-        render: (r) => (
-          <TableLink
-            tooltip="Open vessel page"
-            onPress={() =>
-              router.push(`/projects/${props.projectId}/vessels/${r.id}`)
-            }
-          >
-            {r.name}
-          </TableLink>
-        ),
+        render: (r) => <Text>{r.name}</Text>,
       },
       {
         key: "identifier",

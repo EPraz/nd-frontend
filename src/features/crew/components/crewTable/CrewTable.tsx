@@ -41,16 +41,7 @@ export function CrewTable(props: Props) {
         key: "name",
         header: "Crew Member",
         flex: 2,
-        render: (row) => (
-          <TableLink
-            tooltip="View crew profile"
-            onPress={() =>
-              router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`)
-            }
-          >
-            {row.fullName}
-          </TableLink>
-        ),
+        render: (row) => <Text>{row.fullName}</Text>,
       },
     ];
 
@@ -62,7 +53,9 @@ export function CrewTable(props: Props) {
         render: (row) => (
           <TableLink
             tooltip="Open vessel"
-            onPress={() => router.push(`/projects/${pid}/vessels/${row.assetId}`)}
+            onPress={() =>
+              router.push(`/projects/${pid}/vessels/${row.assetId}`)
+            }
           >
             {row.assetName ?? row.assetId}
           </TableLink>

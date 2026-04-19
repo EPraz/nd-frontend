@@ -119,7 +119,7 @@ export default function Sidebar({
       </View>
 
       {/* Bottom actions */}
-      <View className={`${widthFitFull} flex items-center justify-start gap-3`}>
+      {/* <View className={`${widthFitFull} flex items-center justify-start gap-3`}>
         <GroupSidebarMenu collapsed={collapsed}>
           <SidebarItem
             key="Switch Theme"
@@ -151,7 +151,7 @@ export default function Sidebar({
             labelClassName="text-textMain"
           />
         </GroupSidebarMenu>
-      </View>
+      </View> */}
     </SidebarContainer>
   );
 }

@@ -53,7 +53,7 @@ export default function QuickViewModalFrame({
             {title}
           </Text>
           {subtitle ? (
-            <Text className="text-muted text-[13px] leading-[18px]">
+            <Text className="text-muted text-[13px] leading-[18px] max-w-xl">
               {subtitle}
             </Text>
           ) : null}

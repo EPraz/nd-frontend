@@ -66,18 +66,7 @@ export function MaintenanceTable(props: Props) {
         key: "title",
         header: "Task",
         flex: 2,
-        render: (r) => (
-          <TableLink
-            tooltip="View maintenance task"
-            onPress={() =>
-              router.push(
-                `/projects/${pid}/vessels/${r.assetId}/maintenance/${r.id}`,
-              )
-            }
-          >
-            {r.title}
-          </TableLink>
-        ),
+        render: (r) => <Text>{r.title}</Text>,
       },
     ];
 

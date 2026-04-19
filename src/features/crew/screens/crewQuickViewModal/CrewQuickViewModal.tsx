@@ -1,18 +1,18 @@
-import { Button } from "@/src/components/ui/button/Button";
-import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
-import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
-import { Text } from "@/src/components/ui/text/Text";
 import QuickViewModalFrame from "@/src/components/overlays/QuickViewModalFrame";
+import { Button } from "@/src/components/ui/button/Button";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import { Text } from "@/src/components/ui/text/Text";
 import { useToast } from "@/src/context/ToastProvider";
 import { formatDate, Stat } from "@/src/helpers";
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
+import { crewStatusLabel } from "../../components/crewTable/crew.ui";
 import type { CrewDto } from "../../contracts";
 import { useDeleteCrew } from "../../hooks/useDeleteCrew";
-import { crewStatusLabel } from "../../components/crewTable/crew.ui";
 
 type Props = {
   crew: CrewDto;
@@ -56,7 +56,9 @@ export default function CrewQuickViewModal({
 
   const handleOpenProfile = () => {
     onClose();
-    router.push(`/projects/${projectId}/vessels/${crew.assetId}/crew/${crew.id}`);
+    router.push(
+      `/projects/${projectId}/vessels/${crew.assetId}/crew/${crew.id}`,
+    );
   };
 
   const handleOpenVessel = () => {
@@ -66,7 +68,9 @@ export default function CrewQuickViewModal({
 
   const handleOpenCertificates = () => {
     onClose();
-    router.push(`/projects/${projectId}/vessels/${crew.assetId}/crew/${crew.id}/certificates`);
+    router.push(
+      `/projects/${projectId}/vessels/${crew.assetId}/crew/${crew.id}/certificates`,
+    );
   };
 
   const handleDelete = async () => {
@@ -153,12 +157,16 @@ export default function CrewQuickViewModal({
             Certificates
           </Button>
 
-          <Pressable
+          <Button variant="default" size="pillSm" onPress={handleOpenProfile}>
+            Open Full Profile
+          </Button>
+
+          {/* <Pressable
             onPress={handleOpenProfile}
             className="rounded-full bg-accent px-5 py-2.5 active:opacity-90"
           >
             <Text className="font-bold text-baseBg">Open Full Profile</Text>
-          </Pressable>
+          </Pressable> */}
         </>
       }
       scroll
@@ -250,7 +258,10 @@ export default function CrewQuickViewModal({
 
           <View className="gap-4 web:flex-row">
             <Stat label="Medical" value={medicalLabel(crew)} />
-            <Stat label="Embarkation" value={formatDate(crew.dateOfEmbarkation)} />
+            <Stat
+              label="Embarkation"
+              value={formatDate(crew.dateOfEmbarkation)}
+            />
             <Stat
               label="Disembarkation"
               value={formatDate(crew.expectedDateOfDisembarkation)}
@@ -260,10 +271,15 @@ export default function CrewQuickViewModal({
       </View>
 
       <View className="mt-4 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
-        <Text className="mb-3 font-semibold text-textMain">Operational Notes</Text>
+        <Text className="mb-3 font-semibold text-textMain">
+          Operational Notes
+        </Text>
         <View className="gap-4 web:flex-row">
           <Stat label="Inactive reason" value={crew.inactiveReason ?? "—"} />
-          <Stat label="Next vacation" value={formatDate(crew.nextVacationDate)} />
+          <Stat
+            label="Next vacation"
+            value={formatDate(crew.nextVacationDate)}
+          />
           <Stat label="Company" value={crew.operatingCompany ?? "—"} />
           <Stat label="Agency" value={crew.crewManagementAgency ?? "—"} />
         </View>

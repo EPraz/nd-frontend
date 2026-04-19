@@ -84,13 +84,9 @@ export default function FuelQuickViewModal({
           <Button variant="outline" size="pillSm" onPress={onClose}>
             Close
           </Button>
-
-          <Pressable
-            onPress={handleOpenView}
-            className="rounded-full bg-accent px-5 py-2.5 active:opacity-90"
-          >
-            <Text className="text-baseBg font-bold">Open Fuel View</Text>
-          </Pressable>
+          <Button variant="default" size="pillSm" onPress={handleOpenView}>
+            Open Fuel View
+          </Button>
         </>
       }
       scroll

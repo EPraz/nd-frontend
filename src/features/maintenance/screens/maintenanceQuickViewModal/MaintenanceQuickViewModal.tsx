@@ -148,12 +148,9 @@ export default function MaintenanceQuickViewModal({
             Close
           </Button>
 
-          <Pressable
-            onPress={handleOpenTask}
-            className="rounded-full bg-accent px-5 py-2.5 active:opacity-90"
-          >
-            <Text className="text-baseBg font-bold">Open Task</Text>
-          </Pressable>
+          <Button variant="default" size="pillSm" onPress={handleOpenTask}>
+            Open Task
+          </Button>
         </>
       }
       scroll

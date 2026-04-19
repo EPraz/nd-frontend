@@ -1,13 +1,13 @@
-import { Button } from "@/src/components/ui/button/Button";
-import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
-import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
-import { Text } from "@/src/components/ui/text/Text";
 import QuickViewModalFrame from "@/src/components/overlays/QuickViewModalFrame";
+import { Button } from "@/src/components/ui/button/Button";
+import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
+import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import { Text } from "@/src/components/ui/text/Text";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { formatDate, Stat } from "@/src/helpers";
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
@@ -160,7 +160,9 @@ export default function VesselQuickViewModal({
           </Text>
 
           <View className="gap-3 rounded-[22px] border border-shellLine bg-shellPanelSoft p-4">
-            <Text className="font-semibold text-textMain">Profile at a glance</Text>
+            <Text className="font-semibold text-textMain">
+              Profile at a glance
+            </Text>
             <View className="gap-4 web:flex-row">
               <Stat label="Vessel Email" value={profile?.email ?? "-"} />
               <Stat label="Home Port" value={profile?.homePort ?? "-"} />
@@ -225,7 +227,9 @@ export default function VesselQuickViewModal({
             <Stat
               label="Overdue"
               value={
-                summaryLoading ? "..." : String(summary?.maintenance.overdue ?? 0)
+                summaryLoading
+                  ? "..."
+                  : String(summary?.maintenance.overdue ?? 0)
               }
             />
           </View>
@@ -239,7 +243,11 @@ export default function VesselQuickViewModal({
           <View className="gap-4 web:flex-row">
             <Stat
               label="Certificates"
-              value={summaryLoading ? "..." : String(summary?.certificates.total ?? 0)}
+              value={
+                summaryLoading
+                  ? "..."
+                  : String(summary?.certificates.total ?? 0)
+              }
             />
             <Stat
               label="Expiring soon"

@@ -7,6 +7,7 @@ import {
   useProjectEntitlements,
   useSessionContext,
 } from "@/src/context";
+import { getGuardedProjectModule } from "@/src/helpers/projectEntitlements";
 import { useTheme } from "@/src/context/ThemeProvider";
 import { useProject } from "@/src/hooks";
 import { BlurView } from "expo-blur";
@@ -20,7 +21,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-
 export default function ProjectShellLayout() {
   const { projectId } = useLocalSearchParams<{ projectId?: string }>();
   const pid = typeof projectId === "string" ? projectId : "";
@@ -103,7 +103,6 @@ export default function ProjectShellLayout() {
     </ProjectProvider>
   );
 }
-
 function ProjectShellScaffold({
   collapsed,
   handleSetCollapse,
@@ -146,8 +145,11 @@ function ProjectShellScaffold({
       ([, path]) => pathname === path || pathname.startsWith(`${path}/`),
     )?.[0] as SidebarKey) ?? "dashboard";
 
-  const blockedModule = getBlockedProjectModule(pathname, projectId, isModuleEnabled);
   const guardedModule = getGuardedProjectModule(pathname, projectId);
+  const blockedModule =
+    guardedModule && !isModuleEnabled(guardedModule.moduleKey)
+      ? guardedModule.label
+      : null;
 
   const handleChangeActive = (key: SidebarKey) => {
     const targetPath = routes[key];
@@ -215,7 +217,6 @@ function ProjectShellScaffold({
     </View>
   );
 }
-
 function BlockedModuleState({
   label,
   canManageProject,
@@ -258,45 +259,4 @@ function BlockedModuleState({
       </View>
     </View>
   );
-}
-
-function getBlockedProjectModule(
-  pathname: string,
-  projectId: string,
-  isModuleEnabled: (moduleKey: string) => boolean,
-): string | null {
-  const base = `/projects/${projectId}`;
-
-  const checks = [
-    { prefix: `${base}/vessels`, label: "Vessels", key: "vessels" },
-    { prefix: `${base}/certificates`, label: "Certificates", key: "certificates" },
-    { prefix: `${base}/crew`, label: "Crew", key: "crew" },
-    { prefix: `${base}/maintenance`, label: "Maintenance", key: "maintenance" },
-    { prefix: `${base}/fuel`, label: "Fuel", key: "fuel" },
-  ];
-
-  const match = checks.find(
-    (entry) => pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`),
-  );
-
-  if (!match) return null;
-  return isModuleEnabled(match.key) ? null : match.label;
-}
-
-function getGuardedProjectModule(pathname: string, projectId: string): string | null {
-  const base = `/projects/${projectId}`;
-
-  const checks = [
-    { prefix: `${base}/vessels`, label: "Vessels" },
-    { prefix: `${base}/certificates`, label: "Certificates" },
-    { prefix: `${base}/crew`, label: "Crew" },
-    { prefix: `${base}/maintenance`, label: "Maintenance" },
-    { prefix: `${base}/fuel`, label: "Fuel" },
-  ];
-
-  const match = checks.find(
-    (entry) => pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`),
-  );
-
-  return match?.label ?? null;
 }

@@ -21,6 +21,13 @@ import { Feather } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 
+function cloneModules(modules: ProjectModuleEntitlementDto[]) {
+  return modules.map((module) => ({
+    ...module,
+    submodules: module.submodules.map((submodule) => ({ ...submodule })),
+  }));
+}
+
 export default function ProjectModuleSettingsScreen() {
   const { projectName } = useProjectContext();
   const { session } = useSessionContext();
@@ -31,10 +38,7 @@ export default function ProjectModuleSettingsScreen() {
 
   useEffect(() => {
     if (entitlements?.modules) {
-      setDraft(entitlements.modules.map((module) => ({
-        ...module,
-        submodules: module.submodules.map((submodule) => ({ ...submodule })),
-      })));
+      setDraft(cloneModules(entitlements.modules));
     }
   }, [entitlements]);
 
@@ -48,7 +52,7 @@ export default function ProjectModuleSettingsScreen() {
       <View className="gap-5">
         <PageHeader
           title="Project Settings"
-          subTitle="Only admins can configure which modules and submodules are available for this project."
+          subTitle="Only admins can configure which modules are available for this project."
         />
         <Card className="border-shellLine bg-shellPanel">
           <CardContent className="py-6">
@@ -77,30 +81,8 @@ export default function ProjectModuleSettingsScreen() {
     );
   };
 
-  const handleToggleSubmodule = (moduleKey: string, submoduleKey: string) => {
-    setDraft((current) =>
-      current.map((module) =>
-        module.key !== moduleKey
-          ? module
-          : {
-              ...module,
-              submodules: module.submodules.map((submodule) =>
-                submodule.key !== submoduleKey
-                  ? submodule
-                  : { ...submodule, enabled: !submodule.enabled },
-              ),
-            },
-      ),
-    );
-  };
-
   const handleReset = () => {
-    setDraft(
-      entitlements?.modules.map((module) => ({
-        ...module,
-        submodules: module.submodules.map((submodule) => ({ ...submodule })),
-      })) ?? [],
-    );
+    setDraft(entitlements?.modules ? cloneModules(entitlements.modules) : []);
   };
 
   const handleSave = async () => {
@@ -108,10 +90,7 @@ export default function ProjectModuleSettingsScreen() {
       modules: draft.map((module) => ({
         key: module.key,
         enabled: module.enabled,
-        submodules: module.submodules.map((submodule) => ({
-          key: submodule.key,
-          enabled: submodule.enabled,
-        })),
+        submodules: [],
       })),
     };
 
@@ -123,7 +102,7 @@ export default function ProjectModuleSettingsScreen() {
     <View className="gap-6">
       <PageHeader
         title="Project Settings"
-        subTitle={`Control which modules and submodules are available inside ${projectName}.`}
+        subTitle={`Control which product modules are available inside ${projectName}.`}
         onRefresh={refresh}
         actions={
           <>
@@ -159,10 +138,9 @@ export default function ProjectModuleSettingsScreen() {
             Availability by project
           </CardTitle>
           <CardDescription>
-            This settings page controls what appears in the project sidebar and
-            in vessel-level navigation. Core surfaces now follow the shared
-            workspace shell, while accent is reserved for active decisions and
-            save actions.
+            Enable or disable modules once at project level. Vessel pages inherit
+            those module decisions automatically, so this screen no longer uses
+            duplicate internal toggles.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -224,42 +202,27 @@ export default function ProjectModuleSettingsScreen() {
             </CardHeaderRow>
 
             <CardContent className="gap-3">
-              <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
-                <Text className="text-[11px] uppercase tracking-[0.22em] text-muted">
-                  Submodules
-                </Text>
-
-                <View className="mt-4 gap-3">
-                  {module.submodules.map((submodule) => (
-                    <View
-                      key={`${module.key}-${submodule.key}`}
-                      className="flex-row items-center justify-between gap-4 rounded-2xl border border-shellLine bg-shellPanel px-4 py-3"
-                    >
-                      <View className="min-w-[240px] flex-1 gap-1">
-                        <Text className="font-semibold text-textMain">
-                          {submodule.label}
-                        </Text>
-                        <Text className="text-sm text-muted">
-                          {submodule.description}
-                        </Text>
-                      </View>
-
-                      <SettingsToggle
-                        value={submodule.enabled}
-                        label={submodule.enabled ? "Enabled" : "Disabled"}
-                        onPress={() =>
-                          handleToggleSubmodule(module.key, submodule.key)
-                        }
-                        disabled={!module.enabled}
-                      />
-                    </View>
-                  ))}
-                </View>
-              </View>
+              <InheritanceNote moduleKey={module.key} />
             </CardContent>
           </Card>
         ))}
       </View>
+    </View>
+  );
+}
+
+function InheritanceNote({ moduleKey }: { moduleKey: string }) {
+  const message =
+    moduleKey === "vessels"
+      ? "Controls access to the vessel workspace and vessel overview. Certificates, crew, maintenance, and fuel inside the vessel shell inherit from their own project modules."
+      : "This same toggle also controls the matching area inside vessel pages when that workspace is enabled.";
+
+  return (
+    <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
+      <Text className="text-[11px] uppercase tracking-[0.22em] text-muted">
+        Inheritance
+      </Text>
+      <Text className="mt-3 text-sm leading-6 text-muted">{message}</Text>
     </View>
   );
 }

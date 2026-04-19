@@ -1,6 +1,10 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
 import { useProjectContext, useProjectEntitlements } from "@/src/context";
 import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
+import {
+  getGuardedVesselSection,
+  resolveVesselSectionModuleKey,
+} from "@/src/helpers/projectEntitlements";
 import { usePathname, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 import { useVesselShell } from "../../context/VesselShellProvider";
@@ -15,7 +19,7 @@ export function VesselShellLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { projectName } = useProjectContext();
-  const { isSubmoduleEnabled, loading: entitlementsLoading } = useProjectEntitlements();
+  const { isModuleEnabled, loading: entitlementsLoading } = useProjectEntitlements();
   const {
     projectId,
     assetId,
@@ -100,19 +104,21 @@ export function VesselShellLayout({
       tone:
         summary.fuel.total > 0 ? ("success" as const) : ("neutral" as const),
     },
-  ].filter((item) => isSubmoduleEnabled("vessels", item.key));
+  ].filter((item) => {
+    const moduleKey = resolveVesselSectionModuleKey(item.key);
+    return moduleKey ? isModuleEnabled(moduleKey) : true;
+  });
 
   const hasDedicatedActiveSection = navItems
     .filter((item) => item.key !== "overview")
     .some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
 
-  const blockedSubmodule = getBlockedVesselSubmodule(
-    pathname,
-    basePath,
-    isSubmoduleEnabled,
-  );
-
-  const guardedSubmodule = getGuardedVesselSubmodule(pathname, basePath);
+  const guardedSection = getGuardedVesselSection(pathname, basePath);
+  const blockedSubmodule =
+    guardedSection && !isModuleEnabled(guardedSection.moduleKey)
+      ? guardedSection.label
+      : null;
+  const guardedSubmodule = guardedSection?.label ?? null;
 
   if (guardedSubmodule && entitlementsLoading) {
     return <Loading fullScreen />;
@@ -268,43 +274,6 @@ export function VesselShellLayout({
       <View>{children}</View>
     </View>
   );
-}
-
-function getGuardedVesselSubmodule(pathname: string, basePath: string): string | null {
-  const checks = [
-    { key: "overview", label: "Overview", href: basePath },
-    { key: "certificates", label: "Certificates", href: `${basePath}/certificates` },
-    { key: "crew", label: "Crew", href: `${basePath}/crew` },
-    { key: "maintenance", label: "Maintenance", href: `${basePath}/maintenance` },
-    { key: "fuel", label: "Fuel", href: `${basePath}/fuel` },
-  ];
-
-  const match = checks.find(
-    (entry) => pathname === entry.href || pathname.startsWith(`${entry.href}/`),
-  );
-
-  return match?.label ?? null;
-}
-
-function getBlockedVesselSubmodule(
-  pathname: string,
-  basePath: string,
-  isSubmoduleEnabled: (moduleKey: string, submoduleKey: string) => boolean,
-): string | null {
-  const checks = [
-    { key: "overview", label: "Overview", href: basePath },
-    { key: "certificates", label: "Certificates", href: `${basePath}/certificates` },
-    { key: "crew", label: "Crew", href: `${basePath}/crew` },
-    { key: "maintenance", label: "Maintenance", href: `${basePath}/maintenance` },
-    { key: "fuel", label: "Fuel", href: `${basePath}/fuel` },
-  ];
-
-  const match = checks.find(
-    (entry) => pathname === entry.href || pathname.startsWith(`${entry.href}/`),
-  );
-
-  if (!match) return null;
-  return isSubmoduleEnabled("vessels", match.key) ? null : match.label;
 }
 
 function MetaChip({ label, value }: { label: string; value: string }) {

@@ -2,6 +2,7 @@ import type {
   ProjectModuleEntitlementDto,
   ProjectModuleEntitlementsDto,
 } from "@/src/contracts/project-entitlements.contract";
+import { resolveVesselSectionModuleKey } from "@/src/helpers/projectEntitlements";
 import { PROJECT_MODULE_CATALOG } from "@/src/constants/projectModules";
 import { useProjectModuleEntitlements } from "@/src/hooks/useProjectModuleEntitlements";
 import React, { createContext, useContext, useMemo } from "react";
@@ -37,6 +38,11 @@ export function ProjectEntitlementsProvider({
     const findModule = (moduleKey: string): ProjectModuleEntitlementDto | undefined =>
       modules.find((module) => module.key === moduleKey);
 
+    const getModuleEnabled = (moduleKey: string) =>
+      findModule(moduleKey)?.enabled ??
+      catalogByKey.get(moduleKey)?.defaultEnabled ??
+      true;
+
     return {
       entitlements: state.data,
       loading: state.loading,
@@ -44,15 +50,15 @@ export function ProjectEntitlementsProvider({
       error: state.error,
       refresh: state.refresh,
       save: state.save,
-      isModuleEnabled: (moduleKey: string) => {
-        const row = findModule(moduleKey);
-        if (row) return row.enabled;
-
-        // When entitlements haven't loaded yet (or a module has no overrides),
-        // we fall back to the shared catalog defaults instead of "always true".
-        return catalogByKey.get(moduleKey)?.defaultEnabled ?? true;
-      },
+      isModuleEnabled: getModuleEnabled,
       isSubmoduleEnabled: (moduleKey: string, submoduleKey: string) => {
+        if (moduleKey === "vessels") {
+          const inheritedModuleKey = resolveVesselSectionModuleKey(submoduleKey);
+          if (inheritedModuleKey) {
+            return getModuleEnabled(inheritedModuleKey);
+          }
+        }
+
         const module = findModule(moduleKey);
         const catalog = catalogByKey.get(moduleKey);
 
