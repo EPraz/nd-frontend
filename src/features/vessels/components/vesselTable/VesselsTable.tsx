@@ -1,7 +1,6 @@
 import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
 import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import { useRouter } from "expo-router";
 import { useMemo } from "react";
 
 export type VesselRow = AssetDto;
@@ -32,8 +31,6 @@ function vesselIdentifierLabel(a: AssetDto) {
 }
 
 export function VesselsTable(props: Props) {
-  const router = useRouter();
-
   const rows = useMemo(() => {
     if (!props.sortByName) return props.data;
     const arr = [...props.data];
@@ -74,7 +71,7 @@ export function VesselsTable(props: Props) {
     ];
 
     return cols;
-  }, [router, props.projectId]);
+  }, []);
 
   return (
     <DataTable<VesselRow>
