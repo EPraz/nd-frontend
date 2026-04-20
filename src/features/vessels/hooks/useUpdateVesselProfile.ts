@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { patchVesselProfile } from "../api/vessel-profile.api";
 import { UpdateVesselProfileInput } from "../contracts/vessel.contract";
+import { normalizeVesselApiErrorMessage } from "../helpers/vesselFormValidation";
 
 export function useUpdateVesselProfile(projectId: string, assetId: string) {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,9 @@ export function useUpdateVesselProfile(projectId: string, assetId: string) {
     try {
       return await patchVesselProfile(projectId, assetId, input);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Unknown error";
+      const msg = normalizeVesselApiErrorMessage(
+        e instanceof Error ? e.message : "Unknown error",
+      );
       setError(msg);
       throw e;
     } finally {

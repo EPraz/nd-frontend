@@ -24,6 +24,12 @@ import {
   useVessel,
   useVesselProfile,
 } from "@/src/features/vessels/hooks";
+import {
+  getVesselEmailError,
+  normalizeVesselApiErrorMessage,
+  normalizeVesselValue,
+  VESSEL_FORM_ERROR_TOAST_MESSAGE,
+} from "@/src/features/vessels/helpers/vesselFormValidation";
 
 type FormState = {
   identifierType: "IMO" | "LICENSE";
@@ -39,10 +45,6 @@ type FormState = {
   builder: string;
   yearBuilt: string;
 };
-
-function normalize(value: string) {
-  return value.trim();
-}
 
 function PreviewRow({ label, value }: { label: string; value: string }) {
   return (
@@ -103,6 +105,7 @@ export default function EditVesselScreen() {
   const isBusy = loading || updateState.loading || mediaBusy;
   const useLicense = form.identifierType === "LICENSE";
   const hasStoredImage = Boolean(vesselState.vessel?.imageUrl);
+  const emailError = getVesselEmailError(form.email);
 
   const profileDirty = useMemo(
     () => JSON.stringify(initial) !== JSON.stringify(form),
@@ -112,8 +115,8 @@ export default function EditVesselScreen() {
 
   const canSubmit = useMemo(() => {
     if (isBusy || !dirty) return false;
-    if (useLicense) return Boolean(normalize(form.licenseNumber));
-    return Boolean(normalize(form.imo));
+    if (useLicense) return Boolean(normalizeVesselValue(form.licenseNumber));
+    return Boolean(normalizeVesselValue(form.imo));
   }, [dirty, form.imo, form.licenseNumber, isBusy, useLicense]);
 
   const imagePreviewUrl = pendingImage?.uri ?? (removeStoredImage ? null : vesselState.vessel?.imageUrl ?? null);
@@ -153,21 +156,29 @@ export default function EditVesselScreen() {
   }
 
   async function handleSave() {
+    if (emailError) {
+      show(VESSEL_FORM_ERROR_TOAST_MESSAGE, "error");
+      return;
+    }
+
     const input: UpdateVesselProfileInput = {
       identifierType: form.identifierType,
-      imo: form.identifierType === "IMO" ? normalize(form.imo) : undefined,
+      imo:
+        form.identifierType === "IMO"
+          ? normalizeVesselValue(form.imo)
+          : undefined,
       licenseNumber:
         form.identifierType === "LICENSE"
-          ? normalize(form.licenseNumber)
+          ? normalizeVesselValue(form.licenseNumber)
           : undefined,
-      flag: normalize(form.flag) || undefined,
-      email: normalize(form.email) || undefined,
-      callSign: normalize(form.callSign) || undefined,
-      mmsi: normalize(form.mmsi) || undefined,
-      homePort: normalize(form.homePort) || undefined,
-      vesselType: normalize(form.vesselType) || undefined,
-      classSociety: normalize(form.classSociety) || undefined,
-      builder: normalize(form.builder) || undefined,
+      flag: normalizeVesselValue(form.flag) || undefined,
+      email: normalizeVesselValue(form.email) || undefined,
+      callSign: normalizeVesselValue(form.callSign) || undefined,
+      mmsi: normalizeVesselValue(form.mmsi) || undefined,
+      homePort: normalizeVesselValue(form.homePort) || undefined,
+      vesselType: normalizeVesselValue(form.vesselType) || undefined,
+      classSociety: normalizeVesselValue(form.classSociety) || undefined,
+      builder: normalizeVesselValue(form.builder) || undefined,
       yearBuilt: form.yearBuilt.trim() ? Number(form.yearBuilt) : undefined,
     };
 
@@ -195,8 +206,13 @@ export default function EditVesselScreen() {
 
       show("Vessel profile updated", "success");
       router.replace(backHref);
-    } catch {
-      // hook exposes the API error
+    } catch (cause) {
+      show(
+        normalizeVesselApiErrorMessage(
+          cause instanceof Error ? cause.message : updateState.error,
+        ),
+        "error",
+      );
     } finally {
       setMediaBusy(false);
     }
@@ -216,11 +232,11 @@ export default function EditVesselScreen() {
   }
 
   const identifierPreview = useLicense
-    ? normalize(form.licenseNumber)
-      ? `LIC ${normalize(form.licenseNumber)}`
+    ? normalizeVesselValue(form.licenseNumber)
+      ? `LIC ${normalizeVesselValue(form.licenseNumber)}`
       : "-"
-    : normalize(form.imo)
-      ? `IMO ${normalize(form.imo)}`
+    : normalizeVesselValue(form.imo)
+      ? `IMO ${normalizeVesselValue(form.imo)}`
       : "-";
 
   return (
@@ -412,6 +428,8 @@ export default function EditVesselScreen() {
                       }
                       keyboardType="email-address"
                       editable={!isBusy}
+                      error={emailError}
+                      hint="Use the operational inbox the team expects to see in the vessel shell."
                     />
                   </View>
                   <View className="flex-1">
@@ -538,18 +556,21 @@ export default function EditVesselScreen() {
                 <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
                   <PreviewRow label="Name" value={vesselState.vessel.name} />
                   <PreviewRow label="Identifier" value={identifierPreview} />
-                  <PreviewRow label="Flag" value={normalize(form.flag) || "-"} />
+                  <PreviewRow
+                    label="Flag"
+                    value={normalizeVesselValue(form.flag) || "-"}
+                  />
                   <PreviewRow
                     label="Vessel Email"
-                    value={normalize(form.email) || "-"}
+                    value={normalizeVesselValue(form.email) || "-"}
                   />
                   <PreviewRow
                     label="Home Port"
-                    value={normalize(form.homePort) || "-"}
+                    value={normalizeVesselValue(form.homePort) || "-"}
                   />
                   <PreviewRow
                     label="Type"
-                    value={normalize(form.vesselType) || "-"}
+                    value={normalizeVesselValue(form.vesselType) || "-"}
                   />
                 </View>
 

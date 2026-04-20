@@ -17,11 +17,13 @@ import { useMemo, useState } from "react";
 import { ScrollView, Switch, View } from "react-native";
 import { patchVesselProfile, uploadVesselImage } from "../../api/vessel-profile.api";
 import { VesselImagePanel } from "../../components";
+import {
+  getVesselEmailError,
+  normalizeVesselApiErrorMessage,
+  normalizeVesselValue,
+  VESSEL_FORM_ERROR_TOAST_MESSAGE,
+} from "../../helpers/vesselFormValidation";
 import { useCreateVessel } from "../../hooks/useCreateVessel";
-
-function normalize(value: string) {
-  return value.trim();
-}
 
 function PreviewRow({ label, value }: { label: string; value: string }) {
   return (
@@ -51,19 +53,20 @@ export default function NewVesselScreen() {
   const [finishingCreate, setFinishingCreate] = useState(false);
 
   const isBusy = loading || finishingCreate;
+  const emailError = getVesselEmailError(email);
 
   const canSubmit = useMemo(() => {
-    if (!normalize(name)) return false;
-    if (useLicense) return Boolean(normalize(licenseNumber));
-    return Boolean(normalize(imo));
+    if (!normalizeVesselValue(name)) return false;
+    if (useLicense) return Boolean(normalizeVesselValue(licenseNumber));
+    return Boolean(normalizeVesselValue(imo));
   }, [imo, licenseNumber, name, useLicense]);
 
   const identifierPreview = useLicense
-    ? normalize(licenseNumber)
-      ? `LIC ${normalize(licenseNumber)}`
+    ? normalizeVesselValue(licenseNumber)
+      ? `LIC ${normalizeVesselValue(licenseNumber)}`
       : "-"
-    : normalize(imo)
-      ? `IMO ${normalize(imo)}`
+    : normalizeVesselValue(imo)
+      ? `IMO ${normalizeVesselValue(imo)}`
       : "-";
 
   async function handleSelectImage() {
@@ -86,20 +89,25 @@ export default function NewVesselScreen() {
   }
 
   async function handleCreate() {
+    if (emailError) {
+      show(VESSEL_FORM_ERROR_TOAST_MESSAGE, "error");
+      return;
+    }
+
     const input: CreateAssetInput = useLicense
       ? {
           type: "VESSEL",
-          name: normalize(name),
+          name: normalizeVesselValue(name),
           identifierType: "LICENSE",
-          licenseNumber: normalize(licenseNumber),
-          flag: normalize(flag) || undefined,
+          licenseNumber: normalizeVesselValue(licenseNumber),
+          flag: normalizeVesselValue(flag) || undefined,
         }
       : {
           type: "VESSEL",
-          name: normalize(name),
+          name: normalizeVesselValue(name),
           identifierType: "IMO",
-          imo: normalize(imo),
-          flag: normalize(flag) || undefined,
+          imo: normalizeVesselValue(imo),
+          flag: normalizeVesselValue(flag) || undefined,
         };
 
     try {
@@ -112,9 +120,11 @@ export default function NewVesselScreen() {
 
       const followUpFailures: string[] = [];
 
-      if (normalize(email)) {
+      if (normalizeVesselValue(email)) {
         try {
-          await patchVesselProfile(pid, created.id, { email: normalize(email) });
+          await patchVesselProfile(pid, created.id, {
+            email: normalizeVesselValue(email),
+          });
         } catch {
           followUpFailures.push("email");
         }
@@ -139,8 +149,13 @@ export default function NewVesselScreen() {
 
       show("Vessel created", "success");
       router.replace(`/projects/${pid}/vessels/${created.id}`);
-    } catch {
-      // hook exposes the main API error
+    } catch (cause) {
+      show(
+        normalizeVesselApiErrorMessage(
+          cause instanceof Error ? cause.message : error,
+        ),
+        "error",
+      );
     } finally {
       setFinishingCreate(false);
     }
@@ -298,6 +313,8 @@ export default function NewVesselScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   editable={!isBusy}
+                  error={emailError}
+                  hint="This becomes the operational contact shown in the vessel shell and quick view."
                 />
 
                 {error ? <Text className="text-destructive">{error}</Text> : null}
@@ -321,12 +338,18 @@ export default function NewVesselScreen() {
             <CardContent className="px-6">
               <View className="gap-5">
                 <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
-                  <PreviewRow label="Name" value={normalize(name) || "-"} />
+                  <PreviewRow
+                    label="Name"
+                    value={normalizeVesselValue(name) || "-"}
+                  />
                   <PreviewRow label="Identifier" value={identifierPreview} />
-                  <PreviewRow label="Flag" value={normalize(flag) || "-"} />
+                  <PreviewRow
+                    label="Flag"
+                    value={normalizeVesselValue(flag) || "-"}
+                  />
                   <PreviewRow
                     label="Vessel Email"
-                    value={normalize(email) || "-"}
+                    value={normalizeVesselValue(email) || "-"}
                   />
                 </View>
 

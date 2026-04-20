@@ -1,6 +1,7 @@
 import vesselBanner from "@/src/assets/ship-banner-2.jpg";
 import { Button, Card, Text } from "@/src/components";
 import { HeroBanner } from "@/src/components/modules/heroSection";
+import { RecentActivityPanel } from "@/src/components/modules/recentActivity";
 import type { SpecItem } from "@/src/components/modules/heroSection/hero.ui";
 import { MiniPill } from "@/src/components/ui";
 import { useProjectContext, useProjectEntitlements } from "@/src/context";
@@ -10,9 +11,10 @@ import {
 } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable, ScrollView, View } from "react-native";
 import { useVesselShell } from "../../context/VesselShellProvider";
 import { useVesselAlertsFeedData } from "../../hooks";
+import { useAssetAuditEvents } from "@/src/hooks/useAssetAuditEvents";
 
 const LATERAL_HEIGHT = "web:h-[45vh] web:max-h-[520px] web:min-h-[375px]";
 const GRID_BASE =
@@ -44,6 +46,7 @@ export default function VesselOverviewScreen() {
   const { isModuleEnabled } = useProjectEntitlements();
   const { projectId, assetId, vessel, summary } = useVesselShell();
   const alertsState = useVesselAlertsFeedData(projectId, assetId);
+  const auditState = useAssetAuditEvents(projectId, assetId, { limit: 6 });
   const isWeb = Platform.OS === "web";
 
   if (!vessel) return null;
@@ -166,119 +169,132 @@ export default function VesselOverviewScreen() {
 
   if (isWeb) {
     return (
-      <View className="web:flex web:flex-col web:gap-4 web:lg:flex-row">
-        <View className="web:flex-1">
-          <View className={GRID_BASE}>
-            <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-6">
-              <Card className="gap-0 overflow-hidden p-0">
-                <HeroBanner
-                  title={vessel.name}
-                  subtitle="Single-vessel operational snapshot with the same dashboard language used at project level."
-                  source={heroSource}
-                  rightTitle="Operational Highlights"
-                  leftSectionTitle="Overview"
-                  rightSectionTitle="Readiness"
-                  left={heroLeft}
-                  right={heroRight}
-                />
-              </Card>
-            </View>
-
-            {showCrew ? (
-              <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
-                <OverviewPanel
-                  title={crewCard.title}
-                  description={crewCard.subtitle}
-                  fullHeight
-                >
-                  <ModuleSummary
-                    rows={crewCard.rows}
-                    actionLabel={crewCard.cta}
-                    onPress={() => router.push(crewCard.href)}
+      <>
+        <View className="web:flex web:flex-col web:gap-4 web:lg:flex-row">
+          <View className="web:flex-1">
+            <View className={GRID_BASE}>
+              <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-6">
+                <Card className="gap-0 overflow-hidden p-0">
+                  <HeroBanner
+                    title={vessel.name}
+                    subtitle="Single-vessel operational snapshot with the same dashboard language used at project level."
+                    source={heroSource}
+                    rightTitle="Operational Highlights"
+                    leftSectionTitle="Overview"
+                    rightSectionTitle="Readiness"
+                    left={heroLeft}
+                    right={heroRight}
                   />
-                </OverviewPanel>
+                </Card>
               </View>
-            ) : null}
 
-            {showMaintenance ? (
-              <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
-                <OverviewPanel
-                  title={maintenanceCard.title}
-                  description={maintenanceCard.subtitle}
-                  fullHeight
-                >
-                  <ModuleSummary
-                    rows={maintenanceCard.rows}
-                    actionLabel={maintenanceCard.cta}
-                    onPress={() => router.push(maintenanceCard.href)}
-                  />
-                </OverviewPanel>
-              </View>
-            ) : null}
-
-            <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-6">
-              <OverviewPanel
-                title="Vessel profile snapshot"
-                description="Client-facing vessel details without surfacing technical database identifiers."
-              >
-                <View className="grid gap-3 web:grid web:grid-cols-2 web:gap-3 xl:grid-cols-3">
-                  {profileRows.map((row) => (
-                    <DetailMetric
-                      key={`profile-${row.label}`}
-                      label={row.label}
-                      value={row.value}
+              {showCrew ? (
+                <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
+                  <OverviewPanel
+                    title={crewCard.title}
+                    description={crewCard.subtitle}
+                    fullHeight
+                  >
+                    <ModuleSummary
+                      rows={crewCard.rows}
+                      actionLabel={crewCard.cta}
+                      onPress={() => router.push(crewCard.href)}
                     />
-                  ))}
+                  </OverviewPanel>
                 </View>
-              </OverviewPanel>
+              ) : null}
+
+              {showMaintenance ? (
+                <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-3">
+                  <OverviewPanel
+                    title={maintenanceCard.title}
+                    description={maintenanceCard.subtitle}
+                    fullHeight
+                  >
+                    <ModuleSummary
+                      rows={maintenanceCard.rows}
+                      actionLabel={maintenanceCard.cta}
+                      onPress={() => router.push(maintenanceCard.href)}
+                    />
+                  </OverviewPanel>
+                </View>
+              ) : null}
+
+              <View className="web:col-span-1 web:md:col-span-2 web:2xl:col-span-6">
+                <OverviewPanel
+                  title="Vessel profile snapshot"
+                  description="Client-facing vessel details without surfacing technical database identifiers."
+                >
+                  <View className="grid gap-3 web:grid web:grid-cols-2 web:gap-3 xl:grid-cols-3">
+                    {profileRows.map((row) => (
+                      <DetailMetric
+                        key={`profile-${row.label}`}
+                        label={row.label}
+                        value={row.value}
+                      />
+                    ))}
+                  </View>
+                </OverviewPanel>
+              </View>
             </View>
           </View>
+
+          {(showCertificates || showAlerts) ? (
+            <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
+              {showCertificates ? (
+                <View className={LATERAL_HEIGHT}>
+                  <OverviewPanel
+                    title={certificatesCard.title}
+                    description={certificatesCard.subtitle}
+                    fullHeight
+                  >
+                    <ModuleSummary
+                      rows={certificatesCard.rows}
+                      actionLabel={certificatesCard.cta}
+                      onPress={() => router.push(certificatesCard.href)}
+                    />
+                  </OverviewPanel>
+                </View>
+              ) : null}
+
+              {showAlerts ? (
+                <View className={LATERAL_HEIGHT}>
+                  <OverviewPanel
+                    title="Alerts Feed"
+                    description="Certificate and maintenance alerts filtered to this vessel using the same thresholds as the project dashboard."
+                    fullHeight
+                  >
+                    <AlertsList
+                      alerts={alertsState.data}
+                      isLoading={alertsState.isLoading}
+                      error={alertsState.error}
+                      onRetry={alertsState.refetch}
+                      onNavigate={(type) =>
+                        router.push(
+                          type === "MAINTENANCE"
+                            ? `/projects/${projectId}/vessels/${assetId}/maintenance`
+                            : `/projects/${projectId}/vessels/${assetId}/certificates`,
+                        )
+                      }
+                    />
+                  </OverviewPanel>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </View>
 
-        {(showCertificates || showAlerts) ? (
-          <View className="web:w-full web:gap-4 web:flex web:flex-col web:lg:w-[360px] web:lg:min-w-[340px] web:lg:max-w-[420px]">
-            {showCertificates ? (
-              <View className={LATERAL_HEIGHT}>
-                <OverviewPanel
-                  title={certificatesCard.title}
-                  description={certificatesCard.subtitle}
-                  fullHeight
-                >
-                  <ModuleSummary
-                    rows={certificatesCard.rows}
-                    actionLabel={certificatesCard.cta}
-                    onPress={() => router.push(certificatesCard.href)}
-                  />
-                </OverviewPanel>
-              </View>
-            ) : null}
-
-            {showAlerts ? (
-              <View className={LATERAL_HEIGHT}>
-                <OverviewPanel
-                  title="Alerts Feed"
-                  description="Certificate and maintenance alerts filtered to this vessel using the same thresholds as the project dashboard."
-                  fullHeight
-                >
-                  <AlertsList
-                    alerts={alertsState.data}
-                    isLoading={alertsState.isLoading}
-                    error={alertsState.error}
-                    onRetry={alertsState.refetch}
-                    onNavigate={(type) =>
-                      router.push(
-                        type === "MAINTENANCE"
-                          ? `/projects/${projectId}/vessels/${assetId}/maintenance`
-                          : `/projects/${projectId}/vessels/${assetId}/certificates`,
-                      )
-                    }
-                  />
-                </OverviewPanel>
-              </View>
-            ) : null}
-          </View>
-        ) : null}
-      </View>
+        <RecentActivityPanel
+          title="Recent Activity"
+          description="Latest changes tied to this vessel, filtered from the same project-wide audit foundation."
+          events={auditState.events}
+          isLoading={auditState.loading}
+          error={auditState.error}
+          onRetry={auditState.refresh}
+          isModuleEnabled={isModuleEnabled}
+          maxItems={5}
+        />
+      </>
     );
   }
 
@@ -368,6 +384,17 @@ export default function VesselOverviewScreen() {
           ))}
         </View>
       </OverviewPanel>
+
+      <RecentActivityPanel
+        title="Recent Activity"
+        description="Latest changes tied to this vessel, filtered from the same project-wide audit foundation."
+        events={auditState.events}
+        isLoading={auditState.loading}
+        error={auditState.error}
+        onRetry={auditState.refresh}
+        isModuleEnabled={isModuleEnabled}
+        maxItems={5}
+      />
     </View>
   );
 }
@@ -397,7 +424,10 @@ function OverviewPanel(props: {
       </View>
 
       <View
-        className={["flex-1 px-4 py-4", props.fullHeight ? "h-full" : ""].join(
+        className={[
+          "flex-1 px-4 py-4",
+          props.fullHeight ? "h-full min-h-0" : "",
+        ].join(
           " ",
         )}
       >
@@ -490,51 +520,110 @@ function AlertsList(props: {
     );
   }
 
+  const criticalCount = props.alerts.filter(
+    (alert) => alert.severity === "CRITICAL",
+  ).length;
+  const warningCount = props.alerts.length - criticalCount;
+
   return (
-    <View className="flex-1 gap-3">
-      {props.alerts.slice(0, 4).map((alert) => {
-        const ui = alertUi(alert.severity);
-        const metaLabel =
-          alert.type === "MAINTENANCE" ? "Due" : "Expiry";
+    <View className="flex-1 min-h-0 gap-3">
+      <View className="flex-row flex-wrap items-center justify-between gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3">
+        <View className="gap-1">
+          <Text className="text-[11px] uppercase tracking-[1.6px] text-muted">
+            Live Queue
+          </Text>
+          <Text className="text-[12px] text-muted">
+            {props.alerts.length} alert{props.alerts.length === 1 ? "" : "s"} tied
+            to this vessel.
+          </Text>
+        </View>
 
-        return (
-          <Pressable
-            key={alert.id}
-            onPress={() => props.onNavigate(alert.type)}
-            className="rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3 active:opacity-90 web:hover:bg-shellSoft"
-          >
-            <View className="flex-row items-center gap-3">
-              <View
-                className={`h-10 w-10 items-center justify-center rounded-xl border border-shellLine ${ui.iconBg}`}
-              >
-                <Ionicons
-                  name={ui.icon}
-                  size={18}
-                  className="text-textMain"
-                />
-              </View>
+        <View className="flex-row flex-wrap items-center gap-2">
+          <MiniPill className="border border-destructive/25 bg-destructive/10">
+            <Text className="text-[10px] font-semibold text-destructive">
+              {criticalCount} critical
+            </Text>
+          </MiniPill>
+          <MiniPill className="border border-warning/25 bg-warning/10">
+            <Text className="text-[10px] font-semibold text-warning">
+              {warningCount} warning
+            </Text>
+          </MiniPill>
+        </View>
+      </View>
 
-              <View className="flex-1 gap-0.5">
-                <Text className="text-[13px] font-semibold text-textMain">
-                  {alert.title}
-                </Text>
-                <Text className="text-[12px] text-muted">
-                  {metaLabel}: {formatDate(alert.date ?? null)}
-                </Text>
-              </View>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="pr-1 pb-2"
+        showsVerticalScrollIndicator
+      >
+        {props.alerts.map((alert) => {
+          const ui = alertUi(alert.severity);
+          const metaLabel =
+            alert.type === "MAINTENANCE" ? "Due" : "Expiry";
 
-              <MiniPill className={`border ${ui.pill}`}>
-                <View className="flex-row items-center gap-2">
-                  <View className={`h-2 w-2 rounded-full ${ui.dot}`} />
-                  <Text className={`text-[10px] font-semibold ${ui.text}`}>
-                    {alert.severity}
-                  </Text>
+          return (
+            <Pressable
+              key={alert.id}
+              onPress={() => props.onNavigate(alert.type)}
+              className="border-b border-shellLine bg-shellPanel px-3 py-3 active:opacity-90 web:hover:bg-shellPanelSoft"
+            >
+              <View className="flex-row items-center gap-3">
+                <View
+                  className={`h-9 w-9 items-center justify-center rounded-lg border border-shellLine ${ui.iconBg}`}
+                >
+                  <Ionicons
+                    name={ui.icon}
+                    size={17}
+                    className="text-textMain"
+                  />
                 </View>
-              </MiniPill>
-            </View>
-          </Pressable>
-        );
-      })}
+
+                <View className="flex-1">
+                  <View className="flex-row items-start justify-between gap-3">
+                    <View className="flex-1">
+                      <Text
+                        className="text-[13px] font-semibold leading-[20px] text-textMain"
+                        numberOfLines={2}
+                      >
+                        {alert.title}
+                      </Text>
+                      <Text
+                        className="mt-0.5 text-[12px] text-muted"
+                        numberOfLines={1}
+                      >
+                        {metaLabel}: {formatDate(alert.date ?? null)}
+                      </Text>
+                    </View>
+
+                    <MiniPill className={`border ${ui.pill}`}>
+                      <View className="flex-row items-center gap-2">
+                        <View className={`h-2 w-2 rounded-full ${ui.dot}`} />
+                        <Text className={`text-[10px] font-semibold ${ui.text}`}>
+                          {alert.severity}
+                        </Text>
+                      </View>
+                    </MiniPill>
+                  </View>
+
+                  <View className="mt-2 flex-row items-center justify-between gap-2">
+                    <Text className="text-[11px] uppercase tracking-[1.4px] text-muted">
+                      {alert.type === "MAINTENANCE"
+                        ? "Maintenance alert"
+                        : "Certificate alert"}
+                    </Text>
+                    <Text className="text-[11px] font-semibold uppercase tracking-[1.4px] text-accent">
+                      {alert.type === "MAINTENANCE"
+                        ? "Open maintenance"
+                        : "Open certificates"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }

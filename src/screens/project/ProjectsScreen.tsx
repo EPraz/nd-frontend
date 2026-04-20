@@ -1,7 +1,7 @@
+import { WorkspaceBackdrop } from "@/src/components/layout/AtmosphericBackdrop";
 import { Button } from "@/src/components/ui/button/Button";
 import Loading from "@/src/components/ui/loading/Loading";
 import { Text } from "@/src/components/ui/text/Text";
-import { WorkspaceBackdrop } from "@/src/components/layout/AtmosphericBackdrop";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { ProjectDto, ProjectKind } from "@/src/contracts/projects.contract";
 import { useProjects } from "@/src/hooks/useProjects";
@@ -52,6 +52,14 @@ function statusTone(status: string) {
     pill: "border-shellLine bg-shellPanelSoft",
     text: "text-muted",
   };
+}
+
+function formatWorkspaceDate(value: string) {
+  return new Date(value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function ProjectsScreen() {
@@ -270,94 +278,6 @@ export default function ProjectsScreen() {
             </Text>
           </View>
 
-          <View className="flex-row flex-wrap gap-4">
-            {filteredProjects.map((project) => {
-              const tone = statusTone(String(project.status));
-
-              return (
-                <Pressable
-                  key={project.id}
-                  onPress={() => router.push(`/projects/${project.id}/dashboard`)}
-                  className="w-full web:min-w-[360px] web:flex-1 web:cursor-pointer"
-                >
-                  {(state) => {
-                    const hovered = Boolean(
-                      (state as { hovered?: boolean }).hovered,
-                    );
-
-                    return (
-                      <View
-                        className={[
-                          "min-h-[230px] overflow-hidden rounded-[30px] border border-shellLine bg-shellPanel p-5 transition-colors web:backdrop-blur-md",
-                          hovered ? "bg-shellCardHover" : "",
-                          state.pressed ? "opacity-95" : "",
-                        ].join(" ")}
-                      >
-                        <View className="absolute right-0 top-0 h-full w-1 bg-shellHighlight" />
-                        <View className="flex-1 justify-between gap-8">
-                          <View className="gap-4">
-                            <View className="flex-row items-center justify-between gap-3">
-                              <View className="rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">
-                                <Text className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
-                                  {KIND_SHORT_LABEL[project.kind]}
-                                </Text>
-                              </View>
-
-                              <View
-                                className={[
-                                  "flex-row items-center gap-2 rounded-full border px-3 py-1",
-                                  tone.pill,
-                                ].join(" ")}
-                              >
-                                <View
-                                  className={[
-                                    "h-2 w-2 rounded-full",
-                                    tone.dot,
-                                  ].join(" ")}
-                                />
-                                <Text
-                                  className={[
-                                    "text-[11px] font-semibold uppercase tracking-wide",
-                                    tone.text,
-                                  ].join(" ")}
-                                >
-                                  {String(project.status)}
-                                </Text>
-                              </View>
-                            </View>
-
-                            <View className="gap-2">
-                              <Text className="text-[26px] font-semibold leading-[32px] text-textMain">
-                                {project.name}
-                              </Text>
-                              <Text className="max-w-[520px] text-sm leading-6 text-muted">
-                                {KIND_LABEL[project.kind]} workspace configured
-                                for modular operations and compliance
-                                visibility.
-                              </Text>
-                            </View>
-                          </View>
-
-                          <View className="flex-row items-center justify-between border-t border-shellLine pt-4">
-                            <Text className="text-sm font-semibold text-shellHighlight">
-                              Enter workspace
-                            </Text>
-                            <View className="h-10 w-10 items-center justify-center rounded-full border border-shellBadgeBorder bg-shellBadge">
-                              <ChevronRight
-                                size={18}
-                                color="hsl(var(--shell-highlight))"
-                              />
-                            </View>
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  }}
-                </Pressable>
-              );
-            })}
-          </View>
-
           {filteredProjects.length === 0 ? (
             <View className="items-center gap-3 rounded-[30px] border border-shellLine bg-shellPanel p-8 web:backdrop-blur-md">
               <Text className="text-lg font-semibold text-textMain">
@@ -368,9 +288,181 @@ export default function ProjectsScreen() {
                 to your user.
               </Text>
             </View>
-          ) : null}
+          ) : (
+            <View className="overflow-hidden rounded-[30px] border border-shellLine bg-shellPanel web:backdrop-blur-md">
+              <View className="border-b border-shellLine px-5 py-4">
+                <Text className="text-[18px] font-semibold text-textMain">
+                  Workspace directory
+                </Text>
+                <Text className="mt-1 text-[13px] leading-[20px] text-muted">
+                  Open the correct operational context without scanning oversized
+                  landing cards one by one.
+                </Text>
+              </View>
+
+              <View className="hidden web:flex web:flex-row web:items-center web:border-b web:border-shellLine web:bg-shellPanelSoft web:px-5 web:py-3">
+                <Text className="flex-[2.4] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Workspace
+                </Text>
+                <Text className="flex-[1.1] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Vertical
+                </Text>
+                <Text className="flex-[1.1] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Status
+                </Text>
+                <Text className="flex-[1.5] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Opened
+                </Text>
+                <Text className="flex-[1.8] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Notes
+                </Text>
+                <Text className="flex-[0.9] text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Action
+                </Text>
+              </View>
+
+              {filteredProjects.map((project, index) => (
+                <WorkspaceDirectoryRow
+                  key={project.id}
+                  index={index}
+                  project={project}
+                  onPress={() => router.push(`/projects/${project.id}/dashboard`)}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
+  );
+}
+
+function WorkspaceDirectoryRow(props: {
+  project: ProjectDto;
+  index: number;
+  onPress: () => void;
+}) {
+  const tone = statusTone(String(props.project.status));
+
+  return (
+    <Pressable
+      onPress={props.onPress}
+      className={[
+        "border-shellLine px-5 py-4 active:opacity-95 web:hover:bg-shellCardHover",
+        props.index > 0 ? "border-t" : "",
+      ].join(" ")}
+    >
+      <View className="hidden web:flex web:flex-row web:items-center web:gap-3">
+        <View className="flex-[2.4] gap-1 pr-3">
+          <Text className="text-[15px] font-semibold text-textMain">
+            {props.project.name}
+          </Text>
+          <Text className="text-[12px] text-muted">
+            Modular workspace for operations, compliance visibility, and next
+            actions.
+          </Text>
+        </View>
+
+        <View className="flex-[1.1] pr-3">
+          <View className="self-start rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">
+            <Text className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+              {KIND_SHORT_LABEL[props.project.kind]}
+            </Text>
+          </View>
+        </View>
+
+        <View className="flex-[1.1] pr-3">
+          <View
+            className={[
+              "self-start flex-row items-center gap-2 rounded-full border px-3 py-1",
+              tone.pill,
+            ].join(" ")}
+          >
+            <View className={["h-2 w-2 rounded-full", tone.dot].join(" ")} />
+            <Text
+              className={[
+                "text-[10px] font-semibold uppercase tracking-wide",
+                tone.text,
+              ].join(" ")}
+            >
+              {String(props.project.status)}
+            </Text>
+          </View>
+        </View>
+
+        <View className="flex-[1.5] pr-3">
+          <Text className="text-[12px] text-muted">
+            {formatWorkspaceDate(props.project.createdAt)}
+          </Text>
+        </View>
+
+        <View className="flex-[1.8] pr-3">
+          <Text className="text-[12px] leading-[18px] text-muted">
+            {KIND_LABEL[props.project.kind]} workspace ready for project-level
+            module handoff.
+          </Text>
+        </View>
+
+        <View className="flex-[0.9] items-end">
+          <View className="flex-row items-center gap-2">
+            <Text className="text-[12px] font-semibold text-shellHighlight">
+              Enter
+            </Text>
+            <View className="h-9 w-9 items-center justify-center rounded-full border border-shellBadgeBorder bg-shellBadge">
+              <ChevronRight
+                size={17}
+                color="hsl(var(--shell-highlight))"
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View className="gap-3 web:hidden">
+        <View className="flex-row items-start justify-between gap-3">
+          <View className="flex-1 gap-2">
+            <View className="self-start rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                {KIND_SHORT_LABEL[props.project.kind]}
+              </Text>
+            </View>
+            <Text className="text-[18px] font-semibold text-textMain">
+              {props.project.name}
+            </Text>
+          </View>
+
+          <View
+            className={[
+              "flex-row items-center gap-2 rounded-full border px-3 py-1",
+              tone.pill,
+            ].join(" ")}
+          >
+            <View className={["h-2 w-2 rounded-full", tone.dot].join(" ")} />
+            <Text
+              className={[
+                "text-[10px] font-semibold uppercase tracking-wide",
+                tone.text,
+              ].join(" ")}
+            >
+              {String(props.project.status)}
+            </Text>
+          </View>
+        </View>
+
+        <Text className="text-[13px] leading-[20px] text-muted">
+          {KIND_LABEL[props.project.kind]} workspace created on{" "}
+          {formatWorkspaceDate(props.project.createdAt)}.
+        </Text>
+
+        <View className="flex-row items-center justify-between border-t border-shellLine pt-3">
+          <Text className="text-[12px] font-semibold uppercase tracking-[0.16em] text-shellHighlight">
+            Enter workspace
+          </Text>
+          <View className="h-9 w-9 items-center justify-center rounded-full border border-shellBadgeBorder bg-shellBadge">
+            <ChevronRight size={17} color="hsl(var(--shell-highlight))" />
+          </View>
+        </View>
+      </View>
+    </Pressable>
   );
 }

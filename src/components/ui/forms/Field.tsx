@@ -12,6 +12,8 @@ type FieldProps = {
   secureTextEntry?: boolean;
   placeholderTextColor?: ColorValue;
   multiline?: boolean;
+  error?: string | null;
+  hint?: string | null;
 };
 
 export function Field({
@@ -25,6 +27,8 @@ export function Field({
   secureTextEntry = false,
   placeholderTextColor,
   multiline,
+  error,
+  hint,
 }: FieldProps) {
   return (
     <View className="gap-2">
@@ -37,10 +41,22 @@ export function Field({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize ?? "none"}
         editable={editable}
-        className="h-12 rounded-[20px] border border-shellLine bg-shellPanelSoft px-4 text-textMain web:backdrop-blur-md focus:border-accent"
+        className={[
+          "rounded-[20px] bg-shellPanelSoft px-4 text-textMain web:backdrop-blur-md focus:border-accent",
+          multiline ? "min-h-[120px] py-3" : "h-12",
+          error ? "border border-destructive" : "border border-shellLine",
+        ].join(" ")}
         secureTextEntry={secureTextEntry}
         multiline={multiline}
+        textAlignVertical={multiline ? "top" : "center"}
       />
+      {error ? (
+        <Text className="text-[12px] leading-[18px] text-destructive">
+          {error}
+        </Text>
+      ) : hint ? (
+        <Text className="text-[12px] leading-[18px] text-muted">{hint}</Text>
+      ) : null}
     </View>
   );
 }

@@ -36,7 +36,7 @@ function statusDescription(
 ) {
   switch (status) {
     case "COMMITTED":
-      return `${counts.createdCount} created • ${counts.updatedCount} updated • ${counts.skippedCount} skipped`;
+      return `${counts.createdCount} created - ${counts.updatedCount} updated - ${counts.skippedCount} skipped`;
     case "DISCARDED":
       return "Closed session kept only as traceability record";
     default:
@@ -196,7 +196,7 @@ export default function CrewBulkUploadWorkspaceScreen() {
           }
         />
 
-        <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
+        <View className="flex flex-row flex-wrap items-center justify-start gap-2 xl:justify-between xl:gap-5">
           <StatCard
             iconName="cloud-upload-outline"
             iconLib="ion"
@@ -230,11 +230,11 @@ export default function CrewBulkUploadWorkspaceScreen() {
           />
         </View>
 
-        <View className="rounded-[24px] border border-shellLine bg-shellPanel p-5 gap-4">
-          <Text className="text-textMain text-[18px] font-semibold">
+        <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-5">
+          <Text className="text-[18px] font-semibold text-textMain">
             Start a new session
           </Text>
-          <Text className="text-muted text-[13px] leading-[20px]">
+          <Text className="text-[13px] leading-[20px] text-muted">
             The workbook is parsed on the backend immediately so you can leave
             and come back without losing the session. If your file does not
             include vessel IMO or license, choose a default vessel first.
@@ -262,15 +262,15 @@ export default function CrewBulkUploadWorkspaceScreen() {
             </Button>
           </View>
 
-          <Text className="text-[12px] text-muted leading-[18px]">
+          <Text className="text-[12px] leading-[18px] text-muted">
             {isWeb
               ? "Use the official template whenever possible. In this foundation release, the Certificates sheet stays in preview-only mode and does not create compliance records."
               : "Template download currently works in web only. Open ARXIS in the browser to download the official workbook, then come back to this workspace if needed."}
           </Text>
 
-          <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
+          <View className="gap-1 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
             <Text className="text-[12px] text-muted">Selected workbook</Text>
-            <Text className="text-textMain font-semibold">
+            <Text className="font-semibold text-textMain">
               {file?.name ?? "No workbook selected yet"}
             </Text>
             <Text className="text-[12px] text-muted">
@@ -290,13 +290,14 @@ export default function CrewBulkUploadWorkspaceScreen() {
               disabled={vesselsLoading}
             />
           ) : selectedVessel ? (
-            <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
+            <View className="gap-1 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
               <Text className="text-[12px] text-muted">Default vessel</Text>
-              <Text className="text-textMain font-semibold">
+              <Text className="font-semibold text-textMain">
                 {selectedVessel.name}
               </Text>
               <Text className="text-[12px] text-muted">
-                The current project only has one vessel, so it will be applied automatically.
+                The current project only has one vessel, so it will be applied
+                automatically.
               </Text>
             </View>
           ) : null}
@@ -317,7 +318,7 @@ export default function CrewBulkUploadWorkspaceScreen() {
           <Button
             variant="default"
             size="lg"
-            className="rounded-full self-start"
+            className="self-start rounded-full"
             onPress={onCreateSession}
             loading={uploading}
             disabled={!file}
@@ -331,12 +332,12 @@ export default function CrewBulkUploadWorkspaceScreen() {
           ) : null}
         </View>
 
-        <View className="rounded-[24px] border border-shellLine bg-shellPanel p-5 gap-4">
+        <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-5">
           <View className="gap-1">
-            <Text className="text-textMain text-[18px] font-semibold">
+            <Text className="text-[18px] font-semibold text-textMain">
               Existing sessions
             </Text>
-            <Text className="text-muted text-[13px] leading-[20px]">
+            <Text className="text-[13px] leading-[20px] text-muted">
               Every session stays available until it is discarded or committed,
               so the client can always resume the review without depending on a
               hidden queue.
@@ -345,67 +346,149 @@ export default function CrewBulkUploadWorkspaceScreen() {
 
           {sessions.length === 0 ? (
             <View className="rounded-[18px] border border-dashed border-shellLine bg-shellPanelSoft p-5">
-              <Text className="text-textMain font-semibold">
+              <Text className="font-semibold text-textMain">
                 No bulk sessions yet
               </Text>
-              <Text className="text-muted text-[13px] mt-1">
+              <Text className="mt-1 text-[13px] text-muted">
                 Upload the first workbook to create a reviewable session.
               </Text>
             </View>
           ) : (
-            <View className="gap-3">
-              {sessions.map((session) => (
+            <View className="overflow-hidden rounded-[20px] border border-shellLine bg-shellPanelSoft">
+              <View className="hidden web:flex web:flex-row web:items-center web:border-b web:border-shellLine web:bg-shellPanel web:px-4 web:py-3">
+                <Text className="flex-[2.6] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Workbook
+                </Text>
+                <Text className="flex-[1.6] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Default Vessel
+                </Text>
+                <Text className="flex-[1.2] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Status
+                </Text>
+                <Text className="flex-[1.8] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Queue
+                </Text>
+                <Text className="flex-[2.4] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Outcome
+                </Text>
+                <Text className="flex-[1.2] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  Updated
+                </Text>
+              </View>
+
+              {sessions.map((session, index) => (
                 <Pressable
                   key={session.id}
                   onPress={() =>
                     router.push(`/projects/${pid}/crew/bulk-upload/${session.id}`)
                   }
-                  className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3"
+                  className={[
+                    "border-shellLine px-4 py-4 active:opacity-95 web:hover:bg-shellPanel",
+                    index > 0 ? "border-t" : "",
+                  ].join(" ")}
                 >
-                  <View className="flex-row flex-wrap items-center justify-between gap-3">
-                    <View className="gap-1">
-                      <Text className="text-textMain font-semibold">
+                  <View className="hidden web:flex web:flex-row web:items-start web:gap-3">
+                    <View className="flex-[2.6] gap-1 pr-3">
+                      <Text className="text-[13px] font-semibold text-textMain">
                         {session.sourceFileName}
                       </Text>
                       <Text className="text-[12px] text-muted">
-                        Rev {session.revisionNumber} • Updated {formatDate(session.updatedAt)}
-                        {session.defaultAssetName
-                          ? ` • Default vessel: ${session.defaultAssetName}`
-                          : ""}
+                        Revision {session.revisionNumber}
                       </Text>
                     </View>
 
-                    <View
-                      className={`rounded-full border px-3 py-1 ${statusTone(session.status)}`}
-                    >
-                      <Text className="text-[11px] font-semibold">
-                        {session.status.replaceAll("_", " ")}
+                    <View className="flex-[1.6] pr-3">
+                      <Text className="text-[12px] text-textMain">
+                        {session.defaultAssetName ?? "Not pinned"}
+                      </Text>
+                    </View>
+
+                    <View className="flex-[1.2] pr-3">
+                      <View
+                        className={`self-start rounded-full border px-3 py-1 ${statusTone(session.status)}`}
+                      >
+                        <Text className="text-[10px] font-semibold">
+                          {session.status.replaceAll("_", " ")}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View className="flex-[1.8] gap-1 pr-3">
+                      <Text className="text-[12px] text-textMain">
+                        {session.crewRows} crew - {session.certificateRows} cert
+                      </Text>
+                      <Text className="text-[12px] text-muted">
+                        {session.criticalCount} critical - {session.warningCount} warnings
+                      </Text>
+                    </View>
+
+                    <View className="flex-[2.4] pr-3">
+                      <Text className="text-[12px] leading-[18px] text-muted">
+                        {statusDescription(session.status, {
+                          createdCount: session.createdCount,
+                          updatedCount: session.updatedCount,
+                          skippedCount: session.skippedCount,
+                        })}
+                      </Text>
+                    </View>
+
+                    <View className="flex-[1.2] items-end">
+                      <Text className="text-[12px] text-muted">
+                        {formatDate(session.updatedAt)}
                       </Text>
                     </View>
                   </View>
 
-                  <View className="flex-row flex-wrap gap-3">
+                  <View className="gap-3 web:hidden">
+                    <View className="flex-row items-start justify-between gap-3">
+                      <View className="flex-1 gap-1">
+                        <Text className="text-[14px] font-semibold text-textMain">
+                          {session.sourceFileName}
+                        </Text>
+                        <Text className="text-[12px] text-muted">
+                          Revision {session.revisionNumber}
+                        </Text>
+                      </View>
+
+                      <View
+                        className={`rounded-full border px-3 py-1 ${statusTone(session.status)}`}
+                      >
+                        <Text className="text-[10px] font-semibold">
+                          {session.status.replaceAll("_", " ")}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View className="flex-row flex-wrap gap-x-4 gap-y-2">
+                      <Text className="text-[12px] text-muted">
+                        Vessel: {session.defaultAssetName ?? "Not pinned"}
+                      </Text>
+                      <Text className="text-[12px] text-muted">
+                        Crew: {session.crewRows}
+                      </Text>
+                      <Text className="text-[12px] text-muted">
+                        Certs: {session.certificateRows}
+                      </Text>
+                      <Text className="text-[12px] text-warning">
+                        {session.criticalCount} critical
+                      </Text>
+                      <Text className="text-[12px] text-warning">
+                        {session.warningCount} warnings
+                      </Text>
+                    </View>
+
+                    <Text className="text-[12px] leading-[18px] text-muted">
+                      {statusDescription(session.status, {
+                        createdCount: session.createdCount,
+                        updatedCount: session.updatedCount,
+                        skippedCount: session.skippedCount,
+                      })}
+                    </Text>
+
                     <Text className="text-[12px] text-muted">
-                      {session.crewRows} crew rows
-                    </Text>
-                    <Text className="text-[12px] text-muted">
-                      {session.certificateRows} certificate rows
-                    </Text>
-                    <Text className="text-[12px] text-warning">
-                      {session.criticalCount} critical
-                    </Text>
-                    <Text className="text-[12px] text-warning">
-                      {session.warningCount} warnings
+                      Updated {formatDate(session.updatedAt)}
                     </Text>
                   </View>
-
-                  <Text className="text-[12px] text-muted">
-                    {statusDescription(session.status, {
-                      createdCount: session.createdCount,
-                      updatedCount: session.updatedCount,
-                      skippedCount: session.skippedCount,
-                    })}
-                  </Text>
                 </Pressable>
               ))}
             </View>

@@ -4,6 +4,7 @@ import type {
   CreateAssetInput,
 } from "@/src/contracts/assets.contract";
 import { useState } from "react";
+import { normalizeVesselApiErrorMessage } from "../helpers/vesselFormValidation";
 
 export function useCreateVessel(projectId: string) {
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,11 @@ export function useCreateVessel(projectId: string) {
     try {
       return await createAsset(projectId, input);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unknown error");
+      setError(
+        normalizeVesselApiErrorMessage(
+          e instanceof Error ? e.message : "Unknown error",
+        ),
+      );
       throw e;
     } finally {
       setLoading(false);

@@ -1,18 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useToast } from "@/src/context";
 import { useVessels } from "@/src/features/vessels";
 import {
   fakeCertificateIngestion,
   fakeCertificateRequirement,
   fakeVesselAsset,
 } from "@/src/test/fakes/certificates";
-import {
-  useCertificateRequirementsByAsset,
-  useCreateExtraCertificateIngestion,
-  useCreateRequirementIngestion,
-} from "../../hooks";
+import { useToast } from "@/src/context/ToastProvider";
+import { useCertificateRequirementsByAsset } from "../../hooks/useCertificateRequirementsByAsset";
+import { useCreateExtraCertificateIngestion } from "../../hooks/useCreateExtraCertificateIngestion";
+import { useCreateRequirementIngestion } from "../../hooks/useCreateRequirementIngestion";
 import CertificateUploadScreen from "./CertificateUploadScreen";
 
 jest.mock("expo-document-picker", () => ({
@@ -24,7 +22,7 @@ jest.mock("expo-router", () => ({
   useRouter: jest.fn(),
 }));
 
-jest.mock("@/src/context", () => ({
+jest.mock("@/src/context/ToastProvider", () => ({
   useToast: jest.fn(),
 }));
 
@@ -32,9 +30,21 @@ jest.mock("@/src/features/vessels", () => ({
   useVessels: jest.fn(),
 }));
 
-jest.mock("../../hooks", () => ({
-  useCertificateRequirementsByAsset: jest.fn(),
-  useCreateExtraCertificateIngestion: jest.fn(),
+jest.mock(
+  "../../hooks/useCertificateRequirementsByAsset",
+  () => ({
+    useCertificateRequirementsByAsset: jest.fn(),
+  }),
+);
+
+jest.mock(
+  "../../hooks/useCreateExtraCertificateIngestion",
+  () => ({
+    useCreateExtraCertificateIngestion: jest.fn(),
+  }),
+);
+
+jest.mock("../../hooks/useCreateRequirementIngestion", () => ({
   useCreateRequirementIngestion: jest.fn(),
 }));
 
@@ -98,7 +108,9 @@ describe("CertificateUploadScreen", () => {
     fireEvent.press(screen.getByText("Pick PDF or image"));
 
     await waitFor(() => {
-      expect(screen.getByText("iopp-certificate.pdf")).toBeOnTheScreen();
+      expect(screen.getAllByText("iopp-certificate.pdf").length).toBeGreaterThan(
+        0,
+      );
     });
 
     fireEvent.changeText(

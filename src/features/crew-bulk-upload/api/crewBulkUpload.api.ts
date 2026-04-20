@@ -114,7 +114,10 @@ export async function downloadCrewBulkUploadTemplate(
     throw new Error(text || "Failed to download template");
   }
 
-  const blob = await response.blob();
+  const buffer = await response.arrayBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
   const url = window.URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;

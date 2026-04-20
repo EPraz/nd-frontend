@@ -49,6 +49,14 @@ export type CrewBulkUploadRevisionSummary = {
   infoCount: number;
 };
 
+export type CrewBulkUploadAuditTrailEvent = {
+  eventType: string;
+  at: string;
+  actorUserId: string | null;
+  message: string;
+  metadata: Record<string, unknown> | null;
+};
+
 export type CrewBulkUploadSessionMeta = {
   sheets?: CrewBulkUploadSheetSummary[];
   recognizedCrewSheet?: boolean;
@@ -57,11 +65,13 @@ export type CrewBulkUploadSessionMeta = {
   duplicatePolicy?: {
     uniqueIdentityMatch?: string;
     ambiguousIdentityMatch?: string;
+    workbookDuplicateIdentity?: string;
     weakIdentityNoMatch?: string;
     certificateRows?: string;
   };
   revisions?: CrewBulkUploadRevisionSummary[];
   commit?: CrewBulkUploadCommitSummary;
+  auditTrail?: CrewBulkUploadAuditTrailEvent[];
 };
 
 export type CrewBulkUploadRowDto = {
