@@ -12,24 +12,23 @@ import {
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { useToast } from "@/src/context";
 import { pickImageUpload } from "@/src/helpers/pickImageUpload";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { ScrollView, Switch, View } from "react-native";
-import { removeVesselImage, uploadVesselImage } from "@/src/features/vessels/api/vessel-profile.api";
-import { VesselImagePanel } from "@/src/features/vessels/components";
-import type { UpdateVesselProfileInput } from "@/src/features/vessels/contracts/vessel.contract";
-import {
-  useUpdateVesselProfile,
-  useVessel,
-  useVesselProfile,
-} from "@/src/features/vessels/hooks";
 import {
   getVesselEmailError,
   normalizeVesselApiErrorMessage,
   normalizeVesselValue,
+  removeVesselImage,
+  type UpdateVesselProfileInput,
+  uploadVesselImage,
+  useUpdateVesselProfile,
+  useVessel,
+  useVesselProfile,
   VESSEL_FORM_ERROR_TOAST_MESSAGE,
-} from "@/src/features/vessels/helpers/vesselFormValidation";
+  VesselImagePanel,
+} from "@/src/features/vessels/core";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { ScrollView, Switch, View } from "react-native";
 
 type FormState = {
   identifierType: "IMO" | "LICENSE";

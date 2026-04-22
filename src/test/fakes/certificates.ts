@@ -5,7 +5,7 @@ import type {
   CertificateRequirementDto,
   CertificateTypeDto,
   ConfirmCertificateIngestionResultDto,
-} from "@/src/features/certificates/contracts";
+} from "@/src/features/certificates/shared";
 
 export function fakeVesselAsset(overrides: Partial<AssetDto> = {}): AssetDto {
   return {

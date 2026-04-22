@@ -28,6 +28,7 @@ export function TableLink({ children, onPress, tooltip }: Props) {
         return (
           <Text
             className={[
+              "font-medium text-textMain leading-5",
               hovered ? "text-textMain underline" : "",
               pressed ? "opacity-90" : "",
               "underline-offset-4",

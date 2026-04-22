@@ -1,4 +1,4 @@
-import { NewVesselScreen } from "@/src/features/vessels";
+import { NewVesselScreen } from "@/src/features/vessels/core";
 
 const create = () => {
   return <NewVesselScreen />;

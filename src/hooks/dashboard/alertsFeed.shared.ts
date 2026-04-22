@@ -1,5 +1,5 @@
-import type { CertificateDto } from "@/src/features/certificates/contracts/certificates.contract";
-import type { MaintenanceDto } from "@/src/features/maintenance/contracts";
+import type { CertificateDto } from "@/src/features/certificates/shared/contracts/certificates.contract";
+import type { MaintenanceDto } from "@/src/features/maintenance/shared/contracts";
 
 export type AlertSeverity = "CRITICAL" | "WARNING";
 

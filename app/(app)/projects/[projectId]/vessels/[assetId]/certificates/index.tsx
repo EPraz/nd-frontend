@@ -1,4 +1,4 @@
-import { AssetCertificatesScreen } from "@/src/features/vessels";
+import { AssetCertificatesScreen } from "@/src/features/vessels/certificates";
 
 const index = () => {
   return <AssetCertificatesScreen />;

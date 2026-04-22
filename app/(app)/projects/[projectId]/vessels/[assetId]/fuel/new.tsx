@@ -1,4 +1,4 @@
-import { CreateFuelScreen } from "@/src/features/fuel/screens";
+import { CreateFuelScreen } from "@/src/features/fuel";
 
 const create = () => {
   return <CreateFuelScreen />;

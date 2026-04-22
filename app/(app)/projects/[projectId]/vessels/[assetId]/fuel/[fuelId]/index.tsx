@@ -1,4 +1,4 @@
-import { FuelViewScreen } from "@/src/features/fuel/screens";
+import { FuelViewScreen } from "@/src/features/fuel";
 
 const index = () => {
   return <FuelViewScreen />;

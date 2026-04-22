@@ -34,11 +34,6 @@ export function getGuardedProjectModule(
       label: "Certificates",
       moduleKey: "certificates",
     },
-    {
-      prefix: `${base}/crew-certificates`,
-      label: "Crew Certificates",
-      moduleKey: "crew",
-    },
     { prefix: `${base}/crew`, label: "Crew", moduleKey: "crew" },
     {
       prefix: `${base}/maintenance`,

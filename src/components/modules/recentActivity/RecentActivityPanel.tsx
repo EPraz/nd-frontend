@@ -76,50 +76,66 @@ export function RecentActivityPanel({
             description={emptyDescription}
           />
         ) : (
-          <View className="gap-2">
+          <View className="relative gap-0">
             {visibleEvents.map((event, index) => {
               const tone = auditToneClasses(event.action);
               const metadataLine = [event.actorUserName ?? "System", event.assetName]
                 .filter(Boolean)
                 .join(" | ");
+              const showConnector = index < visibleEvents.length - 1;
 
               return (
                 <View
                   key={event.id}
-                  className={cn(
-                    "gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3",
-                    index === 0 ? "shadow-sm shadow-black/10" : "",
-                  )}
+                  className="relative pl-8"
                 >
-                  <View className="flex-row items-start justify-between gap-3">
-                    <MiniPill className={cn(tone.chip, "rounded-full px-2.5 py-1")}>
-                      <View className="flex-row items-center gap-2">
-                        <View className={cn("h-2 w-2 rounded-full", tone.dot)} />
-                        <Text className={cn("text-[10px] font-semibold", tone.text)}>
-                          {auditModuleLabel(event.moduleKey)}
-                        </Text>
-                      </View>
-                    </MiniPill>
-
-                    <Text className="text-[11px] text-muted">
-                      {formatAuditTimestamp(event.createdAt)}
-                    </Text>
+                  <View
+                    className={cn(
+                      "absolute left-[7px] top-[10px] h-4 w-4 items-center justify-center rounded-full border border-shellLine bg-shellPanel",
+                    )}
+                  >
+                    <View className={cn("h-2.5 w-2.5 rounded-full", tone.dot)} />
                   </View>
 
-                  <View className="gap-1">
-                    <Text className="text-[13px] font-semibold leading-[19px] text-textMain">
-                      {event.summary}
-                    </Text>
-                    {metadataLine ? (
-                      <Text className="text-[12px] leading-[18px] text-muted">
-                        {metadataLine}
+                  {showConnector ? (
+                    <View className="absolute bottom-0 left-[14px] top-[28px] w-px bg-shellLine" />
+                  ) : null}
+
+                  <View className={cn("gap-2", showConnector ? "pb-4" : "")}>
+                    <View className="flex-row flex-wrap items-start justify-between gap-3">
+                      <MiniPill
+                        className={cn(tone.chip, "rounded-full px-2.5 py-1")}
+                      >
+                        <View className="flex-row items-center gap-2">
+                          <View className={cn("h-2 w-2 rounded-full", tone.dot)} />
+                          <Text
+                            className={cn("text-[10px] font-semibold", tone.text)}
+                          >
+                            {auditModuleLabel(event.moduleKey)}
+                          </Text>
+                        </View>
+                      </MiniPill>
+
+                      <Text className="text-[11px] text-muted">
+                        {formatAuditTimestamp(event.createdAt)}
                       </Text>
-                    ) : null}
-                    {event.entityLabel ? (
-                      <Text className="text-[12px] leading-[18px] text-muted">
-                        Subject: {event.entityLabel}
+                    </View>
+
+                    <View className="gap-1.5">
+                      <Text className="text-[13px] font-semibold leading-[19px] text-textMain">
+                        {event.summary}
                       </Text>
-                    ) : null}
+                      {metadataLine ? (
+                        <Text className="text-[12px] leading-[18px] text-muted">
+                          {metadataLine}
+                        </Text>
+                      ) : null}
+                      {event.entityLabel ? (
+                        <Text className="text-[12px] leading-[18px] text-muted">
+                          Subject: {event.entityLabel}
+                        </Text>
+                      ) : null}
+                    </View>
                   </View>
                 </View>
               );
@@ -139,11 +155,7 @@ function CenteredState(props: {
   return (
     <View className="items-center justify-center gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-8">
       <View className="h-10 w-10 items-center justify-center rounded-full border border-shellLine bg-shellGlass">
-        <Ionicons
-          name={props.icon}
-          size={20}
-          color="rgba(255,255,255,0.85)"
-        />
+        <Ionicons name={props.icon} size={20} className="text-textMain" />
       </View>
       <View className="max-w-[360px] gap-1">
         <Text className="text-center text-sm font-semibold text-textMain">

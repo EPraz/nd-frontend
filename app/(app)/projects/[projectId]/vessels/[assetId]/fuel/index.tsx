@@ -1,4 +1,4 @@
-import FuelByAssetScreen from "@/src/features/vessels/screens/fuel/FuelByAssetScreen";
+import { FuelByAssetScreen } from "@/src/features/vessels/fuel";
 import React from "react";
 
 const index = () => {

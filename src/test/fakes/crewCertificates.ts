@@ -1,13 +1,13 @@
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import type { CertificateTypeDto } from "@/src/features/certificates/contracts";
-import type { CrewDto } from "@/src/features/crew/contracts";
+import type { CertificateTypeDto } from "@/src/features/certificates/shared";
+import type { CrewDto } from "@/src/features/crew";
 import type {
   ConfirmCrewCertificateIngestionResultDto,
   CrewCertificateDto,
   CrewCertificateIngestionDto,
   CrewCertificateRequirementDto,
   CrewComplianceSummaryDto,
-} from "@/src/features/crew-certificates/contracts";
+} from "@/src/features/crew/certificates/contracts";
 
 export function fakeCrewAsset(overrides: Partial<AssetDto> = {}): AssetDto {
   return {

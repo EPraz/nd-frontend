@@ -1,5 +1,4 @@
 import { SidebarItemType, SidebarKey } from "@/src/constants";
-import { useEffect, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -8,7 +7,11 @@ import {
   View,
 } from "react-native";
 import BrandLogo from "./BrandLogo";
-import { GroupSidebarMenu, SidebarContainer } from "./Sidebar.styles";
+import {
+  GroupSidebarMenu,
+  SidebarContainer,
+  SidebarLabel,
+} from "./Sidebar.styles";
 import SidebarItem from "./SidebarItem";
 
 type Props = {
@@ -16,8 +19,6 @@ type Props = {
   activeKey: SidebarKey;
   items: { main: SidebarItemType[]; secondary: SidebarItemType[] };
   onChangeActive: (key: SidebarKey) => void;
-  onToggleTheme: () => void;
-  onLogout: () => void;
   handleSetCollapse: (value: boolean) => void;
 };
 
@@ -26,26 +27,13 @@ export default function Sidebar({
   activeKey = "dashboard",
   items,
   onChangeActive,
-  onToggleTheme,
-  onLogout,
   handleSetCollapse,
 }: Props) {
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === "web" && width >= 1024;
 
   const widthFitFull = collapsed ? "w-fit" : "w-full";
-  const [showText, setShowText] = useState(!collapsed);
-
-  useEffect(() => {
-    if (!isDesktop) return;
-
-    if (!collapsed) {
-      const t = setTimeout(() => setShowText(true), 150);
-      return () => clearTimeout(t);
-    } else {
-      setShowText(false);
-    }
-  }, [collapsed, isDesktop]);
+  const showText = !collapsed;
 
   const visibleMainItems = items.main.filter((item) => item.enabled !== false);
   const visibleSecondaryItems = items.secondary.filter(
@@ -61,28 +49,23 @@ export default function Sidebar({
         onMouseLeave: () => handleSetCollapse(true),
       })}
     >
-      {/* Logo */}
       <View
-        className={`${widthFitFull} flex-row items-center justify-center gap-4`}
+        className={`${widthFitFull} flex-row items-center justify-${collapsed ? "center" : "start"} gap-2`}
       >
         <Pressable onPress={() => handleSetCollapse(!collapsed)}>
           <BrandLogo collapsed={collapsed} />
         </Pressable>
-        {/* {showText && (
-          <SidebarLabel className="font-bold text-[18px]">
-            Dashboard
-          </SidebarLabel>
-        )} */}
       </View>
 
-      {/* Menus */}
       <View className={`${widthFitFull} pt-4 flex-1`}>
         <ScrollView
           className="flex-1"
-          contentContainerClassName="gap-[26px] items-center pb-6"
+          contentContainerClassName="gap-2 items-center pb-4"
           showsVerticalScrollIndicator={false}
         >
-          <GroupSidebarMenu collapsed={collapsed}>
+          <SectionSlot collapsed={collapsed} label="Navigation" />
+
+          <GroupSidebarMenu collapsed={collapsed} className="gap-1">
             {visibleMainItems.map((it) => (
               <SidebarItem
                 key={it.key}
@@ -97,9 +80,9 @@ export default function Sidebar({
             ))}
           </GroupSidebarMenu>
 
-          <View className="h-px w-full bg-shellLine" />
+          <SectionSlot collapsed={collapsed} label="Controls" />
 
-          <GroupSidebarMenu collapsed={collapsed}>
+          <GroupSidebarMenu collapsed={collapsed} className="gap-1">
             {visibleSecondaryItems.map((it) => (
               <SidebarItem
                 key={it.key}
@@ -117,41 +100,50 @@ export default function Sidebar({
           <View className="h-6" />
         </ScrollView>
       </View>
-
-      {/* Bottom actions */}
-      {/* <View className={`${widthFitFull} flex items-center justify-start gap-3`}>
-        <GroupSidebarMenu collapsed={collapsed}>
-          <SidebarItem
-            key="Switch Theme"
-            active={false}
-            showText={showText}
-            collapsed={collapsed}
-            label="Switch Theme"
-            iconBase="moon"
-            onPress={onToggleTheme}
-            enabled={false}
-          />
-        </GroupSidebarMenu>
-
-        <GroupSidebarMenu
-          collapsed={collapsed}
-          className="bg-destructive/15 border border-destructive/30"
-        >
-          <SidebarItem
-            key="Logout"
-            active={false}
-            showText={showText}
-            collapsed={collapsed}
-            label="Logout"
-            iconBase="arrow-back-circle"
-            outlinedOnInactive={false}
-            onPress={onLogout}
-            iconColor="text-destructive"
-            iconContainerClassName="bg-destructive/15 border border-destructive/30"
-            labelClassName="text-textMain"
-          />
-        </GroupSidebarMenu>
-      </View> */}
     </SidebarContainer>
+  );
+}
+
+function SidebarSectionLabel({ children }: { children: string }) {
+  return (
+    <View>
+      <BrandLabel>{children}</BrandLabel>
+    </View>
+  );
+}
+
+function BrandLabel({ children }: { children: string }) {
+  return (
+    <View>
+      <SidebarLabel className="text-[9px] font-semibold uppercase tracking-[0.22em] text-muted">
+        {children}
+      </SidebarLabel>
+    </View>
+  );
+}
+
+function SectionSlot({
+  collapsed,
+  label,
+}: {
+  collapsed: boolean;
+  label: string;
+}) {
+  if (collapsed) {
+    return (
+      <View className="w-full items-center justify-center py-1.5">
+        <View className="h-px w-6 rounded-full bg-shellLine" />
+      </View>
+    );
+  }
+
+  return (
+    <View className="w-full px-1 pt-1">
+      <View className="h-[18px] justify-center overflow-hidden rounded-full border border-transparent px-1">
+        <View className="opacity-100">
+          <SidebarSectionLabel>{label}</SidebarSectionLabel>
+        </View>
+      </View>
+    </View>
   );
 }

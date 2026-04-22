@@ -1,7 +1,9 @@
 import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
-import { useProjectContext } from "@/src/context/ProjectProvider";
 import { formatDate } from "@/src/helpers";
-import { useAlertsFeedData, type AlertItem } from "@/src/hooks/dashboard/useAlertsFeedData";
+import {
+  useAlertsFeedData,
+  type AlertItem,
+} from "@/src/hooks/dashboard/useAlertsFeedData";
 import { useCrewSummaryData } from "@/src/hooks/dashboard/useCrewSummaryData";
 import { useMaintenanceOverviewData } from "@/src/hooks/dashboard/useMaintenanceOverviewData";
 import { useOverviewKpisData } from "@/src/hooks/dashboard/useOverviewKpisData";
@@ -120,7 +122,6 @@ export function CommandCenterReviewLayout({
   projectId,
 }: CommandCenterReviewLayoutProps) {
   const router = useRouter();
-  const { projectName } = useProjectContext();
   const { isModuleEnabled } = useProjectEntitlements();
   const overview = useOverviewKpisData();
   const vesselsHealth = useVesselsHealthData();
@@ -173,7 +174,7 @@ export function CommandCenterReviewLayout({
 
   return (
     <View className="gap-4">
-      <View className="rounded-[22px] border border-shellLine bg-shellPanel px-4 py-4 web:backdrop-blur-md">
+      {/* {/* <View className="rounded-[22px] border border-shellLine bg-shellPanel px-4 py-4 web:backdrop-blur-md">
         <View className="flex-row flex-wrap items-start justify-between gap-4">
           <View className="max-w-[860px] gap-1.5">
             <Text className="text-[11px] font-semibold uppercase tracking-[0.24em] text-shellHighlight">
@@ -203,7 +204,7 @@ export function CommandCenterReviewLayout({
             </View>
           </View>
         </View>
-      </View>
+      </View> */}
 
       <View className="web:grid web:grid-cols-1 web:gap-4 web:xl:grid-cols-12">
         <CommandPanel
@@ -222,7 +223,9 @@ export function CommandCenterReviewLayout({
               },
               {
                 label: "Active crew",
-                value: crewModule ? String(overview.data.crewActive) : "Module off",
+                value: crewModule
+                  ? String(overview.data.crewActive)
+                  : "Module off",
                 hint: crewModule ? "current onboard" : "enable crew",
               },
               {
@@ -230,14 +233,18 @@ export function CommandCenterReviewLayout({
                 value: certificateModule
                   ? String(overview.data.certificates.total)
                   : "Module off",
-                hint: certificateModule ? "records tracked" : "enable certificates",
+                hint: certificateModule
+                  ? "records tracked"
+                  : "enable certificates",
               },
               {
                 label: "Open work",
                 value: maintenanceModule
                   ? String(maintenance.data.open + maintenance.data.inProgress)
                   : "Module off",
-                hint: maintenanceModule ? "maintenance queue" : "enable maintenance",
+                hint: maintenanceModule
+                  ? "maintenance queue"
+                  : "enable maintenance",
               },
             ]}
           />
@@ -272,7 +279,13 @@ export function CommandCenterReviewLayout({
                 </View>
 
                 <StatusBadge
-                  label={coverageTone === "ok" ? "Covered" : coverageTone === "warn" ? "Watch" : "At risk"}
+                  label={
+                    coverageTone === "ok"
+                      ? "Covered"
+                      : coverageTone === "warn"
+                        ? "Watch"
+                        : "At risk"
+                  }
                   tone={coverageTone}
                 />
               </View>
@@ -333,7 +346,10 @@ export function CommandCenterReviewLayout({
                   </Text>
                 </View>
 
-                <StatusBadge label={riskLabel(riskIndex)} tone={riskTone(riskIndex)} />
+                <StatusBadge
+                  label={riskLabel(riskIndex)}
+                  tone={riskTone(riskIndex)}
+                />
               </View>
 
               <View className="gap-2">
@@ -358,7 +374,10 @@ export function CommandCenterReviewLayout({
                     label={`${vesselsHealth.data.warning} warning`}
                     tone="warn"
                   />
-                  <StatusBadge label={`${vesselsHealth.data.ok} healthy`} tone="ok" />
+                  <StatusBadge
+                    label={`${vesselsHealth.data.ok} healthy`}
+                    tone="ok"
+                  />
                 </View>
               </View>
             </View>
@@ -402,14 +421,19 @@ export function CommandCenterReviewLayout({
                 <Text className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
                   Next attention point
                 </Text>
-                <Text className="mt-2 text-sm font-semibold text-textMain" numberOfLines={2}>
+                <Text
+                  className="mt-2 text-sm font-semibold text-textMain"
+                  numberOfLines={2}
+                >
                   {commandAlerts[0].title}
                 </Text>
                 <Text className="mt-1 text-xs text-muted" numberOfLines={1}>
                   {commandAlerts[0].subtitle}
                 </Text>
                 <Text className="mt-2 text-xs text-muted">
-                  {commandAlerts[0].date ? formatDate(commandAlerts[0].date) : "No due date"}
+                  {commandAlerts[0].date
+                    ? formatDate(commandAlerts[0].date)
+                    : "No due date"}
                 </Text>
               </View>
             ) : (
@@ -463,11 +487,17 @@ export function CommandCenterReviewLayout({
                               {item.reasons[0] ?? "All good"}
                             </Text>
                           </View>
-                          <StatusBadge label={item.status} tone={vesselTone(item.status)} />
+                          <StatusBadge
+                            label={item.status}
+                            tone={vesselTone(item.status)}
+                          />
                         </View>
 
                         <View className="flex-row flex-wrap gap-2">
-                          <InlineDataPill label="Crew" value={String(item.activeCrew)} />
+                          <InlineDataPill
+                            label="Crew"
+                            value={String(item.activeCrew)}
+                          />
                           <InlineDataPill
                             label="Certs"
                             value={`${item.expiredCerts}/${item.expiringCerts}`}
@@ -486,14 +516,20 @@ export function CommandCenterReviewLayout({
                           </Text>
                         </View>
                         <View className="flex-1 pr-3">
-                          <StatusBadge label={item.status} tone={vesselTone(item.status)} />
+                          <StatusBadge
+                            label={item.status}
+                            tone={vesselTone(item.status)}
+                          />
                         </View>
-                        <TableCell className="flex-[0.8]">{String(item.activeCrew)}</TableCell>
+                        <TableCell className="flex-[0.8]">
+                          {String(item.activeCrew)}
+                        </TableCell>
                         <TableCell className="flex-[1.2]">
                           {item.expiredCerts} exp. / {item.expiringCerts} soon
                         </TableCell>
                         <TableCell className="flex-[1.2]">
-                          {item.overdueMaintenance} over / {item.dueSoonMaintenance} due
+                          {item.overdueMaintenance} over /{" "}
+                          {item.dueSoonMaintenance} due
                         </TableCell>
                         <TableCell className="flex-[1.6]">
                           {item.reasons[0] ?? "All good"}
@@ -561,7 +597,10 @@ export function CommandCenterReviewLayout({
 
                   <View className="flex-1 gap-1">
                     <View className="flex-row items-start justify-between gap-3">
-                      <Text className="flex-1 text-sm font-semibold text-textMain" numberOfLines={2}>
+                      <Text
+                        className="flex-1 text-sm font-semibold text-textMain"
+                        numberOfLines={2}
+                      >
                         {alert.title}
                       </Text>
                       <StatusBadge
@@ -610,10 +649,16 @@ export function CommandCenterReviewLayout({
                 >
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1">
-                      <Text className="text-sm font-semibold text-textMain" numberOfLines={2}>
+                      <Text
+                        className="text-sm font-semibold text-textMain"
+                        numberOfLines={2}
+                      >
                         {item.certificateName}
                       </Text>
-                      <Text className="mt-1 text-xs text-muted" numberOfLines={1}>
+                      <Text
+                        className="mt-1 text-xs text-muted"
+                        numberOfLines={1}
+                      >
                         {item.assetName}
                       </Text>
                     </View>
@@ -623,7 +668,9 @@ export function CommandCenterReviewLayout({
                     />
                   </View>
                   <Text className="mt-2 text-xs text-muted">
-                    {item.expiryDate ? formatDate(item.expiryDate) : "No expiry"}
+                    {item.expiryDate
+                      ? formatDate(item.expiryDate)
+                      : "No expiry"}
                   </Text>
                 </Pressable>
               ))
@@ -670,14 +717,23 @@ export function CommandCenterReviewLayout({
                 >
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="flex-1">
-                      <Text className="text-sm font-semibold text-textMain" numberOfLines={2}>
+                      <Text
+                        className="text-sm font-semibold text-textMain"
+                        numberOfLines={2}
+                      >
                         {item.title}
                       </Text>
-                      <Text className="mt-1 text-xs text-muted" numberOfLines={1}>
+                      <Text
+                        className="mt-1 text-xs text-muted"
+                        numberOfLines={1}
+                      >
                         {item.assetName}
                       </Text>
                     </View>
-                    <StatusBadge label={item.status} tone={maintenanceTone(item.status)} />
+                    <StatusBadge
+                      label={item.status}
+                      tone={maintenanceTone(item.status)}
+                    />
                   </View>
                   <Text className="mt-2 text-xs text-muted">
                     {formatDate(item.dueDate)}
@@ -715,7 +771,11 @@ export function CommandCenterReviewLayout({
           {crewModule ? (
             <>
               <View className="flex-row flex-wrap gap-2">
-                <MetricChip label="Active" value={String(crew.data.active)} tone="ok" />
+                <MetricChip
+                  label="Active"
+                  value={String(crew.data.active)}
+                  tone="ok"
+                />
                 <MetricChip
                   label="Inactive"
                   value={String(crew.data.inactive)}
@@ -743,7 +803,10 @@ export function CommandCenterReviewLayout({
                     >
                       <View className="flex-row items-center justify-between gap-3">
                         <View className="flex-1">
-                          <Text className="text-sm font-semibold text-textMain" numberOfLines={1}>
+                          <Text
+                            className="text-sm font-semibold text-textMain"
+                            numberOfLines={1}
+                          >
                             {item.assetName}
                           </Text>
                           <Text className="mt-1 text-xs text-muted">
@@ -754,7 +817,13 @@ export function CommandCenterReviewLayout({
                         </View>
                         <StatusBadge
                           label={String(item.activeCount)}
-                          tone={item.activeCount === 0 ? "fail" : item.activeCount < 4 ? "warn" : "ok"}
+                          tone={
+                            item.activeCount === 0
+                              ? "fail"
+                              : item.activeCount < 4
+                                ? "warn"
+                                : "ok"
+                          }
                         />
                       </View>
                     </Pressable>
@@ -885,7 +954,13 @@ function StatusRail(props: {
           className={cn(
             "h-full rounded-full",
             ui.rail,
-            props.value === 0 ? "w-[6%] opacity-30" : props.value < 3 ? "w-[22%]" : props.value < 6 ? "w-[45%]" : "w-[72%]",
+            props.value === 0
+              ? "w-[6%] opacity-30"
+              : props.value < 3
+                ? "w-[22%]"
+                : props.value < 6
+                  ? "w-[45%]"
+                  : "w-[72%]",
           )}
         />
       </View>
@@ -893,16 +968,18 @@ function StatusRail(props: {
   );
 }
 
-function StatusBadge(props: {
-  label: string;
-  tone: CommandTone;
-}) {
+function StatusBadge(props: { label: string; tone: CommandTone }) {
   const ui = toneClasses(props.tone);
   return (
     <View className={cn("rounded-full border px-2.5 py-1", ui.badge)}>
       <View className="flex-row items-center gap-2">
         <View className={cn("h-2 w-2 rounded-full", ui.dot)} />
-        <Text className={cn("text-[10px] font-semibold uppercase tracking-[0.08em]", ui.text)}>
+        <Text
+          className={cn(
+            "text-[10px] font-semibold uppercase tracking-[0.08em]",
+            ui.text,
+          )}
+        >
           {props.label}
         </Text>
       </View>
@@ -910,10 +987,7 @@ function StatusBadge(props: {
   );
 }
 
-function InlineDataPill(props: {
-  label: string;
-  value: string;
-}) {
+function InlineDataPill(props: { label: string; value: string }) {
   return (
     <View className="rounded-full border border-shellLine bg-shellPanelSoft px-2.5 py-1.5">
       <Text className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
@@ -924,10 +998,7 @@ function InlineDataPill(props: {
   );
 }
 
-function TableHeader(props: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function TableHeader(props: { children: React.ReactNode; className?: string }) {
   return (
     <Text
       className={cn(
@@ -940,10 +1011,7 @@ function TableHeader(props: {
   );
 }
 
-function TableCell(props: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function TableCell(props: { children: React.ReactNode; className?: string }) {
   return (
     <Text className={cn("pr-3 text-xs text-muted", props.className)}>
       {props.children}
@@ -951,10 +1019,7 @@ function TableCell(props: {
   );
 }
 
-function ModuleOffCopy(props: {
-  label: string;
-  mutedBody?: boolean;
-}) {
+function ModuleOffCopy(props: { label: string; mutedBody?: boolean }) {
   return (
     <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft px-3 py-4">
       <Text className="text-sm font-semibold text-textMain">
@@ -973,15 +1038,10 @@ function ModuleOffCopy(props: {
   );
 }
 
-function EmptyPanelCopy(props: {
-  title: string;
-  body: string;
-}) {
+function EmptyPanelCopy(props: { title: string; body: string }) {
   return (
     <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft px-3 py-4">
-      <Text className="text-sm font-semibold text-textMain">
-        {props.title}
-      </Text>
+      <Text className="text-sm font-semibold text-textMain">{props.title}</Text>
       <Text className="mt-1 text-xs leading-[18px] text-muted">
         {props.body}
       </Text>

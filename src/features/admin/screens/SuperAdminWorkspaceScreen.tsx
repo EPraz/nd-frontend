@@ -1,36 +1,35 @@
-import { Button } from "@/src/components/ui/button/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/src/components/ui/card/Card";
-import PageHeader from "@/src/components/ui/pageHeader/PageHeader";
-import { Text } from "@/src/components/ui/text/Text";
 import { WorkspaceBackdrop } from "@/src/components/layout/AtmosphericBackdrop";
+import { Button } from "@/src/components/ui/button/Button";
+import { Card, CardContent } from "@/src/components/ui/card/Card";
+import {
+  EntryPortalSummaryItem,
+  EntryPortalSummaryStrip,
+  EntryPortalTopBar,
+} from "@/src/components/ui/entryPortal";
+import { RegistrySegmentedTabs } from "@/src/components/ui/registryWorkspace/RegistrySegmentedTabs";
+import { Text } from "@/src/components/ui/text/Text";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
-import type {
-  AdminProjectDto,
-  UserRole,
-} from "@/src/contracts/admin.contract";
+import type { AdminProjectDto, UserRole } from "@/src/contracts/admin.contract";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { KIND_LABEL, ROLE_LABEL } from "../admin.constants";
 import {
   CreateProjectPanel,
-  type CreateProjectFormValues,
   CreateUserPanel,
+  type CreateProjectFormValues,
   type CreateUserFormValues,
 } from "../components/AdminCreateForms";
 import {
   ProjectDirectoryTable,
   UserDirectoryTable,
 } from "../components/AdminDirectoryTables";
-import { AdminMetricCard } from "../components/AdminPrimitives";
 import { ProjectAccessModal } from "../components/ProjectAccessModal";
 import { useAdminWorkspace } from "../hooks/useAdminWorkspace";
+import { SuperAdminHeaderActions } from "./superAdminWorkspaceScreen/SuperAdminHeaderActions";
+
+type AdminWorkspaceTab = "projects" | "users" | "setup";
 
 export default function SuperAdminWorkspaceScreen() {
   const router = useRouter();
@@ -54,6 +53,8 @@ export default function SuperAdminWorkspaceScreen() {
   const [projectSearch, setProjectSearch] = useState("");
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
+  const [activeTab, setActiveTab] = useState<AdminWorkspaceTab>("projects");
+  const [setupTab, setSetupTab] = useState<"project" | "user">("project");
   const [accessProject, setAccessProject] = useState<AdminProjectDto | null>(
     null,
   );
@@ -75,6 +76,36 @@ export default function SuperAdminWorkspaceScreen() {
       admins: users.filter((user) => user.role === "ADMIN").length,
     }),
     [projects, users],
+  );
+
+  const summaryItems = useMemo<EntryPortalSummaryItem[]>(
+    () => [
+      {
+        label: "Projects",
+        value: String(summary.projects),
+        helper: "company workspaces available",
+        tone: "accent",
+      },
+      {
+        label: "Users",
+        value: String(summary.users),
+        helper: "company identities on file",
+        tone: "info",
+      },
+      {
+        label: "Assigned",
+        value: String(summary.assignedUsers),
+        helper: "users with project access",
+        tone: "ok",
+      },
+      {
+        label: "Admins",
+        value: String(summary.admins),
+        helper: "company-wide control holders",
+        tone: "warn",
+      },
+    ],
+    [summary.admins, summary.assignedUsers, summary.projects, summary.users],
   );
 
   const filteredProjects = useMemo(() => {
@@ -164,7 +195,11 @@ export default function SuperAdminWorkspaceScreen() {
   };
 
   const handleCreateUser = async (values: CreateUserFormValues) => {
-    if (!values.name.trim() || !values.email.trim() || !values.password.trim()) {
+    if (
+      !values.name.trim() ||
+      !values.email.trim() ||
+      !values.password.trim()
+    ) {
       show("Name, email, and password are required", "warning");
       return false;
     }
@@ -222,71 +257,43 @@ export default function SuperAdminWorkspaceScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="w-full gap-6 web:max-w-[1480px]">
-          <PageHeader
-            title="Super Admin Workspace"
-            subTitle="Create projects, create users, assign project access, and jump into project-level module settings when needed."
-            onRefresh={refresh}
-            actions={
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full"
-                onPress={() => router.replace("/projects")}
-              >
-                Back to workspaces
-              </Button>
-            }
+          <EntryPortalTopBar
+            companyName={session?.company?.name}
+            actions={<SuperAdminHeaderActions onRefresh={refresh} />}
           />
 
-          <Card className="border-shellLine bg-shellPanel">
-            <CardContent className="gap-6 py-6">
-              <View className="gap-3 web:flex-row web:items-start web:justify-between">
-                <View className="max-w-[820px] gap-2">
-                  <Text className="text-[11px] uppercase tracking-[0.24em] text-accent">
-                    Admin console
+          {/* <EntryPortalHeader
+            eyebrow="Admin control"
+            title="Admin workspace"
+            subtitle="Manage company workspaces, identities, and project visibility without leaving the same calm portal layer."
+            meta={
+              <>
+                <View className="rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2">
+                  <Text className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                    Company governance
                   </Text>
-                  <CardTitle className="text-2xl text-textMain">
-                    Company setup, access assignment, and module handoff
-                  </CardTitle>
-                  <CardDescription className="text-sm leading-6">
-                    This layer stays intentionally focused: create workspaces,
-                    create users, and control project membership. Project-level
-                    module and submodule switches stay inside each workspace.
-                  </CardDescription>
                 </View>
 
-                <View className="self-start rounded-full border border-accent/30 bg-accent/10 px-4 py-2">
-                  <Text className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+                <View className="rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2">
+                  <Text className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
                     RBAC pending by design
                   </Text>
                 </View>
-              </View>
-            </CardContent>
-          </Card>
+              </>
+            }
+          /> */}
 
-          <View className="gap-3 web:flex-row">
-            <AdminMetricCard
-              label="Projects"
-              value={String(summary.projects)}
-              caption="Company workspaces available"
-              tone="accent"
-            />
-            <AdminMetricCard
-              label="Users"
-              value={String(summary.users)}
-              caption="Company identities on file"
-            />
-            <AdminMetricCard
-              label="Assigned"
-              value={String(summary.assignedUsers)}
-              caption="Users with explicit project access"
-            />
-            <AdminMetricCard
-              label="Admins"
-              value={String(summary.admins)}
-              caption="Company-wide access holders"
-            />
-          </View>
+          <EntryPortalSummaryStrip items={summaryItems} />
+
+          <RegistrySegmentedTabs
+            tabs={[
+              { key: "projects", label: "Projects" },
+              { key: "users", label: "Users" },
+              { key: "setup", label: "Setup" },
+            ]}
+            activeKey={activeTab}
+            onChange={setActiveTab}
+          />
 
           {error ? (
             <Card className="border-destructive/30 bg-destructive/5">
@@ -299,67 +306,85 @@ export default function SuperAdminWorkspaceScreen() {
             </Card>
           ) : null}
 
-          <View className="gap-6 web:grid web:grid-cols-[minmax(0,1fr)_400px]">
-            <View className="gap-6">
-              <ProjectDirectoryTable
-                projects={filteredProjects}
-                totalProjects={projects.length}
-                loading={loading}
-                search={projectSearch}
-                onSearchChange={setProjectSearch}
-                onOpenProject={(projectId) =>
-                  router.push(`/projects/${projectId}/dashboard`)
-                }
-                onOpenSettings={(projectId) =>
-                  router.push(`/projects/${projectId}/settings`)
-                }
-                onManageAccess={openAccessModal}
-              />
+          {activeTab === "projects" ? (
+            <ProjectDirectoryTable
+              projects={filteredProjects}
+              totalProjects={projects.length}
+              loading={loading}
+              search={projectSearch}
+              onSearchChange={setProjectSearch}
+              onOpenProject={(projectId) =>
+                router.push(`/projects/${projectId}/dashboard`)
+              }
+              onOpenSettings={(projectId) =>
+                router.push(`/projects/${projectId}/settings`)
+              }
+              onManageAccess={openAccessModal}
+            />
+          ) : null}
 
-              <UserDirectoryTable
-                users={filteredUsers}
-                totalUsers={users.length}
-                projectsById={projectsById}
-                loading={loading}
-                search={userSearch}
-                roleFilter={roleFilter}
-                onSearchChange={setUserSearch}
-                onRoleFilterChange={setRoleFilter}
-              />
-            </View>
+          {activeTab === "users" ? (
+            <UserDirectoryTable
+              users={filteredUsers}
+              totalUsers={users.length}
+              projectsById={projectsById}
+              loading={loading}
+              search={userSearch}
+              roleFilter={roleFilter}
+              onSearchChange={setUserSearch}
+              onRoleFilterChange={setRoleFilter}
+            />
+          ) : null}
 
-            <View className="gap-6">
+          {activeTab === "setup" ? (
+            <View className="gap-6 web:max-w-[920px]">
               <Card className="border-shellLine bg-shellPanel">
                 <CardContent className="gap-3 py-6">
-                  <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-                    Setup rail
+                  <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
+                    Setup
                   </Text>
                   <Text className="text-xl font-semibold text-textMain">
-                    Add what the client needs, then verify access in the tables.
+                    Choose one creation flow, complete it, then verify it in the
+                    directories.
                   </Text>
                   <Text className="text-sm leading-6 text-muted">
-                    This keeps creation compact while the directory area remains
-                    the source of truth for current project membership.
+                    Keep creation sequential so projects, users, and access stay
+                    easy to follow.
                   </Text>
                 </CardContent>
               </Card>
 
-              <CreateProjectPanel
-                saving={savingProject}
-                onSubmit={handleCreateProject}
-                onInvalid={() => show("Project name is required", "warning")}
-              />
+              <View className="gap-4 rounded-[28px] border border-shellLine bg-shellPanel p-5">
+                <RegistrySegmentedTabs
+                  tabs={[
+                    { key: "project", label: "Create project" },
+                    { key: "user", label: "Create user" },
+                  ]}
+                  activeKey={setupTab}
+                  onChange={setSetupTab}
+                />
 
-              <CreateUserPanel
-                projects={projects}
-                saving={savingUser}
-                onSubmit={handleCreateUser}
-                onInvalid={() =>
-                  show("Name, email, and password are required", "warning")
-                }
-              />
+                {setupTab === "project" ? (
+                  <CreateProjectPanel
+                    saving={savingProject}
+                    onSubmit={handleCreateProject}
+                    onInvalid={() =>
+                      show("Project name is required", "warning")
+                    }
+                  />
+                ) : (
+                  <CreateUserPanel
+                    projects={projects}
+                    saving={savingUser}
+                    onSubmit={handleCreateUser}
+                    onInvalid={() =>
+                      show("Name, email, and password are required", "warning")
+                    }
+                  />
+                )}
+              </View>
             </View>
-          </View>
+          ) : null}
         </View>
       </ScrollView>
 

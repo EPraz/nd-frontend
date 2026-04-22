@@ -1,5 +1,5 @@
 import { useProjectData } from "@/src/context/ProjectDataProvider";
-import { CertificateDto } from "@/src/features/certificates/contracts/certificates.contract";
+import { CertificateDto } from "@/src/features/certificates/shared/contracts/certificates.contract";
 import { useMemo } from "react";
 
 export type OverviewKpisData = {

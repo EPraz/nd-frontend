@@ -15,6 +15,7 @@ type ToolbarSelectProps<T extends string> = {
   onToggle: () => void;
   onChange: (value: T) => void;
   renderLabel: (value: T) => string;
+  triggerIconName?: keyof typeof Ionicons.glyphMap;
   minWidth?: number;
 };
 
@@ -50,12 +51,21 @@ export function ToolbarSelect<T extends string>(props: ToolbarSelectProps<T>) {
       <View ref={anchorRef} collapsable={false}>
         <Pressable
           onPress={handleToggle}
-      className="min-h-11 flex-row items-center justify-between gap-3 rounded-full border border-shellLine bg-shellGlass px-4 py-2 web:backdrop-blur-md"
+          className="min-h-11 flex-row items-center justify-between gap-3 rounded-full border border-shellLine bg-shellGlass px-4 py-2 web:backdrop-blur-md"
           style={props.minWidth ? { minWidth: props.minWidth } : undefined}
         >
-          <Text className="text-[13px] font-medium text-textMain">
-            {props.renderLabel(props.value)}
-          </Text>
+          <View className="flex-row items-center gap-2">
+            {props.triggerIconName ? (
+              <Ionicons
+                name={props.triggerIconName}
+                size={14}
+                color="rgba(231,237,247,0.95)"
+              />
+            ) : null}
+            <Text className="text-[13px] font-medium text-textMain">
+              {props.renderLabel(props.value)}
+            </Text>
+          </View>
 
           <Ionicons
             name={props.open ? "chevron-up" : "chevron-down"}

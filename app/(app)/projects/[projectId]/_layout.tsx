@@ -1,4 +1,10 @@
-import { Header, Loading, Sidebar, Text, WorkspaceBackdrop } from "@/src/components";
+import {
+  Header,
+  Loading,
+  Sidebar,
+  Text,
+  WorkspaceBackdrop,
+} from "@/src/components";
 import { sidebarItems, SidebarKey, sidebarRoutes } from "@/src/constants";
 import {
   ProjectDataProvider,
@@ -8,10 +14,14 @@ import {
   useSessionContext,
 } from "@/src/context";
 import { getGuardedProjectModule } from "@/src/helpers/projectEntitlements";
-import { useTheme } from "@/src/context/ThemeProvider";
 import { useProject } from "@/src/hooks";
 import { BlurView } from "expo-blur";
-import { Slot, useLocalSearchParams, usePathname, useRouter } from "expo-router";
+import {
+  Slot,
+  useLocalSearchParams,
+  usePathname,
+  useRouter,
+} from "expo-router";
 import { useState } from "react";
 import {
   Platform,
@@ -26,13 +36,11 @@ export default function ProjectShellLayout() {
   const pid = typeof projectId === "string" ? projectId : "";
 
   const { project, loading, error, refresh } = useProject(pid);
-  const { toggleTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
 
   const [collapsed, setCollapsed] = useState(true);
-  const { signOut } = useSessionContext();
 
   const isDesktop = Platform.OS === "web" && width >= 1024;
   const showOverlay = !collapsed && !isDesktop;
@@ -95,8 +103,6 @@ export default function ProjectShellLayout() {
             projectId={pid}
             projectKind={project.kind}
             showOverlay={showOverlay}
-            signOut={signOut}
-            toggleTheme={toggleTheme}
           />
         </ProjectDataProvider>
       </ProjectEntitlementsProvider>
@@ -111,8 +117,6 @@ function ProjectShellScaffold({
   projectId,
   projectKind,
   showOverlay,
-  signOut,
-  toggleTheme,
 }: {
   collapsed: boolean;
   handleSetCollapse: (value: boolean) => void;
@@ -121,12 +125,12 @@ function ProjectShellScaffold({
   projectId: string;
   projectKind: Parameters<typeof sidebarItems>[0];
   showOverlay: boolean;
-  signOut: () => Promise<void>;
-  toggleTheme: () => void;
 }) {
   const router = useRouter();
   const { session } = useSessionContext();
-  const { isModuleEnabled, loading: entitlementsLoading } = useProjectEntitlements();
+  const { isModuleEnabled, loading: entitlementsLoading } =
+    useProjectEntitlements();
+  const shellInset = isDesktop ? (collapsed ? 76 : 136) : 0;
 
   const routes = sidebarRoutes(projectId, projectKind);
   const items = sidebarItems(projectKind, {
@@ -172,42 +176,40 @@ function ProjectShellScaffold({
         </Pressable>
       )}
 
-      <Header collapsed={collapsed} handleSetCollapse={handleSetCollapse} />
+      <Header
+        collapsed={collapsed}
+        handleSetCollapse={handleSetCollapse}
+        onOpenWorkspaces={() => router.push("/projects")}
+      />
 
       <Sidebar
         collapsed={collapsed}
         activeKey={activeKey}
         items={items}
         onChangeActive={handleChangeActive}
-        onToggleTheme={toggleTheme}
-        onLogout={signOut}
         handleSetCollapse={handleSetCollapse}
       />
 
       <View className="flex-1 flex-row">
         <ScrollView
-          className="flex-1"
-          contentContainerClassName="p-4 gap-4 web:p-6 web:lg:ml-[92px]"
+          className="flex-1 web:transition-all web:duration-200"
+          contentContainerClassName="p-4 gap-4 web:p-6"
+          contentContainerStyle={
+            isDesktop ? { marginLeft: shellInset } : undefined
+          }
         >
-          <View className="flex-row justify-start">
-            <Pressable
-              onPress={() => router.push('/projects')}
-              className="h-10 flex-row items-center gap-2 rounded-full border border-shellLine bg-shellPanelSoft px-4 web:backdrop-blur-md"
-            >
-              <Text className="text-sm font-semibold text-textMain">
-                Back to workspaces
-              </Text>
-            </Pressable>
-          </View>
-
           {guardedModule && entitlementsLoading ? (
             <Loading fullScreen className="bg-transparent" />
           ) : blockedModule ? (
             <BlockedModuleState
               label={blockedModule}
               canManageProject={session?.role === "ADMIN"}
-              onOpenDashboard={() => router.push(`/projects/${projectId}/dashboard`)}
-              onOpenSettings={() => router.push(`/projects/${projectId}/settings`)}
+              onOpenDashboard={() =>
+                router.push(`/projects/${projectId}/dashboard`)
+              }
+              onOpenSettings={() =>
+                router.push(`/projects/${projectId}/settings`)
+              }
             />
           ) : (
             <Slot />

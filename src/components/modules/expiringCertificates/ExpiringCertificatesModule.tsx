@@ -3,7 +3,7 @@ import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvide
 import type {
   CertificateDto,
   CertificateStatus,
-} from "@/src/features/certificates/contracts/certificates.contract";
+} from "@/src/features/certificates/shared/contracts/certificates.contract";
 import { formatDate } from "@/src/helpers";
 import { useCertificatesData } from "@/src/hooks/dashboard/useCertificatesData";
 import { cn } from "@/src/lib/utils";

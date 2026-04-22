@@ -1,4 +1,4 @@
-import { VesselProfileDto } from "../features/vessels/contracts/vessel.contract";
+import { VesselProfileDto } from "../features/vessels/core";
 
 export type AssetType = "VESSEL" | "STORE" | "BARBERSHOP" | "VEHICLE" | "OTHER";
 

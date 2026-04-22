@@ -1,4 +1,4 @@
-import { MaintenanceByProjectScreen } from "@/src/features/maintenance/screens";
+import { MaintenanceByProjectScreen } from "@/src/features/maintenance";
 
 const index = () => {
   return <MaintenanceByProjectScreen />;

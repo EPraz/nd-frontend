@@ -45,7 +45,6 @@ const buttonVariants = cva(
           Platform.select({ web: "hover:bg-accent/15" }),
         ),
 
-        // ✅ NEW: soft/tinted pills (QuickView header actions)
         soft: cn(
           "border border-shellLine bg-shellPanelSoft active:bg-shellSoft",
           Platform.select({ web: "hover:bg-shellSoft web:backdrop-blur-md" }),
@@ -65,11 +64,12 @@ const buttonVariants = cva(
         sm: "h-9 px-3",
         lg: "h-11 px-6",
 
+        iconSm: "h-8 w-8 rounded-full",
         icon: "h-9 w-9 rounded-full",
         iconLg: "h-10 w-10 rounded-full",
 
         pill: "h-12 rounded-full px-6",
-        // ✅ NEW: para acciones compactas tipo chip
+        pillXs: "h-8 rounded-full px-3",
         pillSm: "h-9 rounded-full px-4",
       },
     },
@@ -91,7 +91,6 @@ const buttonTextVariants = cva("text-sm font-semibold", {
       link: "text-accent",
       icon: "text-textMain",
       iconAccent: "text-textMain",
-
       soft: "text-textMain",
       softAccent: "text-accent",
       softDestructive: "text-destructive",
@@ -100,9 +99,11 @@ const buttonTextVariants = cva("text-sm font-semibold", {
       default: "",
       sm: "",
       lg: "",
+      iconSm: "",
       icon: "",
       iconLg: "",
       pill: "",
+      pillXs: "text-[12px]",
       pillSm: "",
     },
   },
@@ -135,11 +136,7 @@ function Button({
 }: ButtonProps) {
   const isDisabled = Boolean(disabled || loading);
 
-  const resolvedSpinnerColor =
-    spinnerColor ??
-    (variant === "default" || variant === "destructive"
-      ? "hsl(var(--text-main))"
-      : "hsl(var(--text-main))");
+  const resolvedSpinnerColor = spinnerColor ?? "hsl(var(--text-main))";
 
   return (
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>

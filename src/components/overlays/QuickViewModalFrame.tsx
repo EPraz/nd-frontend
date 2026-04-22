@@ -5,35 +5,24 @@ import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "../ui";
 
 type Props = {
-  /** nombre del portal (único por modal) */
   portalName: string;
-
-  /** control */
   open: boolean;
   onClose: () => void;
-
-  /** header */
+  eyebrow?: string;
   title: string;
   subtitle?: string;
-
-  /** right side actions in header (icon buttons, delete/edit/close, etc.) */
   headerActions?: React.ReactNode;
-
-  /** main content */
   children: React.ReactNode;
-
-  /** footer actions (Close / Open Full Page, etc.) */
   footer?: React.ReactNode;
-
-  /** layout */
-  maxWidth?: number; // default 980
-  scroll?: boolean; // default true
+  maxWidth?: number;
+  scroll?: boolean;
 };
 
 export default function QuickViewModalFrame({
   portalName,
   open,
   onClose,
+  eyebrow,
   title,
   subtitle,
   headerActions,
@@ -45,31 +34,39 @@ export default function QuickViewModalFrame({
   if (!open) return null;
 
   const content = (
-    <View className="gap-5">
-      {/* Header */}
-      <View className="web:flex-row web:items-start web:justify-between items-start gap-3">
-        <View className="gap-1">
-          <Text className="text-textMain text-[18px] font-semibold">
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text className="text-muted text-[13px] leading-[18px] max-w-xl">
-              {subtitle}
+    <View className="gap-3">
+      <View className="gap-2 border-b border-shellLine pb-2">
+        <View className="items-start gap-2 web:flex-row web:items-start web:justify-between">
+          <View className="min-w-0 flex-1 gap-1">
+            {eyebrow ? (
+              <Text className="text-[11px] uppercase tracking-[0.24em] text-accent">
+                {eyebrow}
+              </Text>
+            ) : null}
+
+            <Text className="text-[16px] font-semibold text-textMain">
+              {title}
             </Text>
+
+            {subtitle ? (
+              <Text className="max-w-2xl text-[12px] leading-[16px] text-muted">
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
+
+          {headerActions ? (
+            <View className="flex-row items-center gap-2">{headerActions}</View>
           ) : null}
         </View>
-
-        {headerActions ? (
-          <View className="flex-row items-center gap-3">{headerActions}</View>
-        ) : null}
       </View>
 
-      {/* Body */}
-      <View className="gap-5">{children}</View>
+      <View className="gap-3">{children}</View>
 
-      {/* Footer */}
       {footer ? (
-        <View className="flex-row justify-end gap-3">{footer}</View>
+        <View className="flex-row justify-end gap-2 border-t border-shellLine pt-2">
+          {footer}
+        </View>
       ) : null}
     </View>
   );
@@ -80,26 +77,26 @@ export default function QuickViewModalFrame({
         className="absolute inset-0 z-50"
         style={{ pointerEvents: "box-none" }}
       >
-        {/* Backdrop */}
         <Pressable onPress={onClose} className="absolute inset-0">
           <BlurView intensity={20} tint="dark" className="absolute inset-0" />
           <View className="absolute inset-0 bg-black/45" />
         </Pressable>
 
-        {/* Modal Container */}
-        <View className="flex-1 items-center justify-center p-4 web:p-6">
+        <View className="flex-1 items-center justify-center p-2 web:p-3">
           <View
-            style={{ maxWidth }}
+            style={{ maxWidth, maxHeight: "90%" }}
             className={[
-              "w-full rounded-[26px] border p-5",
+              "min-h-0 w-full rounded-[24px] border p-4",
               "bg-shellPanel border-shellLine web:backdrop-blur-md",
               "shadow-[0_20px_80px_rgba(0,0,0,0.55)]",
             ].join(" ")}
           >
             {scroll ? (
               <ScrollView
+                className="min-h-0"
+                style={{ maxHeight: "100%" }}
                 showsVerticalScrollIndicator={false}
-                contentContainerClassName="gap-5"
+                contentContainerClassName="gap-3"
               >
                 {content}
               </ScrollView>

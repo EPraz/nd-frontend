@@ -1,6 +1,6 @@
 import { useDashboardScope } from "@/src/context/DashboardScopeProvider";
 import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
-import type { MaintenanceStatus } from "@/src/features/maintenance/contracts/maintenance.contract";
+import type { MaintenanceStatus } from "@/src/features/maintenance/shared/contracts/maintenance.contract";
 import { formatDate } from "@/src/helpers";
 import { useMaintenanceOverviewData } from "@/src/hooks/dashboard/useMaintenanceOverviewData";
 import { cn } from "@/src/lib/utils";

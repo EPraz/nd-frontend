@@ -1,4 +1,4 @@
-import { CreateCertificateScreen } from "@/src/features/certificates";
+import { CreateCertificateScreen } from "@/src/features/certificates/core";
 
 const create = () => {
   return <CreateCertificateScreen />;

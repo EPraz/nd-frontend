@@ -1,5 +1,4 @@
-import { VesselShellLayout } from "@/src/features/vessels/components/vesselShell/VesselShellLayout";
-import { VesselShellProvider } from "@/src/features/vessels/context/VesselShellProvider";
+import { VesselShellLayout, VesselShellProvider } from "@/src/features/vessels/shared";
 import { Slot, useLocalSearchParams } from "expo-router";
 
 export default function VesselLayout() {

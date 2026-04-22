@@ -43,16 +43,17 @@ const SidebarItem = ({
   return (
     <Pressable
       className={[
-        "flex-row justify-start items-center",
+        "flex-row items-center justify-start rounded-[16px] px-1 py-1",
         disabled ? "opacity-45" : "opacity-100",
         disabled ? "web:cursor-not-allowed" : "web:cursor-pointer",
+        active ? "bg-shellPanelSoft" : "bg-transparent",
       ].join(" ")}
       onPress={disabled ? undefined : onPress}
       disabled={disabled}
     >
       <View
         className={[
-          "w-11 h-11 rounded-full items-center justify-center border",
+          "h-8 w-8 items-center justify-center rounded-full border",
           iconContainerClassName
             ? iconContainerClassName
             : active
@@ -70,15 +71,15 @@ const SidebarItem = ({
         )}
       </View>
 
-      <View className={collapsed ? "w-0 overflow-hidden" : "flex-1"}>
+      <View className={collapsed ? "w-0 overflow-hidden" : "min-w-0 flex-1"}>
         <SidebarLabel
           numberOfLines={1}
           className={[
-            "select-none pl-2",
+            "select-none pl-2 text-[13px]",
             labelClassName
               ? labelClassName
               : active
-                ? "text-textMain"
+                ? "text-textMain font-semibold"
                 : "text-muted",
             "web:transition-opacity web:duration-150",
             collapsed ? "opacity-0 w-0" : "opacity-100 w-auto",
@@ -88,7 +89,10 @@ const SidebarItem = ({
         </SidebarLabel>
 
         {showText && disabled ? (
-          <SidebarLabel className="text-[11px] text-muted/70 pl-2">
+          <SidebarLabel
+            numberOfLines={1}
+            className="pl-2 text-[10px] text-muted/70"
+          >
             Coming soon
           </SidebarLabel>
         ) : null}

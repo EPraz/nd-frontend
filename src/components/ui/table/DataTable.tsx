@@ -43,15 +43,17 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
   const isMobile = width < 768;
 
   return (
-    <View className="flex gap-5 rounded-[20px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
-      <View className="flex-row items-center justify-between gap-10">
+    <View className="flex gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
+      <View className="flex-row items-end justify-between gap-6">
         <View className="flex-1 gap-1">
-          <Text className="text-[20px] leading-[130%] font-semibold text-textMain">
+          <Text className="text-[18px] leading-[130%] font-semibold text-textMain">
             {props.title}
           </Text>
 
           {props.subtitleRight ? (
-            <Text className="text-[12px] text-muted">{props.subtitleRight}</Text>
+            <Text className="text-[11px] text-muted">
+              {props.subtitleRight}
+            </Text>
           ) : null}
         </View>
 
@@ -64,35 +66,39 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
 
       {props.toolbarContent ? <View>{props.toolbarContent}</View> : null}
 
-      <View className="flex-1">
-        {props.isLoading ? (
-          <Text className="text-sm text-muted">Loading…</Text>
-        ) : props.error ? (
-          <View className="gap-3 rounded-xl border border-shellLine bg-shellPanelSoft p-4">
-            <Text className="text-sm text-destructive">{props.error}</Text>
-
-            <Pressable
-              onPress={props.onRetry}
-              className="self-start rounded-full px-4 py-2 bg-accent/10 border border-accent/25"
-            >
-              <Text className="text-accent font-semibold">Retry</Text>
-            </Pressable>
-          </View>
-        ) : props.data.length === 0 ? (
-          <View className="rounded-xl border border-shellLine bg-shellPanelSoft p-4">
-            <Text className="text-sm text-muted">
-              {props.emptyText ?? "No data found."}
-            </Text>
-          </View>
-        ) : isMobile ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ minWidth: props.minWidth ?? 860 }}>
-              <TableList {...props} />
+      <View className="overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft/75">
+        <View className="flex-1">
+          {props.isLoading ? (
+            <View className="px-5 py-6">
+              <Text className="text-sm text-muted">Loading…</Text>
             </View>
-          </ScrollView>
-        ) : (
-          <TableList {...props} />
-        )}
+          ) : props.error ? (
+            <View className="gap-3 px-5 py-5">
+              <Text className="text-sm text-destructive">{props.error}</Text>
+
+              <Pressable
+                onPress={props.onRetry}
+                className="self-start rounded-full border border-accent/25 bg-accent/10 px-4 py-2"
+              >
+                <Text className="font-semibold text-accent">Retry</Text>
+              </Pressable>
+            </View>
+          ) : props.data.length === 0 ? (
+            <View className="px-5 py-5">
+              <Text className="text-sm text-muted">
+                {props.emptyText ?? "No data found."}
+              </Text>
+            </View>
+          ) : isMobile ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ minWidth: props.minWidth ?? 860 }}>
+                <TableList {...props} />
+              </View>
+            </ScrollView>
+          ) : (
+            <TableList {...props} />
+          )}
+        </View>
       </View>
     </View>
   );
@@ -122,10 +128,10 @@ function TableList<Row>(props: DataTableProps<Row>) {
 
 function Header<Row>(props: { columns: Column<Row>[] }) {
   return (
-    <TextClassContext.Provider value="text-muted text-[12px] tracking-wide uppercase">
-      <View className="flex-row items-center w-full h-[48px] rounded-tr-2xl rounded-tl-2xl border-b border-shellLine bg-shellPanelSoft">
+    <TextClassContext.Provider value="text-muted text-[11px] tracking-[0.24em] uppercase">
+      <View className="flex-row items-center w-full h-[48px] border-b border-shellLine bg-shellChromeSoft/75">
         {props.columns.map((c) => (
-          <Text key={c.key} className="px-3 py-2" style={{ flex: c.flex }}>
+          <Text key={c.key} className="px-4 py-2" style={{ flex: c.flex }}>
             {c.header}
           </Text>
         ))}
@@ -147,7 +153,7 @@ function RowItem<Row>(props: {
   const clickable = Boolean(props.onRowPress);
 
   const zebraBg =
-    props.index % 2 === 0 ? "bg-shellPanelSoft" : "bg-shellPanel";
+    props.index % 2 === 0 ? "bg-transparent" : "bg-shellPanelSoft/30";
 
   const renderRow = (state?: PressState) => {
     const hovered = Boolean(state?.hovered);
@@ -164,9 +170,9 @@ function RowItem<Row>(props: {
       <TextClassContext.Provider value={textClass}>
         <View
           className={[
-            "relative flex-row items-center w-full h-[65px] border-b border-shellLine transition-colors",
+            "relative flex-row items-center w-full min-h-[68px] border-b border-shellLine transition-colors",
             zebraBg,
-            hovered ? "bg-accent/40" : "",
+            hovered ? "bg-shellCardHover/90" : "",
             hovered ? "web:z-[300]" : "web:z-[1]",
             pressed ? "opacity-95" : "",
             props.selected
@@ -175,7 +181,7 @@ function RowItem<Row>(props: {
           ].join(" ")}
         >
           {props.columns.map((c) => (
-            <View key={c.key} className="p-3" style={{ flex: c.flex }}>
+            <View key={c.key} className="px-4 py-3" style={{ flex: c.flex }}>
               {c.render(props.row)}
             </View>
           ))}

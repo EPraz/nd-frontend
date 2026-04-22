@@ -1,18 +1,15 @@
 import React, { createContext, useContext, useMemo } from "react";
 import type { AssetDto } from "../contracts/assets.contract";
-import type { CertificateDto } from "../features/certificates/contracts/certificates.contract";
-import { useCertificatesByProject } from "../features/certificates/hooks/useCertificatesByProject";
-import type { CrewDto } from "../features/crew/contracts";
-import { useCrewByProject } from "../features/crew/hooks/useCrewByProject";
-import type { FuelDto } from "../features/fuel/contracts/fuel.contract";
-import { useFuelByProject } from "../features/fuel/hooks/useFuelByProject";
-import type { MaintenanceDto } from "../features/maintenance/contracts";
-import { useMaintenanceByProject } from "../features/maintenance/hooks/useMaintenanceByProject";
-import { useVessels } from "../features/vessels/hooks/useVessels";
+import type { CertificateDto } from "../features/certificates/shared/contracts/certificates.contract";
+import { useCertificatesByProject } from "../features/certificates/core/hooks/useCertificatesByProject";
+import type { CrewDto } from "../features/crew";
+import { useCrewByProject } from "../features/crew";
+import type { FuelDto } from "../features/fuel/shared/contracts/fuel.contract";
+import { useFuelByProject } from "../features/fuel/core/hooks/useFuelByProject";
+import type { MaintenanceDto } from "../features/maintenance/shared/contracts";
+import { useMaintenanceByProject } from "../features/maintenance/core/hooks/useMaintenanceByProject";
+import { useVessels } from "../features/vessels/core";
 import { useProjectContext } from "./ProjectProvider";
-
-// Tipos: ajusta imports si ya tienes DTOs tipados
-
 type ProjectDataContextValue = {
   vessels: AssetDto[];
   certificates: CertificateDto[];

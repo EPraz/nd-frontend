@@ -63,9 +63,12 @@ export function ProjectDirectoryTable({
           <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
             Workspaces
           </Text>
-          <CardTitle className="text-xl text-textMain">Project directory</CardTitle>
+          <CardTitle className="text-xl text-textMain">
+            Project directory
+          </CardTitle>
           <CardDescription>
-            Assign users here, then manage module entitlements from each project.
+            Assign users here, then manage module entitlements from each
+            project.
           </CardDescription>
         </View>
 
@@ -102,7 +105,8 @@ export function ProjectDirectoryTable({
             <AdminTableMessage>Loading projects...</AdminTableMessage>
           ) : projects.length === 0 ? (
             <EmptyAdminState>
-              No projects matched this filter. Create a workspace or adjust the search.
+              No projects matched this filter. Create a workspace or adjust the
+              search.
             </EmptyAdminState>
           ) : (
             projects.map((project) => (
@@ -198,7 +202,9 @@ export function UserDirectoryTable({
           <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
             Identity
           </Text>
-          <CardTitle className="text-xl text-textMain">User directory</CardTitle>
+          <CardTitle className="text-xl text-textMain">
+            User directory
+          </CardTitle>
           <CardDescription>
             Company users and their current project visibility.
           </CardDescription>
@@ -275,7 +281,10 @@ export function UserDirectoryTable({
                   style={{ flex: 2.6 }}
                 >
                   {user.assignedProjectIds.length === 0 ? (
-                    <MiniTag label="No explicit project access" tone="warning" />
+                    <MiniTag
+                      label="No explicit project access"
+                      tone="warning"
+                    />
                   ) : (
                     user.assignedProjectIds.map((projectId) => (
                       <MiniTag
@@ -341,7 +350,7 @@ function AdminTableHeader({
 
 function AdminTableRow({ children }: { children: ReactNode }) {
   return (
-    <View className="min-h-[76px] flex-row items-center border-b border-shellLine bg-shellPanelSoft/80 last:border-b-0">
+    <View className="min-h-[46px] flex-row items-center border-b border-shellLine bg-shellPanelSoft/80 last:border-b-0">
       {children}
     </View>
   );

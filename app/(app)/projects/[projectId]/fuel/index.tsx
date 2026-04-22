@@ -1,4 +1,4 @@
-import FuelByProjectScreen from "@/src/features/fuel/screens/fuelByProjectScreen/FuelByProjectScreen";
+import { FuelByProjectScreen } from "@/src/features/fuel";
 
 const index = () => {
   return <FuelByProjectScreen />;

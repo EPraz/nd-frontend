@@ -1,4 +1,4 @@
-import { VesselsByProjectScreen } from "@/src/features/vessels";
+import { VesselsByProjectScreen } from "@/src/features/vessels/core";
 
 const index = () => {
   return <VesselsByProjectScreen />;

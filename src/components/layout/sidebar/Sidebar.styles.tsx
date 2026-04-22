@@ -19,7 +19,7 @@ export const SidebarIcon = (props: ComponentProps<typeof Ionicons>) => {
   return (
     <Ionicons
       {...props}
-      size={22}
+      size={14}
       className={cx("text-textMain", props.className as string)}
     />
   );
@@ -29,7 +29,7 @@ export const SidebarIconSelected = (props: ComponentProps<typeof Ionicons>) => {
   return (
     <Ionicons
       {...props}
-      size={22}
+      size={14}
       className={cx("text-accent", props.className as string)}
     />
   );
@@ -49,7 +49,7 @@ export const GroupSidebarMenu = ({
   return (
     <View
       className={cx(
-        `${collapsed ? "rounded-full w-fit" : "rounded-[20px] w-full"} h-fit gap-3 border border-shellLine bg-shellChromeSoft p-1 web:backdrop-blur-md`,
+        `${collapsed ? "w-fit" : "w-full"} h-fit gap-1 border border-transparent bg-transparent p-0`,
         className as string,
       )}
     >
@@ -70,21 +70,21 @@ export const SidebarContainer = ({
   className,
   ...rest
 }: PropsWithChildren<SidebarContainerProps>) => {
-  const desktopWidth = collapsed ? "w-[92px]" : "w-[320px]";
-  const mobileWidth = "w-[85vw] max-w-[360px]";
+  const desktopWidth = collapsed ? "w-[76px]" : "w-[136px]";
+  const mobileWidth = "w-[74vw] max-w-[264px]";
   const mobileTransform = collapsed ? "-translate-x-full" : "translate-x-0";
-  const openTransitionWeb = Platform.OS === "web" && !collapsed;
+  const animateWeb = Platform.OS === "web";
 
   return (
     <View
       {...rest}
       className={cx(
         isDesktop ? desktopWidth : mobileWidth,
-        "absolute inset-y-0 left-0 z-20 flex flex-col items-center justify-between gap-[26px] overflow-hidden border-r border-shellLine bg-shellChrome p-[20px] web:backdrop-blur-xl",
-        openTransitionWeb ? "transition-all duration-200" : "",
+        "pt-3 absolute inset-y-0 left-0 z-20 flex flex-col items-center justify-start gap-3 overflow-hidden border-r border-shellLine bg-shellChrome p-[12px] web:backdrop-blur-xl",
+        animateWeb ? "transition-all duration-200" : "",
         !isDesktop ? mobileTransform : "",
-        !collapsed
-          ? "rounded-br-[20px] rounded-tr-[20px] shadow-lg web:shadow-black/40"
+        !isDesktop && !collapsed
+          ? "rounded-br-[18px] rounded-tr-[18px] shadow-lg web:shadow-black/40"
           : "",
         className,
       )}

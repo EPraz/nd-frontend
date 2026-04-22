@@ -1,4 +1,4 @@
-import { EditCertificateScreen } from "@/src/features/certificates";
+import { EditCertificateScreen } from "@/src/features/certificates/core";
 
 const edit = () => {
   return <EditCertificateScreen />;
