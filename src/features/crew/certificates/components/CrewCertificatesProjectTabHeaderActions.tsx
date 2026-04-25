@@ -1,4 +1,6 @@
 import { useToast } from "@/src/context/ToastProvider";
+import { useSessionContext } from "@/src/context/SessionProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { useCrewCertificatesProjectWorkspace } from "../hooks/useCrewCertificatesProjectWorkspace";
 import { CrewCertificatesProjectHeaderActions } from "./CrewCertificatesProjectHeaderActions";
 
@@ -8,6 +10,8 @@ export function CrewCertificatesProjectTabHeaderActions({
   projectId: string;
 }) {
   const { show } = useToast();
+  const { session } = useSessionContext();
+  const canGenerate = canUser(session, "OPERATIONAL_WRITE");
   const workspace = useCrewCertificatesProjectWorkspace(projectId);
 
   async function handleGenerate() {
@@ -28,6 +32,7 @@ export function CrewCertificatesProjectTabHeaderActions({
       onRefresh={workspace.refreshAll}
       onGenerate={handleGenerate}
       loading={workspace.generating}
+      canGenerate={canGenerate}
     />
   );
 }

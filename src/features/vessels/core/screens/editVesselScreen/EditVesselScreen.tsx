@@ -1,5 +1,6 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
 import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { pickImageUpload } from "@/src/helpers/pickImageUpload";
@@ -21,6 +22,7 @@ import { useDeleteVessel } from "../../hooks/useDeleteVessel";
 import { useUpdateVesselProfile } from "../../hooks/useUpdateVesselProfile";
 import { useVessel } from "../../hooks/useVessel";
 import { useVesselProfile } from "../../hooks/useVesselProfile";
+import { canUser } from "@/src/security/rolePermissions";
 import {
   buildVesselEditorValues,
   canSubmitVesselEditor,
@@ -37,6 +39,7 @@ import {
 export default function EditVesselScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -45,6 +48,8 @@ export default function EditVesselScreen() {
   const pid = String(projectId);
   const aid = String(assetId);
   const backHref = `/projects/${pid}/vessels/${aid}`;
+  const canEditVessel = canUser(session, "OPERATIONAL_WRITE");
+  const canDeleteVessel = canUser(session, "OPERATIONAL_SOFT_DELETE");
 
   const vesselState = useVessel(pid, aid);
   const profileState = useVesselProfile(pid, aid);
@@ -197,6 +202,35 @@ export default function EditVesselScreen() {
     );
   }
 
+  if (!canEditVessel) {
+    return (
+      <View className="flex-1 p-4 web:p-6">
+        <View className="mx-auto w-full max-w-[960px] gap-5 rounded-[24px] border border-shellLine bg-shellPanel p-6">
+          <View className="gap-2">
+            <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
+              Permission required
+            </Text>
+            <Text className="text-2xl font-semibold text-textMain">
+              Vessel editing is restricted
+            </Text>
+            <Text className="text-[13px] leading-6 text-muted">
+              Your role can view this vessel, but cannot edit operational
+              records. Backend policy also denies direct update requests.
+            </Text>
+          </View>
+          <Button
+            variant="outline"
+            size="pillSm"
+            className="self-start rounded-full"
+            onPress={goBack}
+          >
+            Back to vessel
+          </Button>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1">
       <ScrollView
@@ -236,21 +270,23 @@ export default function EditVesselScreen() {
                   Reset
                 </Button>
 
-                <Button
-                  variant="softDestructive"
-                  size="pillSm"
-                  onPress={() => setIsDeleteOpen(true)}
-                  disabled={isBusy}
-                  rightIcon={
-                    <Ionicons
-                      name="trash-outline"
-                      size={15}
-                      className="text-destructive"
-                    />
-                  }
-                >
-                  Delete
-                </Button>
+                {canDeleteVessel ? (
+                  <Button
+                    variant="softDestructive"
+                    size="pillSm"
+                    onPress={() => setIsDeleteOpen(true)}
+                    disabled={isBusy}
+                    rightIcon={
+                      <Ionicons
+                        name="trash-outline"
+                        size={15}
+                        className="text-destructive"
+                      />
+                    }
+                  >
+                    Delete
+                  </Button>
+                ) : null}
 
                 <Button
                   variant="default"

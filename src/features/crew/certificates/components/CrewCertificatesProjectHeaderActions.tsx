@@ -4,12 +4,14 @@ type Props = {
   onRefresh: () => void;
   onGenerate: () => void;
   loading: boolean;
+  canGenerate: boolean;
 };
 
 export function CrewCertificatesProjectHeaderActions({
   onRefresh,
   onGenerate,
   loading,
+  canGenerate,
 }: Props) {
   return (
     <>
@@ -21,13 +23,15 @@ export function CrewCertificatesProjectHeaderActions({
         Refresh
       </RegistryHeaderActionButton>
 
-      <RegistryHeaderActionButton
-        variant="outline"
-        onPress={onGenerate}
-        loading={loading}
-      >
-        Refresh requirements
-      </RegistryHeaderActionButton>
+      {canGenerate ? (
+        <RegistryHeaderActionButton
+          variant="outline"
+          onPress={onGenerate}
+          loading={loading}
+        >
+          Refresh requirements
+        </RegistryHeaderActionButton>
+      ) : null}
     </>
   );
 }

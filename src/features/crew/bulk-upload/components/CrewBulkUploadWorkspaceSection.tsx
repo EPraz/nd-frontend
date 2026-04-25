@@ -1,7 +1,12 @@
 import { ErrorState, Text } from "@/src/components";
-import { RegistrySummaryStrip } from "@/src/components/ui/registryWorkspace";
+import {
+  RegistrySummaryStrip,
+  RegistryWorkspaceSection,
+} from "@/src/components/ui/registryWorkspace";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { useVessels } from "@/src/features/vessels/core";
+import { canUser } from "@/src/security/rolePermissions";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -25,6 +30,8 @@ export function CrewBulkUploadWorkspaceSection({
 }) {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
+  const canCreateBulkUploadSession = canUser(session, "DOCUMENT_UPLOAD");
 
   const {
     vessels,
@@ -96,6 +103,14 @@ export function CrewBulkUploadWorkspaceSection({
   async function onCreateSession() {
     setLocalError(null);
 
+    if (!canCreateBulkUploadSession) {
+      show(
+        "Your role can review bulk upload sessions, but cannot upload workbooks.",
+        "error",
+      );
+      return;
+    }
+
     if (!file) {
       setLocalError("Select an .xlsx or .csv workbook first.");
       return;
@@ -138,26 +153,38 @@ export function CrewBulkUploadWorkspaceSection({
     <View className="gap-4">
       <RegistrySummaryStrip items={summaryItems} />
 
-      <CrewBulkUploadStartSessionSection
-        isWeb={isWeb}
-        file={file}
-        selectedVessel={selectedVessel}
-        vessels={vessels}
-        vesselsLoading={vesselsLoading}
-        vesselsError={vesselsError}
-        localError={localError}
-        uploadError={uploadError}
-        templateError={templateError}
-        uploading={uploading}
-        templateLoading={templateLoading}
-        onRetryVessels={refreshVessels}
-        onDownloadTemplate={onDownloadTemplate}
-        onPickWorkbook={onPickWorkbook}
-        onCreateSession={onCreateSession}
-        onSelectVessel={(value) =>
-          setValue("defaultAssetId", value.id, { shouldDirty: true })
-        }
-      />
+      {canCreateBulkUploadSession ? (
+        <CrewBulkUploadStartSessionSection
+          isWeb={isWeb}
+          file={file}
+          selectedVessel={selectedVessel}
+          vessels={vessels}
+          vesselsLoading={vesselsLoading}
+          vesselsError={vesselsError}
+          localError={localError}
+          uploadError={uploadError}
+          templateError={templateError}
+          uploading={uploading}
+          templateLoading={templateLoading}
+          onRetryVessels={refreshVessels}
+          onDownloadTemplate={onDownloadTemplate}
+          onPickWorkbook={onPickWorkbook}
+          onCreateSession={onCreateSession}
+          onSelectVessel={(value) =>
+            setValue("defaultAssetId", value.id, { shouldDirty: true })
+          }
+        />
+      ) : (
+        <RegistryWorkspaceSection
+          title="Bulk upload read-only"
+          subtitle="Your role can review existing sessions, but workbook intake is reserved for operational users."
+        >
+          <Text className="text-[13px] leading-[20px] text-muted">
+            Backend permissions still enforce this if someone attempts to call
+            the upload endpoint directly.
+          </Text>
+        </RegistryWorkspaceSection>
+      )}
 
       <CrewBulkUploadSessionsTable
         title="Existing sessions"

@@ -5,7 +5,9 @@ import {
   Loading,
   Text,
 } from "@/src/components";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, type ReactNode } from "react";
@@ -30,6 +32,7 @@ import {
 export default function CrewViewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, crewId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -40,6 +43,8 @@ export default function CrewViewScreen() {
   const vid = String(assetId);
   const cid = String(crewId);
   const crewHref = `/projects/${pid}/vessels/${vid}/crew`;
+  const canEditCrew = canUser(session, "OPERATIONAL_WRITE");
+  const canDeleteCrew = canUser(session, "OPERATIONAL_SOFT_DELETE");
 
   const { crew, loading, error, refresh } = useCrewById(pid, vid, cid);
   const {
@@ -91,6 +96,8 @@ export default function CrewViewScreen() {
             onEdit={goEdit}
             onOpenCertificates={goCertificates}
             onDelete={() => setIsDeleteOpen(true)}
+            canEdit={canEditCrew}
+            canDelete={canDeleteCrew}
             deleting={deleting}
           />
 

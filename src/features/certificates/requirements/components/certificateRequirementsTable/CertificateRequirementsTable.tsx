@@ -21,6 +21,7 @@ type Props = {
   error: string | null;
   onRetry: () => void;
   onUpload: (row: CertificateRequirementDto) => void;
+  canUpload?: boolean;
 };
 
 export function CertificateRequirementsTable(props: Props) {
@@ -36,6 +37,7 @@ export function CertificateRequirementsTable(props: Props) {
     error,
     onRetry,
     onUpload,
+    canUpload = true,
   } = props;
 
   const rows = useMemo(() => {
@@ -155,17 +157,19 @@ export function CertificateRequirementsTable(props: Props) {
               />
             ) : null}
 
-            <TableActionIcon
-              icon="cloud-upload-outline"
-              tone="accent"
-              tooltip="Upload certificate document"
-              onPress={() => onUpload(row)}
-            />
+            {canUpload ? (
+              <TableActionIcon
+                icon="cloud-upload-outline"
+                tone="accent"
+                tooltip="Upload certificate document"
+                onPress={() => onUpload(row)}
+              />
+            ) : null}
           </View>
         ),
       },
     ];
-  }, [onUpload, projectId, router]);
+  }, [canUpload, onUpload, projectId, router]);
 
   return (
     <DataTable<CertificateRequirementDto>

@@ -3,6 +3,7 @@ import { usePathname, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
 import { useProjectContext } from "@/src/context/ProjectProvider";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { VesselShellLayout } from "../VesselShellLayout";
 import { useVesselShell } from "../../context/VesselShellProvider";
 
@@ -19,6 +20,10 @@ jest.mock("@/src/context/ProjectEntitlementsProvider", () => ({
 
 jest.mock("@/src/context/ProjectProvider", () => ({
   useProjectContext: jest.fn(),
+}));
+
+jest.mock("@/src/context/SessionProvider", () => ({
+  useSessionContext: jest.fn(),
 }));
 
 jest.mock("../../context/VesselShellProvider", () => ({
@@ -72,6 +77,9 @@ describe("VesselShellLayout", () => {
     );
     (useProjectContext as jest.Mock).mockReturnValue({
       projectName: "Atlantic Ops",
+    });
+    (useSessionContext as jest.Mock).mockReturnValue({
+      session: { role: "ADMIN" },
     });
     (useProjectEntitlements as jest.Mock).mockReturnValue({
       isModuleEnabled: jest.fn(() => true),
@@ -151,5 +159,28 @@ describe("VesselShellLayout", () => {
     expect(screen.getByText("Module body")).toBeOnTheScreen();
     expect(screen.queryByText("Current layout")).toBeNull();
     expect(screen.queryByText("Review layout")).toBeNull();
+  });
+
+  it("GIVEN a viewer opens a disabled vessel submodule WHEN rendered SHOULD hide the settings shortcut", () => {
+    (usePathname as jest.Mock).mockReturnValue(
+      "/projects/project-atlantic/vessels/asset-1/certificates",
+    );
+    (useSessionContext as jest.Mock).mockReturnValue({
+      session: { role: "VIEWER" },
+    });
+    (useProjectEntitlements as jest.Mock).mockReturnValue({
+      isModuleEnabled: jest.fn((moduleKey: string) => moduleKey !== "certificates"),
+      loading: false,
+    });
+
+    render(
+      <VesselShellLayout>
+        <mockReactNative.Text>Module body</mockReactNative.Text>
+      </VesselShellLayout>,
+    );
+
+    expect(screen.getByText("Submodule unavailable")).toBeOnTheScreen();
+    expect(screen.getByText("Back to vessel overview")).toBeOnTheScreen();
+    expect(screen.queryByText("Open settings")).toBeNull();
   });
 });

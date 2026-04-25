@@ -10,6 +10,7 @@ import {
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
 import { RegistryTablePill } from "@/src/components/ui/table";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useVessels } from "@/src/features/vessels/core";
@@ -20,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 import { useCertificateRequirementsByAsset } from "@/src/features/certificates/requirements/hooks/useCertificateRequirementsByAsset";
+import { canUser } from "@/src/security/rolePermissions";
 import {
   documentStateTone,
   requirementStatusLabel,
@@ -91,6 +93,7 @@ function FlowStep({ step, title, description, tone }: FlowStepProps) {
 export default function CertificateUploadScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, requirementId } = useLocalSearchParams<{
     projectId: string;
     assetId?: string;
@@ -101,6 +104,7 @@ export default function CertificateUploadScreen() {
   const fixedAssetId = assetId ? String(assetId) : null;
   const rid = requirementId ? String(requirementId) : null;
   const isRequirementFlow = Boolean(fixedAssetId && rid);
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
 
   const {
     vessels,
@@ -163,7 +167,7 @@ export default function CertificateUploadScreen() {
   const uploading =
     requirementUpload.loading || extraUpload.loading || requirementsLoading;
   const uploadError = requirementUpload.error ?? extraUpload.error;
-  const canUpload = Boolean(file && effectiveAssetId && !uploading);
+  const canUpload = canUploadDocuments && Boolean(file && effectiveAssetId && !uploading);
 
   const summaryItems = useMemo<RegistrySummaryItem[]>(
     () => [
@@ -268,6 +272,41 @@ export default function CertificateUploadScreen() {
   }
 
   if (fixedAssetId && vesselsLoading && !selectedVessel) return <Loading fullScreen />;
+
+  if (!canUploadDocuments) {
+    return (
+      <ScrollView
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <RegistryWorkspaceHeader
+          title="Certificate intake"
+          eyebrow="Permission required"
+          subtitle="Your role can review certificate information, but cannot upload new certificate evidence."
+          actions={
+            <RegistryHeaderActionButton
+              variant="soft"
+              iconName="chevron-back-outline"
+              iconSide="left"
+              onPress={goBack}
+            >
+              Certificate compliance
+            </RegistryHeaderActionButton>
+          }
+        />
+
+        <RegistryWorkspaceSection
+          title="Upload access restricted"
+          subtitle="Backend policy also denies direct document-upload requests for this role."
+        >
+          <Text className="text-[13px] leading-6 text-muted">
+            Ask an admin or ops user to upload the source document. You can still
+            open existing records and view approved evidence.
+          </Text>
+        </RegistryWorkspaceSection>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView

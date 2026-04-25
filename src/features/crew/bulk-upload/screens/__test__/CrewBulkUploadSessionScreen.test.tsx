@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { useCrewBulkUploadSession } from "../../hooks/useCrewBulkUploadSession";
 import { useCrewBulkUploadSessionActions } from "../../hooks/useCrewBulkUploadSessionActions";
@@ -13,6 +14,10 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/src/context/ToastProvider", () => ({
   useToast: jest.fn(),
+}));
+
+jest.mock("@/src/context/SessionProvider", () => ({
+  useSessionContext: jest.fn(),
 }));
 
 jest.mock("../../hooks/useCrewBulkUploadSession", () => ({
@@ -156,6 +161,9 @@ describe("CrewBulkUploadSessionScreen", () => {
     (useRouter as jest.Mock).mockReturnValue({
       push: routerPush,
     });
+    (useSessionContext as jest.Mock).mockReturnValue({
+      session: { role: "ADMIN" },
+    });
     (useToast as jest.Mock).mockReturnValue({ show: showToast });
     (useCrewBulkUploadSessionActions as jest.Mock).mockReturnValue({
       commit: jest.fn(),
@@ -267,5 +275,29 @@ describe("CrewBulkUploadSessionScreen", () => {
     expect(screen.getByText("Correct same session")).toBeOnTheScreen();
     expect(screen.getByText("Replace workbook in this session")).toBeOnTheScreen();
     expect(screen.getByText("Duplicate handling policy")).toBeOnTheScreen();
+  });
+
+  it("GIVEN a viewer user WHEN a ready session renders SHOULD hide mutation actions but keep review context", () => {
+    (useSessionContext as jest.Mock).mockReturnValue({
+      session: { role: "VIEWER" },
+    });
+    (useCrewBulkUploadSession as jest.Mock).mockReturnValue({
+      session: createSession({
+        status: "READY_FOR_REVIEW",
+        committedAt: null,
+        committedByUserId: null,
+      }),
+      loading: false,
+      error: null,
+      refresh,
+      setSession,
+    });
+
+    render(<CrewBulkUploadSessionScreen />);
+
+    expect(screen.getByText("Review Bulk Upload Session")).toBeOnTheScreen();
+    expect(screen.queryByText("Discard session")).toBeNull();
+    expect(screen.queryByText("Commit crew data")).toBeNull();
+    expect(screen.queryByText("Replace workbook in this session")).toBeNull();
   });
 });

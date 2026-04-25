@@ -1,5 +1,6 @@
 import { Button } from "@/src/components/ui/button/Button";
 import { useSessionContext } from "@/src/context/SessionProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { useRouter } from "expo-router";
 import { LogOut, RefreshCw, ShieldCheck } from "lucide-react-native";
 
@@ -14,10 +15,11 @@ export function ProjectsHeaderActions({
 }) {
   const router = useRouter();
   const { signOut, session } = useSessionContext();
+  const canManageUsers = canUser(session, "USER_MANAGE");
 
   return (
     <>
-      {session?.role === "ADMIN" ? (
+      {canManageUsers ? (
         <Button
           variant="softAccent"
           size="pillSm"

@@ -25,6 +25,7 @@ type Props = {
   error: string | null;
   onRetry: () => void;
   onUpload: (row: CrewCertificateRequirementDto) => void;
+  canUpload?: boolean;
   sortBy?: CrewCertificateSortOption;
 };
 
@@ -38,6 +39,7 @@ export function CrewCertificateRequirementsTable({
   error,
   onRetry,
   onUpload,
+  canUpload = true,
   sortBy = "PRIORITY",
 }: Props) {
   const router = useRouter();
@@ -187,17 +189,19 @@ export function CrewCertificateRequirementsTable({
               />
             ) : null}
 
-            <TableActionIcon
-              icon="cloud-upload-outline"
-              tone="accent"
-              tooltip="Upload certificate document"
-              onPress={() => onUpload(row)}
-            />
+            {canUpload ? (
+              <TableActionIcon
+                icon="cloud-upload-outline"
+                tone="accent"
+                tooltip="Upload certificate document"
+                onPress={() => onUpload(row)}
+              />
+            ) : null}
           </View>
         ),
       },
     ];
-  }, [onUpload, projectId, router]);
+  }, [canUpload, onUpload, projectId, router]);
 
   return (
     <DataTable<CrewCertificateRequirementDto>

@@ -6,12 +6,14 @@ type Props = {
   onRefresh: () => void;
   onOpenUpload: () => void;
   loading: boolean;
+  canUpload: boolean;
 };
 
 export function AssetCertificatesHeaderActions({
   onRefresh,
   onOpenUpload,
   loading,
+  canUpload,
 }: Props) {
   return (
     <>
@@ -25,15 +27,17 @@ export function AssetCertificatesHeaderActions({
         Refresh
       </RegistryHeaderActionButton>
 
-      <RegistryHeaderActionButton
-        variant="default"
-        iconName="add-outline"
-        iconSize={15}
-        iconSide="right"
-        onPress={onOpenUpload}
-      >
-        Add Certificate
-      </RegistryHeaderActionButton>
+      {canUpload ? (
+        <RegistryHeaderActionButton
+          variant="default"
+          iconName="add-outline"
+          iconSize={15}
+          iconSide="right"
+          onPress={onOpenUpload}
+        >
+          Add Certificate
+        </RegistryHeaderActionButton>
+      ) : null}
     </>
   );
 }

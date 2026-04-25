@@ -6,7 +6,9 @@ import {
   RegistryWorkspaceSection,
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { View } from "react-native";
@@ -31,6 +33,7 @@ import {
 export default function CrewCertificatesByCrewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, crewId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -40,6 +43,8 @@ export default function CrewCertificatesByCrewScreen() {
   const pid = String(projectId);
   const aid = String(assetId);
   const cid = String(crewId);
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
+  const canUpdateOperationalRecords = canUser(session, "OPERATIONAL_WRITE");
 
   const {
     crew,
@@ -177,31 +182,35 @@ export default function CrewCertificatesByCrewScreen() {
                 Refresh
               </RegistryHeaderActionButton>
 
-              <RegistryHeaderActionButton
-                variant="outline"
-                onPress={onGenerate}
-                loading={generating}
-              >
-                Refresh requirements
-              </RegistryHeaderActionButton>
+              {canUpdateOperationalRecords ? (
+                <RegistryHeaderActionButton
+                  variant="outline"
+                  onPress={onGenerate}
+                  loading={generating}
+                >
+                  Refresh requirements
+                </RegistryHeaderActionButton>
+              ) : null}
 
-              <RegistryHeaderActionButton
-                variant="default"
-                iconName="add-outline"
-                iconSize={15}
-                onPress={() =>
-                  router.push({
-                    pathname: "/projects/[projectId]/crew/certificates/upload",
-                    params: {
-                      projectId: pid,
-                      assetId: aid,
-                      crewId: cid,
-                    },
-                  })
-                }
-              >
-                Add extra certificate
-              </RegistryHeaderActionButton>
+              {canUploadDocuments ? (
+                <RegistryHeaderActionButton
+                  variant="default"
+                  iconName="add-outline"
+                  iconSize={15}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/projects/[projectId]/crew/certificates/upload",
+                      params: {
+                        projectId: pid,
+                        assetId: aid,
+                        crewId: cid,
+                      },
+                    })
+                  }
+                >
+                  Add extra certificate
+                </RegistryHeaderActionButton>
+              ) : null}
             </>
           }
         />
@@ -266,6 +275,7 @@ export default function CrewCertificatesByCrewScreen() {
         error={requirementsError}
         onRetry={refreshRequirements}
         onUpload={openUpload}
+        canUpload={canUploadDocuments}
       />
 
       <CrewCertificatesTable

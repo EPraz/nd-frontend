@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { useVessels } from "@/src/features/vessels/core";
 import { useCreateCrewBulkUploadSession } from "../../hooks/useCreateCrewBulkUploadSession";
@@ -13,6 +14,10 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/src/context/ToastProvider", () => ({
   useToast: jest.fn(),
+}));
+
+jest.mock("@/src/context/SessionProvider", () => ({
+  useSessionContext: jest.fn(),
 }));
 
 jest.mock("@/src/features/vessels/core", () => ({
@@ -35,6 +40,9 @@ describe("CrewBulkUploadWorkspaceSection", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue({ push: jest.fn() });
+    (useSessionContext as jest.Mock).mockReturnValue({
+      session: { role: "ADMIN" },
+    });
     (useToast as jest.Mock).mockReturnValue({ show: jest.fn() });
     (useVessels as jest.Mock).mockReturnValue({
       vessels: [],
@@ -97,5 +105,17 @@ describe("CrewBulkUploadWorkspaceSection", () => {
     expect(screen.getAllByText("crew-bulk.xlsx").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Ready for review").length).toBeGreaterThan(0);
     expect(screen.getByText("Critical before commit")).toBeOnTheScreen();
+  });
+
+  it("GIVEN a viewer user WHEN the workspace renders SHOULD keep existing sessions visible and hide workbook intake", () => {
+    (useSessionContext as jest.Mock).mockReturnValue({
+      session: { role: "VIEWER" },
+    });
+
+    render(<CrewBulkUploadWorkspaceSection projectId="project-atlantic" />);
+
+    expect(screen.queryByText("Start a new session")).toBeNull();
+    expect(screen.getByText("Bulk upload read-only")).toBeOnTheScreen();
+    expect(screen.getByText("Existing sessions")).toBeOnTheScreen();
   });
 });

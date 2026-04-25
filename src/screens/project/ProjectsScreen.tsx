@@ -10,6 +10,7 @@ import { Text } from "@/src/components/ui/text/Text";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { ProjectDto } from "@/src/contracts/projects.contract";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
+import { canUser } from "@/src/security/rolePermissions";
 import { useProjects } from "@/src/hooks/useProjects";
 import { useRouter } from "expo-router";
 import { Search } from "lucide-react-native";
@@ -26,6 +27,7 @@ export default function ProjectsScreen() {
   const router = useRouter();
   const { projects, loading, error, refresh } = useProjects();
   const { session } = useSessionContext();
+  const canManageUsers = canUser(session, "USER_MANAGE");
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query);
 
@@ -70,12 +72,12 @@ export default function ProjectsScreen() {
       },
       {
         label: "Access",
-        value: session?.role === "ADMIN" ? "Admin" : "Workspace",
+        value: canManageUsers ? "Admin" : "Workspace",
         helper: "current session role",
-        tone: session?.role === "ADMIN" ? "warn" : "info",
+        tone: canManageUsers ? "warn" : "info",
       },
     ];
-  }, [projects, session?.role]);
+  }, [canManageUsers, projects]);
 
   if (loading) {
     return (

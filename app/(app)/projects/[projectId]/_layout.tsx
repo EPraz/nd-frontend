@@ -15,6 +15,7 @@ import { ProjectProvider } from "@/src/context/ProjectProvider";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { getGuardedProjectModule } from "@/src/helpers/projectEntitlements";
 import { useProject } from "@/src/hooks/useProject";
+import { canUser } from "@/src/security/rolePermissions";
 import { BlurView } from "expo-blur";
 import {
   Slot,
@@ -133,6 +134,7 @@ function ProjectShellScaffold({
   const shellInset = isDesktop ? (collapsed ? 76 : 176) : 0;
 
   const routes = sidebarRoutes(projectId, projectKind);
+  const canManageProject = canUser(session, "PROJECT_CONFIGURE");
   const items = sidebarItems(projectKind, {
     moduleEnabled: {
       vessels: isModuleEnabled("vessels"),
@@ -141,7 +143,7 @@ function ProjectShellScaffold({
       maintenance: isModuleEnabled("maintenance"),
       fuel: isModuleEnabled("fuel"),
     },
-    canManageProject: session?.role === "ADMIN",
+    canManageProject,
   });
 
   const activeKey =
@@ -154,6 +156,9 @@ function ProjectShellScaffold({
     guardedModule && !isModuleEnabled(guardedModule.moduleKey)
       ? guardedModule.label
       : null;
+  const isSettingsRoute =
+    pathname === routes.settings || pathname.startsWith(`${routes.settings}/`);
+  const blockedPermission = isSettingsRoute && !canManageProject;
 
   const handleChangeActive = (key: SidebarKey) => {
     const targetPath = routes[key];
@@ -200,10 +205,16 @@ function ProjectShellScaffold({
         >
           {guardedModule && entitlementsLoading ? (
             <Loading fullScreen className="bg-transparent" />
+          ) : blockedPermission ? (
+            <BlockedPermissionState
+              onOpenDashboard={() =>
+                router.push(`/projects/${projectId}/dashboard`)
+              }
+            />
           ) : blockedModule ? (
             <BlockedModuleState
               label={blockedModule}
-              canManageProject={session?.role === "ADMIN"}
+              canManageProject={canManageProject}
               onOpenDashboard={() =>
                 router.push(`/projects/${projectId}/dashboard`)
               }
@@ -219,6 +230,34 @@ function ProjectShellScaffold({
     </View>
   );
 }
+
+function BlockedPermissionState({
+  onOpenDashboard,
+}: {
+  onOpenDashboard: () => void;
+}) {
+  return (
+    <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-6">
+      <View className="gap-2">
+        <Text className="text-xl font-semibold text-textMain">
+          Permission required
+        </Text>
+        <Text className="text-muted">
+          Only admin users can manage project settings. Backend permissions still
+          protect this page if someone opens the route directly.
+        </Text>
+      </View>
+
+      <Pressable
+        onPress={onOpenDashboard}
+        className="h-11 items-center justify-center self-start rounded-xl border border-shellLine bg-shellPanelSoft px-4"
+      >
+        <Text className="font-semibold text-textMain">Go to dashboard</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 function BlockedModuleState({
   label,
   canManageProject,

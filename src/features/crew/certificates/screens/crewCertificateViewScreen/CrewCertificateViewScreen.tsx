@@ -16,6 +16,7 @@ import {
   RegistryWorkspaceSection,
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import {
   CertificateStatusPill,
@@ -23,6 +24,7 @@ import {
   WorkflowStatusPill,
 } from "@/src/features/certificates/core";
 import { formatDate } from "@/src/helpers";
+import { canUser } from "@/src/security/rolePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Linking, Pressable, View } from "react-native";
@@ -48,6 +50,7 @@ function getWorkflowTone(status: string): RegistrySummaryItem["tone"] {
 export default function CrewCertificateViewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, crewId, certificateId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -59,6 +62,9 @@ export default function CrewCertificateViewScreen() {
   const aid = String(assetId);
   const cid = String(crewId);
   const certId = String(certificateId);
+  const canApproveCertificates = canUser(session, "CERTIFICATE_APPROVE");
+  const canSoftDelete = canUser(session, "OPERATIONAL_SOFT_DELETE");
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<{
     id: string;
@@ -237,24 +243,27 @@ export default function CrewCertificateViewScreen() {
                 Refresh
               </RegistryHeaderActionButton>
 
-              <RegistryHeaderActionButton
-                variant="outline"
-                onPress={() =>
-                  router.push({
-                    pathname: "/projects/[projectId]/crew/certificates/upload",
-                    params: {
-                      projectId: pid,
-                      assetId: aid,
-                      crewId: cid,
-                      certificateTypeId: certificate.certificateTypeId,
-                    },
-                  })
-                }
-              >
-                Upload new version
-              </RegistryHeaderActionButton>
+              {canUploadDocuments ? (
+                <RegistryHeaderActionButton
+                  variant="outline"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/projects/[projectId]/crew/certificates/upload",
+                      params: {
+                        projectId: pid,
+                        assetId: aid,
+                        crewId: cid,
+                        certificateTypeId: certificate.certificateTypeId,
+                      },
+                    })
+                  }
+                >
+                  Upload new version
+                </RegistryHeaderActionButton>
+              ) : null}
 
-              {certificate.workflowStatus !== "APPROVED" &&
+              {canApproveCertificates &&
+              certificate.workflowStatus !== "APPROVED" &&
               certificate.workflowStatus !== "ARCHIVED" ? (
                 <RegistryHeaderActionButton
                   variant="default"
@@ -265,22 +274,24 @@ export default function CrewCertificateViewScreen() {
                 </RegistryHeaderActionButton>
               ) : null}
 
-              <Button
-                variant="softDestructive"
-                size="pillSm"
-                onPress={() => setIsDeleteOpen(true)}
-                loading={workflowLoading}
-                className="rounded-full"
-                rightIcon={
-                  <Ionicons
-                    name="trash-outline"
-                    size={15}
-                    className="text-destructive"
-                  />
-                }
-              >
-                Delete
-              </Button>
+              {canSoftDelete ? (
+                <Button
+                  variant="softDestructive"
+                  size="pillSm"
+                  onPress={() => setIsDeleteOpen(true)}
+                  loading={workflowLoading}
+                  className="rounded-full"
+                  rightIcon={
+                    <Ionicons
+                      name="trash-outline"
+                      size={15}
+                      className="text-destructive"
+                    />
+                  }
+                >
+                  Delete
+                </Button>
+              ) : null}
             </>
           }
         />
@@ -411,20 +422,22 @@ export default function CrewCertificateViewScreen() {
                         Open file
                       </Button>
 
-                      <Button
-                        variant="softDestructive"
-                        size="pillXs"
-                        onPress={() =>
-                          setAttachmentToDelete({
-                            id: attachment.id,
-                            fileName: attachment.fileName,
-                          })
-                        }
-                        loading={workflowLoading}
-                        className="rounded-full"
-                      >
-                        Delete file
-                      </Button>
+                      {canSoftDelete ? (
+                        <Button
+                          variant="softDestructive"
+                          size="pillXs"
+                          onPress={() =>
+                            setAttachmentToDelete({
+                              id: attachment.id,
+                              fileName: attachment.fileName,
+                            })
+                          }
+                          loading={workflowLoading}
+                          className="rounded-full"
+                        >
+                          Delete file
+                        </Button>
+                      ) : null}
                     </View>
                   </View>
                 ))}
@@ -477,7 +490,8 @@ export default function CrewCertificateViewScreen() {
                 }
               />
 
-              {certificate.workflowStatus === "SUBMITTED" ? (
+              {canApproveCertificates &&
+              certificate.workflowStatus === "SUBMITTED" ? (
                 <Button
                   variant="outline"
                   size="pillXs"

@@ -8,6 +8,7 @@ import {
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
 import { RegistryTablePill } from "@/src/components/ui/table";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { useCertificateTypes } from "@/src/features/certificates/core";
 import { isIsoDateOnly } from "@/src/helpers";
@@ -16,6 +17,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Linking, ScrollView, View } from "react-native";
+import { canUser } from "@/src/security/rolePermissions";
 import { useCrewById } from "../../../core/hooks/useCrewById";
 import { CrewCertificateFormCard } from "../../components";
 import {
@@ -251,6 +253,7 @@ function ReviewStep({
 export default function CrewCertificateIngestionReviewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, crewId, ingestionId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -262,6 +265,8 @@ export default function CrewCertificateIngestionReviewScreen() {
   const aid = String(assetId);
   const cid = String(crewId);
   const iid = String(ingestionId);
+  const canCancelUpload = canUser(session, "DOCUMENT_UPLOAD");
+  const canConfirmIngestion = canUser(session, "INGESTION_CONFIRM");
 
   const {
     crew,
@@ -359,6 +364,11 @@ export default function CrewCertificateIngestionReviewScreen() {
   async function onConfirm() {
     setLocalError(null);
 
+    if (!canConfirmIngestion) {
+      show("Your role cannot confirm crew certificate candidates.", "error");
+      return;
+    }
+
     if (!values.certificateTypeId) {
       setLocalError("Select a certificate type.");
       return;
@@ -392,6 +402,11 @@ export default function CrewCertificateIngestionReviewScreen() {
   }
 
   async function onCancelIngestion() {
+    if (!canCancelUpload) {
+      show("Your role cannot cancel crew certificate uploads.", "error");
+      return;
+    }
+
     try {
       await cancelIngestion();
       show("Upload cancelled", "success");
@@ -454,40 +469,46 @@ export default function CrewCertificateIngestionReviewScreen() {
                 </RegistryHeaderActionButton>
               ) : null}
 
-              <Button
-                variant="softDestructive"
-                size="pillSm"
-                className="rounded-full"
-                onPress={onCancelIngestion}
-                disabled={confirming || workflowLoading}
-                rightIcon={
-                  <Ionicons
-                    name="close-outline"
-                    size={15}
-                    className="text-destructive"
-                  />
-                }
-              >
-                Cancel upload
-              </Button>
+              {canCancelUpload ? (
+                <Button
+                  variant="softDestructive"
+                  size="pillSm"
+                  className="rounded-full"
+                  onPress={onCancelIngestion}
+                  disabled={confirming || workflowLoading}
+                  rightIcon={
+                    <Ionicons
+                      name="close-outline"
+                      size={15}
+                      className="text-destructive"
+                    />
+                  }
+                >
+                  Cancel upload
+                </Button>
+              ) : null}
 
-              <Button
-                variant="default"
-                size="pillSm"
-                className="rounded-full"
-                onPress={onConfirm}
-                disabled={!values.certificateTypeId || confirming || workflowLoading}
-                loading={confirming}
-                rightIcon={
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={15}
-                    className="text-textMain"
-                  />
-                }
-              >
-                Create submitted record
-              </Button>
+              {canConfirmIngestion ? (
+                <Button
+                  variant="default"
+                  size="pillSm"
+                  className="rounded-full"
+                  onPress={onConfirm}
+                  disabled={
+                    !values.certificateTypeId || confirming || workflowLoading
+                  }
+                  loading={confirming}
+                  rightIcon={
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={15}
+                      className="text-textMain"
+                    />
+                  }
+                >
+                  Create submitted record
+                </Button>
+              ) : null}
             </>
           }
         />
@@ -673,8 +694,14 @@ export default function CrewCertificateIngestionReviewScreen() {
               }}
               localError={localError}
               apiError={confirmError}
-              disabled={confirming}
+              disabled={!canConfirmIngestion || confirming}
             />
+            {!canConfirmIngestion ? (
+              <Text className="mt-3 text-[12px] leading-5 text-muted">
+                This candidate is read-only for your role. Backend policy also
+                blocks direct confirmation requests.
+              </Text>
+            ) : null}
           </RegistryWorkspaceSection>
         </View>
 

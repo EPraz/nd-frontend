@@ -1,5 +1,7 @@
 import { RegistrySummaryStrip } from "@/src/components/ui/registryWorkspace";
 import { Text } from "@/src/components/ui/text/Text";
+import { useSessionContext } from "@/src/context/SessionProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { View } from "react-native";
@@ -21,6 +23,8 @@ export function CrewCertificatesProjectWorkspaceContent({
   workspace: CrewCertificatesProjectWorkspaceState;
 }) {
   const router = useRouter();
+  const { session } = useSessionContext();
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
   const [statusFilter, setStatusFilter] =
     useState<CrewCertificateRequirementFilter>("ALL");
   const [sortBy, setSortBy] = useState<CrewCertificateSortOption>("PRIORITY");
@@ -88,6 +92,7 @@ export function CrewCertificatesProjectWorkspaceContent({
         error={workspace.error}
         onRetry={workspace.refreshAll}
         sortBy={sortBy}
+        canUpload={canUploadDocuments}
         onUpload={(row) =>
           router.push({
             pathname: "/projects/[projectId]/crew/certificates/upload",

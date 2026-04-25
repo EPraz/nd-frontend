@@ -1,4 +1,5 @@
 import { Button, Text } from "@/src/components";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { pickImageUpload } from "@/src/helpers/pickImageUpload";
@@ -14,6 +15,7 @@ import {
   VESSEL_FORM_ERROR_TOAST_MESSAGE,
 } from "../../helpers/vesselFormValidation";
 import { useCreateVessel } from "../../hooks/useCreateVessel";
+import { canUser } from "@/src/security/rolePermissions";
 import {
   canSubmitVesselEditor,
   emptyVesselEditorValues,
@@ -29,9 +31,11 @@ import {
 export default function NewVesselScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const pid = String(projectId);
   const { submit, loading, error } = useCreateVessel(pid);
+  const canCreateVessel = canUser(session, "OPERATIONAL_WRITE");
 
   const { control, setValue, watch } = useForm<VesselEditorFormValues>({
     defaultValues: emptyVesselEditorValues(),
@@ -104,6 +108,36 @@ export default function NewVesselScreen() {
     } finally {
       setFinishingCreate(false);
     }
+  }
+
+  if (!canCreateVessel) {
+    return (
+      <View className="flex-1 p-4 web:p-6">
+        <View className="mx-auto w-full max-w-[960px] gap-5 rounded-[24px] border border-shellLine bg-shellPanel p-6">
+          <View className="gap-2">
+            <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
+              Permission required
+            </Text>
+            <Text className="text-2xl font-semibold text-textMain">
+              Vessel creation is restricted
+            </Text>
+            <Text className="text-[13px] leading-6 text-muted">
+              Your role can view vessel information, but cannot create
+              operational records. Backend policy also denies direct create
+              requests.
+            </Text>
+          </View>
+          <Button
+            variant="outline"
+            size="pillSm"
+            className="self-start rounded-full"
+            onPress={goBack}
+          >
+            Back to vessels
+          </Button>
+        </View>
+      </View>
+    );
   }
 
   return (

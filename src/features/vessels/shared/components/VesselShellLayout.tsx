@@ -1,10 +1,12 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
 import { useProjectEntitlements } from "@/src/context/ProjectEntitlementsProvider";
 import { useProjectContext } from "@/src/context/ProjectProvider";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import {
   getGuardedVesselSection,
   resolveVesselSectionModuleKey,
 } from "@/src/helpers/projectEntitlements";
+import { canUser } from "@/src/security/rolePermissions";
 import { usePathname, useRouter } from "expo-router";
 import { View } from "react-native";
 import { useVesselShell } from "../context/VesselShellProvider";
@@ -22,8 +24,10 @@ export function VesselShellLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { projectName } = useProjectContext();
+  const { session } = useSessionContext();
   const { isModuleEnabled, loading: entitlementsLoading } =
     useProjectEntitlements();
+  const canManageProject = canUser(session, "PROJECT_CONFIGURE");
   const {
     projectId,
     assetId,
@@ -93,14 +97,16 @@ export function VesselShellLayout({
             >
               Back to vessel overview
             </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onPress={() => router.push(`/projects/${projectId}/settings`)}
-              className="rounded-full"
-            >
-              Open settings
-            </Button>
+            {canManageProject ? (
+              <Button
+                variant="default"
+                size="sm"
+                onPress={() => router.push(`/projects/${projectId}/settings`)}
+                className="rounded-full"
+              >
+                Open settings
+              </Button>
+            ) : null}
           </View>
         </View>
       </View>

@@ -4,7 +4,9 @@ import {
   RegistryWorkspaceHeader,
 } from "@/src/components/ui/registryWorkspace";
 import { Text } from "@/src/components/ui/text/Text";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
@@ -25,8 +27,11 @@ import { CERTIFICATES_PROJECT_TABS } from "./certificatesByProject.constants";
 export default function CertificatesByProjectScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const pid = String(projectId);
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
+  const canUpdateOperationalRecords = canUser(session, "OPERATIONAL_WRITE");
   const [activeTab, setActiveTab] = useState<"requirements" | "overview">(
     "overview",
   );
@@ -187,9 +192,10 @@ export default function CertificatesByProjectScreen() {
           actions={
             <CertificatesByProjectHeaderActions
               projectId={pid}
-              onRefresh={onGenerate}
+              onRefresh={canUpdateOperationalRecords ? onGenerate : refreshAll}
               onOpenUpload={openExtraUpload}
-              loading={generating}
+              loading={canUpdateOperationalRecords && generating}
+              canUpload={canUploadDocuments}
             />
           }
         />
@@ -252,6 +258,7 @@ export default function CertificatesByProjectScreen() {
           error={error}
           onRetry={refresh}
           onUpload={openUpload}
+          canUpload={canUploadDocuments}
         />
       ) : (
         <View className="flex-1">

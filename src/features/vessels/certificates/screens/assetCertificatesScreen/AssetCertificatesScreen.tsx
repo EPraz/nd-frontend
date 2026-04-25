@@ -4,6 +4,7 @@ import {
   RegistryWorkspaceHeader,
 } from "@/src/components/ui/registryWorkspace";
 import { Text } from "@/src/components/ui/text/Text";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type {
   CertificateStatus,
@@ -13,6 +14,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
+import { canUser } from "@/src/security/rolePermissions";
 import {
   ASSET_CERTIFICATES_WORKSPACE_TABS,
   normalizeAssetCertificatesWorkspaceTab,
@@ -31,6 +33,7 @@ type AssetCertificatesWorkspaceConfig = {
 export default function AssetCertificatesScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, tab } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -39,6 +42,8 @@ export default function AssetCertificatesScreen() {
 
   const pid = String(projectId);
   const aid = String(assetId);
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
+  const canUpdateOperationalRecords = canUser(session, "OPERATIONAL_WRITE");
   const workspace = useAssetCertificatesWorkspace(pid, aid);
   const [activeTab, setActiveTab] = useState<AssetCertificatesWorkspaceTab>(
     normalizeAssetCertificatesWorkspaceTab(tab),
@@ -161,6 +166,7 @@ export default function AssetCertificatesScreen() {
           error={workspace.requirementsError}
           onRetry={workspace.refreshRequirements}
           onUpload={(row) => openRequirementUpload(row.id)}
+          canUpload={canUploadDocuments}
           headerActions={tableActions}
         />
       ),
@@ -178,9 +184,12 @@ export default function AssetCertificatesScreen() {
             <AssetCertificatesHeaderActions
               projectId={pid}
               assetId={aid}
-              onRefresh={handleGenerate}
+              onRefresh={
+                canUpdateOperationalRecords ? handleGenerate : workspace.refreshAll
+              }
               onOpenUpload={openExtraUpload}
-              loading={workspace.generating}
+              loading={canUpdateOperationalRecords && workspace.generating}
+              canUpload={canUploadDocuments}
             />
           }
         />

@@ -12,10 +12,12 @@ import {
   RegistrySummaryStrip,
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { VesselImageMedia } from "@/src/features/vessels/shared";
 import { formatDate } from "@/src/helpers";
+import { canUser } from "@/src/security/rolePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -46,6 +48,9 @@ export default function VesselQuickViewModal({
 }: Props) {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
+  const canEditVessel = canUser(session, "OPERATIONAL_WRITE");
+  const canDeleteVessel = canUser(session, "OPERATIONAL_SOFT_DELETE");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { submit: deleteVessel, loading: deleting } = useDeleteVessel(
     projectId,
@@ -167,31 +172,39 @@ export default function VesselQuickViewModal({
         <QuickViewHeaderActions
           onClose={onClose}
           actions={[
-            {
-              label: "Delete",
-              onPress: () => setIsDeleteOpen(true),
-              variant: "softDestructive",
-              disabled: deleting,
-              leftIcon: (
-                <Ionicons
-                  name="trash-outline"
-                  size={16}
-                  className="text-destructive"
-                />
-              ),
-            },
-            {
-              label: "Edit",
-              onPress: handleEdit,
-              variant: "softAccent",
-              leftIcon: (
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  className="text-accent"
-                />
-              ),
-            },
+            ...(canDeleteVessel
+              ? [
+                  {
+                    label: "Delete",
+                    onPress: () => setIsDeleteOpen(true),
+                    variant: "softDestructive" as const,
+                    disabled: deleting,
+                    leftIcon: (
+                      <Ionicons
+                        name="trash-outline"
+                        size={16}
+                        className="text-destructive"
+                      />
+                    ),
+                  },
+                ]
+              : []),
+            ...(canEditVessel
+              ? [
+                  {
+                    label: "Edit",
+                    onPress: handleEdit,
+                    variant: "softAccent" as const,
+                    leftIcon: (
+                      <Ionicons
+                        name="create-outline"
+                        size={16}
+                        className="text-accent"
+                      />
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       }

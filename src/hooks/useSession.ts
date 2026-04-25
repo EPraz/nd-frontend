@@ -1,4 +1,4 @@
-import { login as apiLogin, getSession } from "@/src/api/auth.api";
+import { getSession, login as apiLogin, logout as apiLogout } from "@/src/api/auth.api";
 import { clearToken, getToken, setToken } from "@/src/helpers/tokenStore";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -61,6 +61,11 @@ export function useSession() {
   }
 
   async function signOut() {
+    try {
+      await apiLogout();
+    } catch {
+      // Local cleanup still wins if the server session was already invalid.
+    }
     await clearToken();
     setSessionState(null);
     setStatus("unauthenticated");

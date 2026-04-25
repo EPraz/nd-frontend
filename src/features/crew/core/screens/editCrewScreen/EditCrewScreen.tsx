@@ -6,6 +6,7 @@ import {
   OperationalEditorHeader,
   Text,
 } from "@/src/components";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
@@ -16,6 +17,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { deleteCrewPhoto, uploadCrewPhoto } from "../../api/crew.api";
+import { canUser } from "@/src/security/rolePermissions";
 import CrewEditorPreviewRail from "../../components/crewEditorPreviewRail/CrewEditorPreviewRail";
 import CrewFormCard from "../../components/crewFormCard/CrewFormCard";
 import {
@@ -31,6 +33,7 @@ import { useUpdateCrew } from "../../hooks/useUpdateCrew";
 export default function EditCrewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, crewId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -41,6 +44,8 @@ export default function EditCrewScreen() {
   const vid = String(assetId);
   const cid = String(crewId);
   const backHref = `/projects/${pid}/vessels/${vid}/crew/${cid}`;
+  const canEditCrew = canUser(session, "OPERATIONAL_WRITE");
+  const canDeleteCrew = canUser(session, "OPERATIONAL_SOFT_DELETE");
 
   const { crew, loading, error, refresh } = useCrewById(pid, vid, cid);
   const {
@@ -175,6 +180,35 @@ export default function EditCrewScreen() {
     return <ErrorState message="Crew member not found." onRetry={refresh} />;
   }
 
+  if (!canEditCrew) {
+    return (
+      <View className="flex-1 p-4 web:p-6">
+        <View className="mx-auto w-full max-w-[960px] gap-5 rounded-[24px] border border-shellLine bg-shellPanel p-6">
+          <View className="gap-2">
+            <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
+              Permission required
+            </Text>
+            <Text className="text-2xl font-semibold text-textMain">
+              Crew editing is restricted
+            </Text>
+            <Text className="text-[13px] leading-6 text-muted">
+              Your role can view this crew member, but cannot edit operational
+              records. Backend policy also denies direct update requests.
+            </Text>
+          </View>
+          <Button
+            variant="outline"
+            size="pillSm"
+            className="self-start rounded-full"
+            onPress={() => router.replace(backHref)}
+          >
+            Back to crew member
+          </Button>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1">
       <ScrollView
@@ -214,21 +248,23 @@ export default function EditCrewScreen() {
                   Reset
                 </Button>
 
-                <Button
-                  variant="softDestructive"
-                  size="pillSm"
-                  onPress={() => setIsDeleteOpen(true)}
-                  disabled={isBusy}
-                  rightIcon={
-                    <Ionicons
-                      name="trash-outline"
-                      size={15}
-                      className="text-destructive"
-                    />
-                  }
-                >
-                  Delete
-                </Button>
+                {canDeleteCrew ? (
+                  <Button
+                    variant="softDestructive"
+                    size="pillSm"
+                    onPress={() => setIsDeleteOpen(true)}
+                    disabled={isBusy}
+                    rightIcon={
+                      <Ionicons
+                        name="trash-outline"
+                        size={15}
+                        className="text-destructive"
+                      />
+                    }
+                  >
+                    Delete
+                  </Button>
+                ) : null}
 
                 <Button
                   variant="default"

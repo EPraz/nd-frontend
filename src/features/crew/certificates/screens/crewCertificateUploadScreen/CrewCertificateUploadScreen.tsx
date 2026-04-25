@@ -13,6 +13,7 @@ import {
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
 import { RegistryTablePill } from "@/src/components/ui/table";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
@@ -20,6 +21,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
+import { canUser } from "@/src/security/rolePermissions";
 import { useCrewById } from "../../../core/hooks/useCrewById";
 import {
   documentStateTone,
@@ -99,6 +101,7 @@ function FlowStep({ step, title, description, tone }: FlowStepProps) {
 export default function CrewCertificateUploadScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, crewId, requirementId, certificateTypeId } =
     useLocalSearchParams<{
       projectId: string;
@@ -116,6 +119,7 @@ export default function CrewCertificateUploadScreen() {
     ? String(certificateTypeId)
     : null;
   const isRequirementFlow = Boolean(rid);
+  const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
 
   const {
     crew,
@@ -262,6 +266,41 @@ export default function CrewCertificateUploadScreen() {
   if (!crew) {
     return (
       <ErrorState message="Crew member not found." onRetry={refreshCrew} />
+    );
+  }
+
+  if (!canUploadDocuments) {
+    return (
+      <ScrollView
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <RegistryWorkspaceHeader
+          title="Crew certificate intake"
+          eyebrow="Permission required"
+          subtitle="Your role can review crew certificate information, but cannot upload new evidence."
+          actions={
+            <RegistryHeaderActionButton
+              variant="soft"
+              iconName="chevron-back-outline"
+              iconSide="left"
+              onPress={goBack}
+            >
+              Crew certificates
+            </RegistryHeaderActionButton>
+          }
+        />
+
+        <RegistryWorkspaceSection
+          title="Upload access restricted"
+          subtitle="Backend policy also denies direct crew-certificate upload requests for this role."
+        >
+          <Text className="text-[13px] leading-6 text-muted">
+            Ask an admin or ops user to upload the source document. You can still
+            open existing records and view approved evidence.
+          </Text>
+        </RegistryWorkspaceSection>
+      </ScrollView>
     );
   }
 

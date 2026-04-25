@@ -1,10 +1,10 @@
 import { ErrorState, Loading, Text } from "@/src/components";
-import {
-  RegistryWorkspaceSection,
-} from "@/src/components/ui/registryWorkspace";
+import { RegistryWorkspaceSection } from "@/src/components/ui/registryWorkspace";
 import { DataTable, RegistryTablePill } from "@/src/components/ui/table";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { humanizeTechnicalLabel } from "@/src/helpers/humanizeTechnicalLabel";
+import { canUser } from "@/src/security/rolePermissions";
 import * as DocumentPicker from "expo-document-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
@@ -233,6 +233,7 @@ function SheetCard({
 export default function CrewBulkUploadSessionScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session: userSession } = useSessionContext();
   const { projectId, sessionId } = useLocalSearchParams<{
     projectId: string;
     sessionId: string;
@@ -276,13 +277,22 @@ export default function CrewBulkUploadSessionScreen() {
       new Date(right.at).getTime() - new Date(left.at).getTime(),
   );
   const commitSummary = currentSession.summary?.commit ?? null;
+  const canUploadDocuments = canUser(userSession, "DOCUMENT_UPLOAD");
+  const canConfirmIngestion = canUser(userSession, "INGESTION_CONFIRM");
   const blockingCrewRows = crewRows.filter((row) =>
     row.issues.some((issue) => issue.severity === "CRITICAL"),
   );
   const canCommit =
-    currentSession.status === "READY_FOR_REVIEW" && blockingCrewRows.length === 0;
+    canConfirmIngestion &&
+    currentSession.status === "READY_FOR_REVIEW" &&
+    blockingCrewRows.length === 0;
 
   async function onCommit() {
+    if (!canConfirmIngestion) {
+      show("Your role can review this session, but cannot commit crew data.", "error");
+      return;
+    }
+
     try {
       const next = await commit();
       setSession(next);
@@ -293,6 +303,11 @@ export default function CrewBulkUploadSessionScreen() {
   }
 
   async function onDiscard() {
+    if (!canUploadDocuments) {
+      show("Your role can review this session, but cannot discard uploads.", "error");
+      return;
+    }
+
     try {
       const next = await discard();
       setSession(next);
@@ -303,6 +318,11 @@ export default function CrewBulkUploadSessionScreen() {
   }
 
   async function onReupload() {
+    if (!canUploadDocuments) {
+      show("Your role can review this session, but cannot replace workbooks.", "error");
+      return;
+    }
+
     if (currentSession.status !== "READY_FOR_REVIEW") return;
 
     const result = await DocumentPicker.getDocumentAsync({
@@ -344,7 +364,9 @@ export default function CrewBulkUploadSessionScreen() {
       <CrewBulkUploadSessionHeader
         currentSession={currentSession}
         blockingCrewRowsCount={blockingCrewRows.length}
+        canCommitSession={canConfirmIngestion}
         canCommit={canCommit}
+        canDiscardSession={canUploadDocuments}
         actionLoading={actionLoading}
         onRefresh={refresh}
         onBackToWorkspace={() => router.push(`/projects/${pid}/crew?tab=bulk-upload`)}
@@ -496,6 +518,7 @@ export default function CrewBulkUploadSessionScreen() {
           revisionHistory={revisionHistory}
           auditTrail={auditTrail}
           commitSummary={commitSummary}
+          canReupload={canUploadDocuments}
           onReupload={onReupload}
         />
       </View>

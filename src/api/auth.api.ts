@@ -17,3 +17,7 @@ export function login(email: string, password: string) {
 export function getSession() {
   return apiClient.get<SessionResponse>("/auth/session");
 }
+
+export function logout() {
+  return apiClient.post<{ ok: true }>("/auth/logout");
+}

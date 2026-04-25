@@ -76,7 +76,7 @@ async function request<T>(
     ...options?.init,
     method,
     headers,
-    // importante: en web permite cookies si algún endpoint usa cookie httpOnly
+    // importante: en web permite cookies si algun endpoint usa cookie httpOnly
     // en RN no rompe; simplemente se ignora si no aplica
     credentials: "include",
     body: hasBody

@@ -1,4 +1,6 @@
 import { RegistryHeaderActionButton } from "@/src/components/ui/registryWorkspace";
+import { useSessionContext } from "@/src/context/SessionProvider";
+import { canUser } from "@/src/security/rolePermissions";
 import { useRouter } from "expo-router";
 
 export function VesselsOverviewHeaderActions({
@@ -9,6 +11,8 @@ export function VesselsOverviewHeaderActions({
   onRefresh: () => void;
 }) {
   const router = useRouter();
+  const { session } = useSessionContext();
+  const canCreateVessels = canUser(session, "OPERATIONAL_WRITE");
 
   return (
     <>
@@ -20,14 +24,16 @@ export function VesselsOverviewHeaderActions({
         Refresh
       </RegistryHeaderActionButton>
 
-      <RegistryHeaderActionButton
-        variant="default"
-        iconName="add-outline"
-        iconSize={15}
-        onPress={() => router.push(`/projects/${projectId}/vessels/new`)}
-      >
-        New Vessel
-      </RegistryHeaderActionButton>
+      {canCreateVessels ? (
+        <RegistryHeaderActionButton
+          variant="default"
+          iconName="add-outline"
+          iconSize={15}
+          onPress={() => router.push(`/projects/${projectId}/vessels/new`)}
+        >
+          New Vessel
+        </RegistryHeaderActionButton>
+      ) : null}
     </>
   );
 }

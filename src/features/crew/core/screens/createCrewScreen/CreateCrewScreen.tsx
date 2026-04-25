@@ -1,4 +1,6 @@
 import { Button, OperationalEditorHeader } from "@/src/components";
+import { Text } from "@/src/components/ui/text/Text";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
@@ -9,6 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { uploadCrewPhoto } from "../../api/crew.api";
+import { canUser } from "@/src/security/rolePermissions";
 import CrewEditorPreviewRail from "../../components/crewEditorPreviewRail/CrewEditorPreviewRail";
 import CrewFormCard from "../../components/crewFormCard/CrewFormCard";
 import {
@@ -21,6 +24,7 @@ import { useCreateCrew } from "../../hooks/useCreateCrew";
 export default function CreateCrewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId } = useLocalSearchParams<{
     projectId: string;
     assetId?: string;
@@ -28,6 +32,7 @@ export default function CreateCrewScreen() {
 
   const pid = String(projectId);
   const fixedAssetId = assetId ? String(assetId) : null;
+  const canCreateCrew = canUser(session, "OPERATIONAL_WRITE");
 
   const { submit, loading, error } = useCreateCrew(pid);
 
@@ -126,6 +131,35 @@ export default function CreateCrewScreen() {
     } catch {
       // hook handles primary error state
     }
+  }
+
+  if (!canCreateCrew) {
+    return (
+      <View className="flex-1 p-4 web:p-6">
+        <View className="mx-auto w-full max-w-[960px] gap-5 rounded-[24px] border border-shellLine bg-shellPanel p-6">
+          <View className="gap-2">
+            <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
+              Permission required
+            </Text>
+            <Text className="text-2xl font-semibold text-textMain">
+              Crew creation is restricted
+            </Text>
+            <Text className="text-[13px] leading-6 text-muted">
+              Your role can view crew information, but cannot create operational
+              records. Backend policy also denies direct create requests.
+            </Text>
+          </View>
+          <Button
+            variant="outline"
+            size="pillSm"
+            className="self-start rounded-full"
+            onPress={() => router.replace(crewHref)}
+          >
+            Back to crew
+          </Button>
+        </View>
+      </View>
+    );
   }
 
   return (

@@ -161,6 +161,7 @@ type Props = {
   revisionHistory: CrewBulkUploadRevisionSummary[];
   auditTrail: CrewBulkUploadAuditTrailEvent[];
   commitSummary: CrewBulkUploadCommitSummary | null;
+  canReupload: boolean;
   onReupload: () => void;
 };
 
@@ -172,6 +173,7 @@ export function CrewBulkUploadSessionSidebar({
   revisionHistory,
   auditTrail,
   commitSummary,
+  canReupload,
   onReupload,
 }: Props) {
   const latestRevision = revisionHistory[0] ?? null;
@@ -226,7 +228,7 @@ export function CrewBulkUploadSessionSidebar({
         </View>
       </RegistryWorkspaceSection>
 
-      {currentSession.status === "READY_FOR_REVIEW" ? (
+      {canReupload && currentSession.status === "READY_FOR_REVIEW" ? (
         <RegistryWorkspaceSection
           title="Correct same session"
           subtitle="Replace the workbook here when the client sends a corrected file. The session id stays stable and the revision chain keeps the review trace."

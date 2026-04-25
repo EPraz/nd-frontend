@@ -19,6 +19,8 @@ type Props = {
   onEdit: () => void;
   onOpenCertificates: () => void;
   onDelete: () => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
   deleting?: boolean;
 };
 
@@ -31,6 +33,8 @@ export default function CrewProfileHero({
   onEdit,
   onOpenCertificates,
   onDelete,
+  canEdit = true,
+  canDelete = true,
   deleting = false,
 }: Props) {
   return (
@@ -82,36 +86,40 @@ export default function CrewProfileHero({
                 Certificates
               </Button>
 
-              <Button
-                variant="softDestructive"
-                size="pillSm"
-                onPress={onDelete}
-                disabled={deleting}
-                rightIcon={
-                  <Ionicons
-                    name="trash-outline"
-                    size={15}
-                    className="text-destructive"
-                  />
-                }
-              >
-                Delete
-              </Button>
+              {canDelete ? (
+                <Button
+                  variant="softDestructive"
+                  size="pillSm"
+                  onPress={onDelete}
+                  disabled={deleting}
+                  rightIcon={
+                    <Ionicons
+                      name="trash-outline"
+                      size={15}
+                      className="text-destructive"
+                    />
+                  }
+                >
+                  Delete
+                </Button>
+              ) : null}
 
-              <Button
-                variant="default"
-                size="pillSm"
-                onPress={onEdit}
-                rightIcon={
-                  <Ionicons
-                    name="create-outline"
-                    size={15}
-                    className="text-textMain"
-                  />
-                }
-              >
-                Edit
-              </Button>
+              {canEdit ? (
+                <Button
+                  variant="default"
+                  size="pillSm"
+                  onPress={onEdit}
+                  rightIcon={
+                    <Ionicons
+                      name="create-outline"
+                      size={15}
+                      className="text-textMain"
+                    />
+                  }
+                >
+                  Edit
+                </Button>
+              ) : null}
 
               <Button
                 variant="iconAccent"

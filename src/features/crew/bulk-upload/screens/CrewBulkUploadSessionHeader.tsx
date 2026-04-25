@@ -13,7 +13,9 @@ import { getSessionSummaryItems } from "./crewBulkUploadSession.helpers";
 type Props = {
   currentSession: CrewBulkUploadSessionDto;
   blockingCrewRowsCount: number;
+  canCommitSession: boolean;
   canCommit: boolean;
+  canDiscardSession: boolean;
   actionLoading: boolean;
   onRefresh: () => void;
   onBackToWorkspace: () => void;
@@ -26,7 +28,9 @@ type Props = {
 export function CrewBulkUploadSessionHeader({
   currentSession,
   blockingCrewRowsCount,
+  canCommitSession,
   canCommit,
+  canDiscardSession,
   actionLoading,
   onRefresh,
   onBackToWorkspace,
@@ -64,33 +68,37 @@ export function CrewBulkUploadSessionHeader({
 
             {currentSession.status === "READY_FOR_REVIEW" ? (
               <>
-                <Button
-                  variant="softDestructive"
-                  size="pillSm"
-                  className="rounded-full"
-                  onPress={onDiscard}
-                  loading={actionLoading}
-                  rightIcon={
-                    <Ionicons
-                      name="trash-outline"
-                      size={15}
-                      className="text-destructive"
-                    />
-                  }
-                >
-                  Discard session
-                </Button>
+                {canDiscardSession ? (
+                  <Button
+                    variant="softDestructive"
+                    size="pillSm"
+                    className="rounded-full"
+                    onPress={onDiscard}
+                    loading={actionLoading}
+                    rightIcon={
+                      <Ionicons
+                        name="trash-outline"
+                        size={15}
+                        className="text-destructive"
+                      />
+                    }
+                  >
+                    Discard session
+                  </Button>
+                ) : null}
 
-                <RegistryHeaderActionButton
-                  variant="default"
-                  iconName="checkmark-circle-outline"
-                  iconSize={15}
-                  onPress={onCommit}
-                  disabled={!canCommit}
-                  loading={actionLoading}
-                >
-                  Commit crew data
-                </RegistryHeaderActionButton>
+                {canCommitSession ? (
+                  <RegistryHeaderActionButton
+                    variant="default"
+                    iconName="checkmark-circle-outline"
+                    iconSize={15}
+                    onPress={onCommit}
+                    disabled={!canCommit}
+                    loading={actionLoading}
+                  >
+                    Commit crew data
+                  </RegistryHeaderActionButton>
+                ) : null}
               </>
             ) : (
               <>
@@ -117,7 +125,8 @@ export function CrewBulkUploadSessionHeader({
 
       <RegistrySummaryStrip items={summaryItems} />
 
-      {currentSession.status === "READY_FOR_REVIEW" &&
+      {canCommitSession &&
+      currentSession.status === "READY_FOR_REVIEW" &&
       blockingCrewRowsCount > 0 ? (
         <View className="rounded-[20px] border border-destructive/30 bg-destructive/10 p-5">
           <Text className="text-[18px] font-semibold text-textMain">

@@ -8,6 +8,7 @@ import {
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
 import { RegistryTablePill } from "@/src/components/ui/table";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { useCertificateTypes } from "@/src/features/certificates/core/hooks/useCertificateTypes";
@@ -18,6 +19,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Linking, ScrollView, View } from "react-native";
+import { canUser } from "@/src/security/rolePermissions";
 import CertificateFormCard from "@/src/features/certificates/core/components/certificateFormCard/CertificateFormCard";
 import {
   CertificateFormValues,
@@ -252,6 +254,7 @@ function ReviewStep({
 export default function CertificateIngestionReviewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, ingestionId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -261,6 +264,8 @@ export default function CertificateIngestionReviewScreen() {
   const pid = String(projectId);
   const aid = String(assetId);
   const iid = String(ingestionId);
+  const canCancelUpload = canUser(session, "DOCUMENT_UPLOAD");
+  const canConfirmIngestion = canUser(session, "INGESTION_CONFIRM");
 
   const { ingestion, loading, error, refresh } = useCertificateIngestionById(
     pid,
@@ -373,6 +378,11 @@ export default function CertificateIngestionReviewScreen() {
   async function onConfirm() {
     setLocalError(null);
 
+    if (!canConfirmIngestion) {
+      show("Your role cannot confirm certificate ingestion candidates.", "error");
+      return;
+    }
+
     if (!values.certificateTypeId) {
       setLocalError("Selecciona un certificate type.");
       return;
@@ -406,6 +416,11 @@ export default function CertificateIngestionReviewScreen() {
   }
 
   async function onCancelIngestion() {
+    if (!canCancelUpload) {
+      show("Your role cannot cancel certificate uploads.", "error");
+      return;
+    }
+
     try {
       await cancelIngestion();
       show("Upload cancelled", "success");
@@ -458,40 +473,46 @@ export default function CertificateIngestionReviewScreen() {
                 </RegistryHeaderActionButton>
               ) : null}
 
-              <Button
-                variant="softDestructive"
-                size="pillSm"
-                className="rounded-full"
-                onPress={onCancelIngestion}
-                disabled={confirming || workflowLoading}
-                rightIcon={
-                  <Ionicons
-                    name="close-outline"
-                    size={15}
-                    className="text-destructive"
-                  />
-                }
-              >
-                Cancel upload
-              </Button>
+              {canCancelUpload ? (
+                <Button
+                  variant="softDestructive"
+                  size="pillSm"
+                  className="rounded-full"
+                  onPress={onCancelIngestion}
+                  disabled={confirming || workflowLoading}
+                  rightIcon={
+                    <Ionicons
+                      name="close-outline"
+                      size={15}
+                      className="text-destructive"
+                    />
+                  }
+                >
+                  Cancel upload
+                </Button>
+              ) : null}
 
-              <Button
-                variant="default"
-                size="pillSm"
-                className="rounded-full"
-                onPress={onConfirm}
-                disabled={!values.certificateTypeId || confirming || workflowLoading}
-                loading={confirming}
-                rightIcon={
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={15}
-                    className="text-textMain"
-                  />
-                }
-              >
-                Create submitted record
-              </Button>
+              {canConfirmIngestion ? (
+                <Button
+                  variant="default"
+                  size="pillSm"
+                  className="rounded-full"
+                  onPress={onConfirm}
+                  disabled={
+                    !values.certificateTypeId || confirming || workflowLoading
+                  }
+                  loading={confirming}
+                  rightIcon={
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={15}
+                      className="text-textMain"
+                    />
+                  }
+                >
+                  Create submitted record
+                </Button>
+              ) : null}
             </>
           }
         />
@@ -671,10 +692,16 @@ export default function CertificateIngestionReviewScreen() {
               }}
               localError={localError}
               apiError={confirmError}
-              disabled={confirming}
-              showFilesNextHint={false}
-            />
-          </RegistryWorkspaceSection>
+            disabled={!canConfirmIngestion || confirming}
+            showFilesNextHint={false}
+          />
+          {!canConfirmIngestion ? (
+            <Text className="mt-3 text-[12px] leading-5 text-muted">
+              This candidate is read-only for your role. Backend policy also
+              blocks direct confirmation requests.
+            </Text>
+          ) : null}
+        </RegistryWorkspaceSection>
         </View>
 
         <View className="min-w-0 flex-1 gap-5 web:xl:max-w-[400px]">

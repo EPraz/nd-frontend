@@ -15,6 +15,7 @@ import type {
   ProjectModuleEntitlementDto,
   UpdateProjectModuleEntitlementsDto,
 } from "@/src/contracts/project-entitlements.contract";
+import { canUser } from "@/src/security/rolePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -219,6 +220,7 @@ export default function ProjectModuleSettingsScreen() {
     [draft],
   );
   const disabledCount = draft.length - enabledCount;
+  const canConfigureProject = canUser(session, "PROJECT_CONFIGURE");
   const changedCount = useMemo(
     () => countChangedModules(entitlements?.modules, draft),
     [draft, entitlements?.modules],
@@ -287,7 +289,7 @@ export default function ProjectModuleSettingsScreen() {
     }
   }
 
-  if (session?.role !== "ADMIN") {
+  if (!canConfigureProject) {
     return (
       <View className="gap-5 p-4 web:p-6 pb-10">
         <RegistryWorkspaceHeader

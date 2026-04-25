@@ -13,6 +13,7 @@ import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AdminProjectDto, UserRole } from "@/src/contracts/admin.contract";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
+import { canUser } from "@/src/security/rolePermissions";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -39,7 +40,7 @@ export default function SuperAdminWorkspaceScreen() {
   const router = useRouter();
   const { session } = useSessionContext();
   const { show } = useToast();
-  const isAdmin = session?.role === "ADMIN";
+  const isAdmin = canUser(session, "USER_MANAGE");
   const {
     projects,
     users,

@@ -8,6 +8,7 @@ type Props = {
   error: string | null;
   onRetry: () => void;
   onUpload: (row: CertificateRequirementDto) => void;
+  canUpload: boolean;
   headerActions?: ReactNode;
 };
 
@@ -17,6 +18,7 @@ export function AssetCertificateRequirementsWorkspaceSection({
   error,
   onRetry,
   onUpload,
+  canUpload,
   headerActions,
 }: Props) {
   return (
@@ -30,6 +32,7 @@ export function AssetCertificateRequirementsWorkspaceSection({
       error={error}
       onRetry={onRetry}
       onUpload={onUpload}
+      canUpload={canUpload}
     />
   );
 }

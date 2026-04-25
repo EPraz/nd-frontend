@@ -12,8 +12,10 @@ import {
   RegistrySummaryStrip,
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { formatDate } from "@/src/helpers";
+import { canUser } from "@/src/security/rolePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -71,6 +73,9 @@ export default function CrewQuickViewModal({
 }: Props) {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
+  const canEditCrew = canUser(session, "OPERATIONAL_WRITE");
+  const canDeleteCrew = canUser(session, "OPERATIONAL_SOFT_DELETE");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { submit: deleteCrew, loading: deleting } = useDeleteCrew(
     projectId,
@@ -192,31 +197,39 @@ export default function CrewQuickViewModal({
         <QuickViewHeaderActions
           onClose={onClose}
           actions={[
-            {
-              label: "Delete",
-              onPress: () => setIsDeleteOpen(true),
-              variant: "softDestructive",
-              disabled: deleting,
-              leftIcon: (
-                <Ionicons
-                  name="trash-outline"
-                  size={16}
-                  className="text-destructive"
-                />
-              ),
-            },
-            {
-              label: "Edit",
-              onPress: handleEdit,
-              variant: "softAccent",
-              leftIcon: (
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  className="text-accent"
-                />
-              ),
-            },
+            ...(canDeleteCrew
+              ? [
+                  {
+                    label: "Delete",
+                    onPress: () => setIsDeleteOpen(true),
+                    variant: "softDestructive" as const,
+                    disabled: deleting,
+                    leftIcon: (
+                      <Ionicons
+                        name="trash-outline"
+                        size={16}
+                        className="text-destructive"
+                      />
+                    ),
+                  },
+                ]
+              : []),
+            ...(canEditCrew
+              ? [
+                  {
+                    label: "Edit",
+                    onPress: handleEdit,
+                    variant: "softAccent" as const,
+                    leftIcon: (
+                      <Ionicons
+                        name="create-outline"
+                        size={16}
+                        className="text-accent"
+                      />
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       }

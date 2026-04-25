@@ -12,8 +12,10 @@ import { FieldDisplay } from "@/src/components/ui/forms/FieldDisplay";
 import Loading from "@/src/components/ui/loading/Loading";
 import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
 import { Text } from "@/src/components/ui/text/Text";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { formatDate } from "@/src/helpers";
+import { canUser } from "@/src/security/rolePermissions";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -64,6 +66,7 @@ function DetailTag({
 export default function CertificateViewScreen() {
   const router = useRouter();
   const { show } = useToast();
+  const { session } = useSessionContext();
   const { projectId, assetId, certificateId } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
@@ -73,6 +76,8 @@ export default function CertificateViewScreen() {
   const pid = String(projectId);
   const vid = String(assetId);
   const cid = String(certificateId);
+  const canApproveCertificates = canUser(session, "CERTIFICATE_APPROVE");
+  const canSoftDelete = canUser(session, "OPERATIONAL_SOFT_DELETE");
 
   const { certificate, loading, error, refresh } = useCertificatesById(
     pid,
@@ -225,23 +230,26 @@ export default function CertificateViewScreen() {
                 accessibilityLabel="Refresh"
               />
 
-              <Button
-                variant="softDestructive"
-                size="pill"
-                onPress={() => setIsDeleteCertificateOpen(true)}
-                className="rounded-full"
-                rightIcon={
-                  <Ionicons
-                    name="trash-outline"
-                    size={16}
-                    className="text-destructive"
-                  />
-                }
-              >
-                Delete
-              </Button>
+              {canSoftDelete ? (
+                <Button
+                  variant="softDestructive"
+                  size="pill"
+                  onPress={() => setIsDeleteCertificateOpen(true)}
+                  className="rounded-full"
+                  rightIcon={
+                    <Ionicons
+                      name="trash-outline"
+                      size={16}
+                      className="text-destructive"
+                    />
+                  }
+                >
+                  Delete
+                </Button>
+              ) : null}
 
-              {certificate.workflowStatus !== "APPROVED" &&
+              {canApproveCertificates &&
+              certificate.workflowStatus !== "APPROVED" &&
               certificate.workflowStatus !== "ARCHIVED" ? (
                 <Button
                   variant="default"
@@ -394,20 +402,22 @@ export default function CertificateViewScreen() {
                             >
                               Open original
                             </Button>
-                            <Button
-                              variant="softDestructive"
-                              size="sm"
-                              onPress={() =>
-                                setAttachmentPendingDelete({
-                                  id: attachment.id,
-                                  fileName: attachment.fileName,
-                                })
-                              }
-                              loading={workflowLoading}
-                              className="rounded-full"
-                            >
-                              Delete file
-                            </Button>
+                            {canSoftDelete ? (
+                              <Button
+                                variant="softDestructive"
+                                size="sm"
+                                onPress={() =>
+                                  setAttachmentPendingDelete({
+                                    id: attachment.id,
+                                    fileName: attachment.fileName,
+                                  })
+                                }
+                                loading={workflowLoading}
+                                className="rounded-full"
+                              >
+                                Delete file
+                              </Button>
+                            ) : null}
                           </View>
                         </View>
                       ))
@@ -463,7 +473,8 @@ export default function CertificateViewScreen() {
                             : "Review metadata and approve"
                     }
                   />
-                  {certificate.workflowStatus === "SUBMITTED" ? (
+                  {canApproveCertificates &&
+                  certificate.workflowStatus === "SUBMITTED" ? (
                     <Button
                       variant="outline"
                       size="sm"
