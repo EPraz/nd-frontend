@@ -1,11 +1,12 @@
 import { SidebarItemType, SidebarKey } from "@/src/constants";
+import { Ionicons } from "@expo/vector-icons";
 import {
   Platform,
-  Pressable,
   ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
+import { Button } from "../../ui/button/Button";
 import BrandLogo from "./BrandLogo";
 import {
   GroupSidebarMenu,
@@ -19,7 +20,8 @@ type Props = {
   activeKey: SidebarKey;
   items: { main: SidebarItemType[]; secondary: SidebarItemType[] };
   onChangeActive: (key: SidebarKey) => void;
-  handleSetCollapse: (value: boolean) => void;
+  onToggleCollapse: () => void;
+  onOpenWorkspaces: () => void;
 };
 
 export default function Sidebar({
@@ -27,13 +29,24 @@ export default function Sidebar({
   activeKey = "dashboard",
   items,
   onChangeActive,
-  handleSetCollapse,
+  onToggleCollapse,
+  onOpenWorkspaces,
 }: Props) {
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === "web" && width >= 1024;
 
   const widthFitFull = collapsed ? "w-fit" : "w-full";
   const showText = !collapsed;
+  const toggleIcon = collapsed
+    ? "chevron-forward-outline"
+    : isDesktop
+      ? "chevron-back-outline"
+      : "close-outline";
+  const toggleLabel = collapsed
+    ? "Expand sidebar"
+    : isDesktop
+      ? "Collapse sidebar"
+      : "Close menu";
 
   const visibleMainItems = items.main.filter((item) => item.enabled !== false);
   const visibleSecondaryItems = items.secondary.filter(
@@ -41,20 +54,9 @@ export default function Sidebar({
   );
 
   return (
-    <SidebarContainer
-      collapsed={collapsed}
-      isDesktop={isDesktop}
-      {...(isDesktop && {
-        onMouseEnter: () => handleSetCollapse(false),
-        onMouseLeave: () => handleSetCollapse(true),
-      })}
-    >
-      <View
-        className={`${widthFitFull} flex-row items-center justify-${collapsed ? "center" : "start"} gap-2`}
-      >
-        <Pressable onPress={() => handleSetCollapse(!collapsed)}>
-          <BrandLogo collapsed={collapsed} />
-        </Pressable>
+    <SidebarContainer collapsed={collapsed} isDesktop={isDesktop}>
+      <View className={`${widthFitFull} items-center`}>
+        <BrandLogo collapsed={collapsed} />
       </View>
 
       <View className={`${widthFitFull} pt-4 flex-1`}>
@@ -83,6 +85,15 @@ export default function Sidebar({
           <SectionSlot collapsed={collapsed} label="Controls" />
 
           <GroupSidebarMenu collapsed={collapsed} className="gap-1">
+            <SidebarItem
+              active={false}
+              showText={showText}
+              collapsed={collapsed}
+              label="Workspaces"
+              iconBase="grid"
+              onPress={onOpenWorkspaces}
+            />
+
             {visibleSecondaryItems.map((it) => (
               <SidebarItem
                 key={it.key}
@@ -100,6 +111,30 @@ export default function Sidebar({
           <View className="h-6" />
         </ScrollView>
       </View>
+
+      {isDesktop || !collapsed ? (
+        <View className={`${widthFitFull} mt-auto items-center gap-3 pt-3`}>
+          <View className="w-full items-center">
+            <View
+              className={`${collapsed ? "w-7" : "w-full"} h-px rounded-full bg-shellLine`}
+            />
+          </View>
+
+          <Button
+            variant="icon"
+            size="icon"
+            className="h-9 w-9 border-shellLine bg-shellPanelSoft"
+            onPress={onToggleCollapse}
+            accessibilityLabel={toggleLabel}
+          >
+            <Ionicons
+              name={toggleIcon}
+              size={13}
+              className="text-textMain"
+            />
+          </Button>
+        </View>
+      ) : null}
     </SidebarContainer>
   );
 }

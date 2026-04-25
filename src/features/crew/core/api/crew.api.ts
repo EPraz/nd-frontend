@@ -1,14 +1,34 @@
 import { apiClient } from "../../../../api/client";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
+import { getBaseUrl } from "@/src/api/baseUrl";
 import { CreateCrewInput, CrewDto } from "../contracts";
+
+function toAbsoluteCrewMediaUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  return url.startsWith("http") ? url : `${getBaseUrl()}${url}`;
+}
+
+function normalizeCrew(crew: CrewDto): CrewDto {
+  return {
+    ...crew,
+    photoUrl: toAbsoluteCrewMediaUrl(crew.photoUrl),
+    asset: crew.asset
+      ? {
+          ...crew.asset,
+          imageUrl: toAbsoluteCrewMediaUrl(crew.asset.imageUrl),
+        }
+      : null,
+  };
+}
 
 export async function fetchCrew(
   projectId: string,
   assetId: string,
 ): Promise<CrewDto[]> {
-  return apiClient.get<CrewDto[]>(
+  const crew = await apiClient.get<CrewDto[]>(
     `/projects/${projectId}/assets/${assetId}/crew`,
   );
+  return crew.map(normalizeCrew);
 }
 
 export async function fetchCrewById(
@@ -16,8 +36,10 @@ export async function fetchCrewById(
   assetId: string,
   crewId: string,
 ): Promise<CrewDto> {
-  return apiClient.get<CrewDto>(
+  return normalizeCrew(
+    await apiClient.get<CrewDto>(
     `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
+    ),
   );
 }
 
@@ -25,13 +47,16 @@ export async function createCrew(
   projectId: string,
   input: CreateCrewInput,
 ): Promise<CrewDto> {
-  return apiClient.post<CrewDto>(`/projects/${projectId}/crew`, input);
+  return normalizeCrew(
+    await apiClient.post<CrewDto>(`/projects/${projectId}/crew`, input),
+  );
 }
 
 export async function fetchCrewByProject(
   projectId: string,
 ): Promise<CrewDto[]> {
-  return apiClient.get<CrewDto[]>(`/projects/${projectId}/crew`);
+  const crew = await apiClient.get<CrewDto[]>(`/projects/${projectId}/crew`);
+  return crew.map(normalizeCrew);
 }
 
 export async function updateCrew(
@@ -40,9 +65,11 @@ export async function updateCrew(
   crewId: string,
   input: Partial<CreateCrewInput>,
 ): Promise<CrewDto> {
-  return apiClient.patch<CrewDto>(
-    `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
-    input,
+  return normalizeCrew(
+    await apiClient.patch<CrewDto>(
+      `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
+      input,
+    ),
   );
 }
 
@@ -51,8 +78,10 @@ export async function deleteCrew(
   assetId: string,
   crewId: string,
 ): Promise<CrewDto> {
-  return apiClient.delete<CrewDto>(
-    `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
+  return normalizeCrew(
+    await apiClient.delete<CrewDto>(
+      `/projects/${projectId}/assets/${assetId}/crew/${crewId}`,
+    ),
   );
 }
 
@@ -80,9 +109,11 @@ export async function uploadCrewPhoto(
   const formData = new FormData();
   appendUploadFile(formData, file);
 
-  return apiClient.post<CrewDto>(
-    `/projects/${projectId}/assets/${assetId}/crew/${crewId}/photo`,
-    formData,
+  return normalizeCrew(
+    await apiClient.post<CrewDto>(
+      `/projects/${projectId}/assets/${assetId}/crew/${crewId}/photo`,
+      formData,
+    ),
   );
 }
 
@@ -91,7 +122,9 @@ export async function deleteCrewPhoto(
   assetId: string,
   crewId: string,
 ): Promise<CrewDto> {
-  return apiClient.delete<CrewDto>(
-    `/projects/${projectId}/assets/${assetId}/crew/${crewId}/photo`,
+  return normalizeCrew(
+    await apiClient.delete<CrewDto>(
+      `/projects/${projectId}/assets/${assetId}/crew/${crewId}/photo`,
+    ),
   );
 }

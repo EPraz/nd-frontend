@@ -1,6 +1,7 @@
 import { Button } from "@/src/components/ui/button/Button";
 import { Text } from "@/src/components/ui/text/Text";
 import { ProjectDto } from "@/src/contracts/projects.contract";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import { ChevronRight } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 import {
@@ -47,7 +48,7 @@ export function ProjectsWorkspaceRow({
 
         <View className="flex-[1.1] pr-3">
           <View className="self-start rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">
-            <Text className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+            <Text className="text-[11px] font-semibold text-muted">
               {KIND_SHORT_LABEL[project.kind]}
             </Text>
           </View>
@@ -63,11 +64,11 @@ export function ProjectsWorkspaceRow({
             <View className={["h-2 w-2 rounded-full", tone.dot].join(" ")} />
             <Text
               className={[
-                "text-[10px] font-semibold uppercase tracking-[0.16em]",
+                "text-[11px] font-semibold",
                 tone.text,
               ].join(" ")}
             >
-              {String(project.status)}
+              {humanizeTechnicalLabel(String(project.status))}
             </Text>
           </View>
         </View>
@@ -90,9 +91,9 @@ export function ProjectsWorkspaceRow({
             size="pillXs"
             className="gap-2"
             onPress={onPress}
+            rightIcon={<ChevronRight size={14} color={ACTION_ICON_COLOR} />}
           >
-            <Text className="text-accent">Enter</Text>
-            <ChevronRight size={14} color={ACTION_ICON_COLOR} />
+            Enter
           </Button>
         </View>
       </View>
@@ -101,7 +102,7 @@ export function ProjectsWorkspaceRow({
         <View className="flex-row items-start justify-between gap-3">
           <View className="flex-1 gap-2">
             <View className="self-start rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">
-              <Text className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+              <Text className="text-[11px] font-semibold text-muted">
                 {KIND_SHORT_LABEL[project.kind]}
               </Text>
             </View>
@@ -119,11 +120,11 @@ export function ProjectsWorkspaceRow({
             <View className={["h-2 w-2 rounded-full", tone.dot].join(" ")} />
             <Text
               className={[
-                "text-[10px] font-semibold uppercase tracking-[0.16em]",
+                "text-[11px] font-semibold",
                 tone.text,
               ].join(" ")}
             >
-              {String(project.status)}
+              {humanizeTechnicalLabel(String(project.status))}
             </Text>
           </View>
         </View>

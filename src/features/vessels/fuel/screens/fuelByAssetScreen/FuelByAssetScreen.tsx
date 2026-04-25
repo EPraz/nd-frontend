@@ -33,11 +33,7 @@ export default function FuelByAssetScreen() {
           title="Fuel"
           eyebrow="Vessel fuel registry"
           actions={
-            <FuelByAssetHeaderActions
-              projectId={pid}
-              assetId={aid}
-              onRefresh={page.refresh}
-            />
+            <FuelByAssetHeaderActions onRefresh={page.refresh} />
           }
         />
 

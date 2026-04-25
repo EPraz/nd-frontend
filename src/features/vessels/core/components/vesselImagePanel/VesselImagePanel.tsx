@@ -1,7 +1,8 @@
 import { Button, Text } from "@/src/components";
-import { Image } from "expo-image";
+import { VesselImageMedia } from "@/src/features/vessels/shared";
 import { Ionicons } from "@expo/vector-icons";
-import { View } from "react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 type Props = {
   imagePreviewUrl?: string | null;
@@ -12,6 +13,7 @@ type Props = {
   canManageImage?: boolean;
   busy?: boolean;
   disabled?: boolean;
+  compact?: boolean;
 };
 
 export default function VesselImagePanel({
@@ -23,12 +25,35 @@ export default function VesselImagePanel({
   canManageImage = true,
   busy = false,
   disabled = false,
+  compact = false,
 }: Props) {
-  const resolvedFileLabel =
-    pendingFileName ?? storedFileName ?? "No image selected yet";
+  const [previewErrored, setPreviewErrored] = useState(false);
+
+  useEffect(() => {
+    setPreviewErrored(false);
+  }, [imagePreviewUrl]);
+
+  const resolvedFileLabel = pendingFileName ?? storedFileName ?? null;
+  const hasRenderablePreview = Boolean(imagePreviewUrl) && !previewErrored;
+  const previewCopy = previewErrored
+    ? {
+        title: "Preview unavailable",
+        description:
+          "This image could not be rendered in the editor. Try selecting it again before saving.",
+      }
+    : {
+        title: "No vessel image",
+        description:
+          "Add a real vessel photo to make the vessel shell feel current and client-ready.",
+      };
 
   return (
-    <View className="gap-4 rounded-[18px] border border-shellLine bg-shellCanvas p-4">
+    <View
+      className={[
+        "border border-shellLine bg-shellPanel",
+        compact ? "gap-3 rounded-[22px] p-3" : "gap-4 rounded-[18px] p-4",
+      ].join(" ")}
+    >
       <View className="gap-1">
         <Text className="font-semibold text-textMain">Vessel Image</Text>
         <Text className="text-[12px] leading-[18px] text-muted">
@@ -37,45 +62,44 @@ export default function VesselImagePanel({
         </Text>
       </View>
 
-      <View className="gap-4 web:flex-row">
-        <View className="h-[220px] flex-1 overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft">
-          {imagePreviewUrl ? (
-            <Image
-              source={{ uri: imagePreviewUrl }}
-              contentFit="cover"
-              style={{ width: "100%", height: "100%" }}
+      <View className={compact ? "gap-3" : "gap-4 web:flex-row"}>
+        <View
+          className={[
+            "overflow-hidden border border-shellLine bg-shellPanelSoft",
+            compact ? "rounded-[20px]" : "rounded-[18px]",
+          ].join(" ")}
+          style={compact ? styles.compactPreviewFrame : styles.previewFrame}
+          testID="vessel-image-preview-frame"
+        >
+          {hasRenderablePreview ? (
+            <VesselImageMedia
+              uri={imagePreviewUrl!}
+              onError={() => setPreviewErrored(true)}
+              testID="vessel-image-preview"
+              accessibilityLabel="Vessel image preview"
             />
           ) : (
             <View className="flex-1 items-center justify-center gap-2 px-4">
               <Ionicons
-                name="boat-outline"
+                name={previewErrored ? "alert-circle-outline" : "boat-outline"}
                 size={42}
                 className="text-muted"
               />
               <Text className="font-semibold text-textMain">
-                No vessel image
+                {previewCopy.title}
               </Text>
               <Text className="text-center text-[12px] leading-[18px] text-muted">
-                Add a real vessel photo to make the vessel shell feel current
-                and client-ready.
+                {previewCopy.description}
               </Text>
             </View>
           )}
         </View>
 
-        <View className="flex-1 gap-3">
-          <View className="gap-1 rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3">
-            <Text className="text-[12px] text-muted">Selected file</Text>
-            <Text className="font-semibold text-textMain">
-              {resolvedFileLabel}
-            </Text>
-            <Text className="text-[12px] text-muted">JPG, PNG or WEBP</Text>
-          </View>
-
+        <View className={compact ? "gap-3" : "flex-1 gap-3"}>
           <View className="flex-row flex-wrap gap-2">
             <Button
-              variant="outline"
-              size="sm"
+              variant="default"
+              size={compact ? "pillXs" : "sm"}
               onPress={onSelectImage}
               disabled={disabled || !canManageImage || busy}
               className="rounded-full"
@@ -84,8 +108,8 @@ export default function VesselImagePanel({
             </Button>
 
             <Button
-              variant="outline"
-              size="sm"
+              variant="softDestructive"
+              size={compact ? "pillXs" : "sm"}
               onPress={onRemoveImage}
               disabled={
                 disabled ||
@@ -98,8 +122,30 @@ export default function VesselImagePanel({
               Remove image
             </Button>
           </View>
+
+          {resolvedFileLabel ? (
+            <Text className="text-[12px] leading-[18px] text-muted">
+              Selected file: {resolvedFileLabel}
+            </Text>
+          ) : (
+            <Text className="text-[12px] leading-[18px] text-muted">
+              JPG, PNG or WEBP
+            </Text>
+          )}
         </View>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  previewFrame: {
+    flex: 1,
+    height: 220,
+  },
+  compactPreviewFrame: {
+    alignSelf: "stretch",
+    height: 220,
+    width: "100%",
+  },
+});

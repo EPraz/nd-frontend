@@ -1,5 +1,5 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
-import { useToast } from "@/src/context";
+import { useToast } from "@/src/context/ToastProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";

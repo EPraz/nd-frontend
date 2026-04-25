@@ -89,18 +89,11 @@ export function DocumentStatePill(props: {
     DRAFT: "info",
   };
 
-  const label: Record<typeof props.state, string> = {
-    MISSING: "Missing",
-    CANDIDATE: "Candidate",
-    APPROVED: "Approved",
-    SUBMITTED: "Submitted",
-    REJECTED: "Rejected",
-    ARCHIVED: "Archived",
-    DRAFT: "Draft",
-  };
-
   return (
-    <RegistryTablePill label={label[props.state]} tone={tone[props.state]} />
+    <RegistryTablePill
+      label={humanizeTechnicalLabel(props.state)}
+      tone={tone[props.state]}
+    />
   );
 }
 

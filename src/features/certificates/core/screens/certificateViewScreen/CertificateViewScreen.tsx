@@ -10,7 +10,6 @@ import { DocumentPreview } from "@/src/components/ui/documentPreview/DocumentPre
 import ErrorState from "@/src/components/ui/errorState/ErrorState";
 import { FieldDisplay } from "@/src/components/ui/forms/FieldDisplay";
 import Loading from "@/src/components/ui/loading/Loading";
-import { MiniPill } from "@/src/components/ui/miniPill/MiniPill";
 import { ConfirmModal } from "@/src/components/ui/modal/ConfirmModal";
 import { Text } from "@/src/components/ui/text/Text";
 import { useToast } from "@/src/context/ToastProvider";
@@ -26,6 +25,41 @@ import {
 } from "@/src/features/certificates/core/components/certificateTable/certificates.ui";
 import { useCertificatesById } from "@/src/features/certificates/core/hooks/useCertificatesById";
 import { useCertificateWorkflowActions } from "@/src/features/certificates/ingestion";
+
+type DetailTagTone = "accent" | "info" | "ok" | "warn";
+
+function detailTagClasses(tone: DetailTagTone) {
+  switch (tone) {
+    case "ok":
+      return "border-emerald-400/25 bg-emerald-400/10 text-emerald-100";
+    case "warn":
+      return "border-amber-300/30 bg-amber-300/12 text-amber-100";
+    case "info":
+      return "border-sky-400/25 bg-sky-400/10 text-sky-100";
+    case "accent":
+    default:
+      return "border-accent/35 bg-accent/14 text-accent";
+  }
+}
+
+function DetailTag({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: DetailTagTone;
+}) {
+  return (
+    <View
+      className={[
+        "rounded-full border px-3 py-1.5",
+        detailTagClasses(tone),
+      ].join(" ")}
+    >
+      <Text className="text-[11px] font-medium">{label}</Text>
+    </View>
+  );
+}
 
 export default function CertificateViewScreen() {
   const router = useRouter();
@@ -54,8 +88,6 @@ export default function CertificateViewScreen() {
   } = useCertificateWorkflowActions(pid, vid, cid);
 
   const goBack = () => router.back();
-  const goEdit = () =>
-    router.push(`/projects/${pid}/vessels/${vid}/certificates/${cid}/edit`);
   const goVessel = () => router.push(`/projects/${pid}/vessels/${vid}`);
   const listHref = `/projects/${pid}/vessels/${vid}/certificates`;
 
@@ -155,9 +187,13 @@ export default function CertificateViewScreen() {
   if (!certificate)
     return <ErrorState message="Certificate not found." onRetry={refresh} />;
 
+  const approvalTagLabel = certificate.approvedByUserName
+    ? `Approved by: ${certificate.approvedByUserName}`
+    : "Approved by: Pending review";
+
   return (
     <>
-      <View className="flex-1 bg-shellCanvas p-4 web:p-6 gap-5">
+      <View className="flex-1 p-4 web:p-6 gap-5">
         <View className="gap-3">
           <Pressable
             onPress={goBack}
@@ -190,45 +226,36 @@ export default function CertificateViewScreen() {
               />
 
               <Button
-                variant="destructive"
-                size="lg"
+                variant="softDestructive"
+                size="pill"
                 onPress={() => setIsDeleteCertificateOpen(true)}
                 className="rounded-full"
                 rightIcon={
                   <Ionicons
                     name="trash-outline"
                     size={16}
-                    className="text-textMain"
+                    className="text-destructive"
                   />
                 }
               >
                 Delete
               </Button>
 
-              <Button
-                variant="default"
-                size="lg"
-                onPress={goEdit}
-                className="rounded-full"
-                rightIcon={
-                  <Ionicons
-                    name="create-outline"
-                    size={16}
-                    className="text-textMain"
-                  />
-                }
-              >
-                Edit metadata
-              </Button>
-
               {certificate.workflowStatus !== "APPROVED" &&
               certificate.workflowStatus !== "ARCHIVED" ? (
                 <Button
-                  variant="outline"
-                  size="lg"
+                  variant="default"
+                  size="pill"
                   onPress={onApprove}
                   loading={workflowLoading}
                   className="rounded-full"
+                  rightIcon={
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={16}
+                      className="text-textMain"
+                    />
+                  }
                 >
                   Approve
                 </Button>
@@ -258,12 +285,22 @@ export default function CertificateViewScreen() {
                     </Text>
 
                     <View className="flex-row flex-wrap gap-2">
-                      <MiniPill>{`Code: ${certificate.certificateCode}`}</MiniPill>
-                      <MiniPill>{`Vessel: ${certificate.assetName}`}</MiniPill>
-                      <MiniPill>
-                        {`Approved by: ${certificate.approvedByUserName ?? "Pending review"}`}
-                      </MiniPill>
-                      <MiniPill>{`Attachments: ${certificate.attachmentCount}`}</MiniPill>
+                      <DetailTag
+                        label={`Code: ${certificate.certificateCode}`}
+                        tone="accent"
+                      />
+                      <DetailTag
+                        label={`Vessel: ${certificate.assetName}`}
+                        tone="info"
+                      />
+                      <DetailTag
+                        label={approvalTagLabel}
+                        tone={certificate.approvedByUserName ? "ok" : "warn"}
+                      />
+                      <DetailTag
+                        label={`Attachments: ${certificate.attachmentCount}`}
+                        tone="info"
+                      />
                     </View>
                   </View>
 
@@ -358,7 +395,7 @@ export default function CertificateViewScreen() {
                               Open original
                             </Button>
                             <Button
-                              variant="destructive"
+                              variant="softDestructive"
                               size="sm"
                               onPress={() =>
                                 setAttachmentPendingDelete({
@@ -451,9 +488,18 @@ export default function CertificateViewScreen() {
                 {selectedAttachment ? (
                   <View className="gap-4">
                     <View className="flex-row flex-wrap gap-2">
-                      <MiniPill>{selectedAttachment.fileName}</MiniPill>
-                      <MiniPill>{selectedAttachment.mimeType}</MiniPill>
-                      <MiniPill>{`Version ${selectedAttachment.version}`}</MiniPill>
+                      <DetailTag
+                        label={selectedAttachment.fileName}
+                        tone="accent"
+                      />
+                      <DetailTag
+                        label={selectedAttachment.mimeType}
+                        tone="info"
+                      />
+                      <DetailTag
+                        label={`Version ${selectedAttachment.version}`}
+                        tone="ok"
+                      />
                     </View>
 
                     <DocumentPreview

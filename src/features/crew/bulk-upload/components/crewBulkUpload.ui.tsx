@@ -1,4 +1,5 @@
 import { RegistryTablePill } from "@/src/components/ui/table";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import type { CrewBulkUploadSessionStatus } from "../contracts/crewBulkUpload.contract";
 
 export function CrewBulkUploadStatusPill({
@@ -10,11 +11,10 @@ export function CrewBulkUploadStatusPill({
     status === "COMMITTED"
       ? ("ok" as const)
       : status === "DISCARDED"
-        ? ("neutral" as const)
+        ? ("danger" as const)
         : ("warn" as const);
 
-  const label =
-    status === "READY_FOR_REVIEW" ? "Ready for review" : humanize(status);
+  const label = humanizeTechnicalLabel(status);
 
   return <RegistryTablePill label={label} tone={tone} />;
 }
@@ -32,12 +32,4 @@ export function CrewBulkUploadIssuePill({
   return (
     <RegistryTablePill label={`${count} ${label}`} tone={resolvedTone} />
   );
-}
-
-function humanize(value: string) {
-  return value
-    .toLowerCase()
-    .split("_")
-    .map((chunk) => chunk[0].toUpperCase() + chunk.slice(1))
-    .join(" ");
 }

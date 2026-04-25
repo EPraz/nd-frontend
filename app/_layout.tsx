@@ -1,6 +1,7 @@
 import { SafeScreen } from "@/src/components";
-import { SessionProvider, ToastProvider } from "@/src/context";
+import { SessionProvider } from "@/src/context/SessionProvider";
 import { ThemeProvider } from "@/src/context/ThemeProvider";
+import { ToastProvider } from "@/src/context/ToastProvider";
 import "@/src/lib/interop";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";

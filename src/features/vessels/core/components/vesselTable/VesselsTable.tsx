@@ -4,6 +4,7 @@ import { TableActionIcon } from "@/src/components/ui/table/TableActionIcon";
 import { TableLink } from "@/src/components/ui/table/TableLink";
 import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import { useRouter } from "expo-router";
 import { useMemo, type ReactNode } from "react";
 
@@ -129,7 +130,10 @@ export function VesselsTable(props: Props) {
         header: "Status",
         flex: 1,
         render: (row) => (
-          <StatusPill label={row.status} tone={statusTone(row.status)} />
+          <StatusPill
+            label={humanizeTechnicalLabel(row.status)}
+            tone={statusTone(row.status)}
+          />
         ),
       },
       {

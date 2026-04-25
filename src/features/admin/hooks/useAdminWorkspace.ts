@@ -5,12 +5,14 @@ import {
   fetchAdminUsers,
   updateProjectUserAccess,
 } from "@/src/api/admin.api";
+import { updateProjectModuleEntitlements } from "@/src/api/projects.api";
 import type {
   AdminProjectDto,
   AdminUserDto,
   CreateAdminUserDto,
   CreateProjectDto,
 } from "@/src/contracts/admin.contract";
+import type { UpdateProjectModuleEntitlementsDto } from "@/src/contracts/project-entitlements.contract";
 import { useCallback, useEffect, useState } from "react";
 
 function toMessage(error: unknown): string {
@@ -24,6 +26,7 @@ export function useAdminWorkspace(enabled = true) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingProject, setSavingProject] = useState(false);
+  const [savingProjectModules, setSavingProjectModules] = useState(false);
   const [savingUser, setSavingUser] = useState(false);
   const [savingAccess, setSavingAccess] = useState<string | null>(null);
 
@@ -69,6 +72,18 @@ export function useAdminWorkspace(enabled = true) {
     }
   }, []);
 
+  const saveProjectModules = useCallback(
+    async (projectId: string, dto: UpdateProjectModuleEntitlementsDto) => {
+      setSavingProjectModules(true);
+      try {
+        return await updateProjectModuleEntitlements(projectId, dto);
+      } finally {
+        setSavingProjectModules(false);
+      }
+    },
+    [],
+  );
+
   const createUser = useCallback(async (dto: CreateAdminUserDto) => {
     setSavingUser(true);
     try {
@@ -102,9 +117,11 @@ export function useAdminWorkspace(enabled = true) {
     error,
     refresh,
     createProject,
+    saveProjectModules,
     createUser,
     saveProjectUsers,
     savingProject,
+    savingProjectModules,
     savingUser,
     savingAccess,
   };

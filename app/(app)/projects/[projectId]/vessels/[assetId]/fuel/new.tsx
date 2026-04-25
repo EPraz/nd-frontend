@@ -1,7 +1,16 @@
-import { CreateFuelScreen } from "@/src/features/fuel";
+import { Redirect, useLocalSearchParams } from "expo-router";
 
-const create = () => {
-  return <CreateFuelScreen />;
-};
+function Create() {
+  const { projectId, assetId } = useLocalSearchParams<{
+    projectId: string;
+    assetId: string;
+  }>();
 
-export default create;
+  return (
+    <Redirect
+      href={`/projects/${String(projectId)}/vessels/${String(assetId)}/fuel`}
+    />
+  );
+}
+
+export default Create;

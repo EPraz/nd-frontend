@@ -1,27 +1,30 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeaderRow,
-  CardTitle,
-  Loading,
-  PageHeader,
-  StatCard,
-  Text,
-} from "@/src/components";
+import { Button, Field, Loading, Text } from "@/src/components";
 import { EmptyVesselsState } from "@/src/components/ui/forms/EmptyVesselsState";
-import { Field } from "@/src/components/ui/forms/Field";
 import { SearchableVesselSelect } from "@/src/components/ui/forms/SearchableVesselSelect";
 import { VesselPill } from "@/src/components/ui/forms/VesselPill";
+import {
+  RegistryHeaderActionButton,
+  RegistrySummaryStrip,
+  RegistryWorkspaceHeader,
+  RegistryWorkspaceSection,
+  type RegistrySummaryItem,
+} from "@/src/components/ui/registryWorkspace";
+import { RegistryTablePill } from "@/src/components/ui/table";
 import { useToast } from "@/src/context/ToastProvider";
-import { useVessels } from "@/src/features/vessels/core";
 import { Ionicons } from "@expo/vector-icons";
+import { useVessels } from "@/src/features/vessels/core";
+import { humanizeTechnicalLabel } from "@/src/helpers/humanizeTechnicalLabel";
 import * as DocumentPicker from "expo-document-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 import { useCertificateRequirementsByAsset } from "@/src/features/certificates/requirements/hooks/useCertificateRequirementsByAsset";
+import {
+  documentStateTone,
+  requirementStatusLabel,
+  requirementTone,
+} from "../certificateTask.helpers";
 import { useCreateExtraCertificateIngestion } from "../../hooks/useCreateExtraCertificateIngestion";
 import { useCreateRequirementIngestion } from "../../hooks/useCreateRequirementIngestion";
 
@@ -30,25 +33,56 @@ type CertificateUploadFormValues = {
   notes: string;
 };
 
-function FlowRow({
-  icon,
-  title,
-  description,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
+type FlowStepProps = {
+  step: string;
   title: string;
   description: string;
-}) {
+  tone: "accent" | "info" | "ok";
+};
+
+function flowStepClasses(tone: FlowStepProps["tone"]) {
+  switch (tone) {
+    case "ok":
+      return {
+        rail: "bg-emerald-300",
+        badge: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+      };
+    case "info":
+      return {
+        rail: "bg-sky-300",
+        badge: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+      };
+    case "accent":
+    default:
+      return {
+        rail: "bg-accent",
+        badge: "border-accent/30 bg-accent/12 text-accent",
+      };
+  }
+}
+
+function FlowStep({ step, title, description, tone }: FlowStepProps) {
+  const ui = flowStepClasses(tone);
+
   return (
-    <View className="flex-row items-start gap-3">
-      <View className="mt-0.5 h-9 w-9 items-center justify-center rounded-[12px] border border-shellLine bg-shellPanelSoft">
-        <Ionicons name={icon} size={16} className="text-accent" />
+    <View className="relative pl-8">
+      <View className="absolute left-[7px] top-[8px] h-4 w-4 items-center justify-center rounded-full border border-shellLine bg-shellPanel">
+        <View className={["h-2.5 w-2.5 rounded-full", ui.rail].join(" ")} />
       </View>
-      <View className="flex-1 gap-1">
-        <Text className="text-[13px] font-semibold text-textMain">{title}</Text>
-        <Text className="text-[12px] leading-[18px] text-muted">
-          {description}
-        </Text>
+      <View className="absolute bottom-0 left-[14px] top-[24px] w-px bg-shellLine" />
+
+      <View className="gap-2 pb-4">
+        <View className={["self-start rounded-full border px-2.5 py-1", ui.badge].join(" ")}>
+          <Text className="text-[10px] font-semibold uppercase tracking-[0.14em]">
+            {step}
+          </Text>
+        </View>
+        <View className="gap-1">
+          <Text className="text-[13px] font-semibold text-textMain">{title}</Text>
+          <Text className="text-[12px] leading-[18px] text-muted">
+            {description}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -81,7 +115,7 @@ export default function CertificateUploadScreen() {
     return requirements.find((row) => row.id === rid) ?? null;
   }, [requirements, rid]);
 
-  const { setValue, watch } = useForm<CertificateUploadFormValues>({
+  const { handleSubmit, setValue, watch } = useForm<CertificateUploadFormValues>({
     defaultValues: {
       selectedVesselId: fixedAssetId,
       notes: "",
@@ -130,6 +164,47 @@ export default function CertificateUploadScreen() {
     requirementUpload.loading || extraUpload.loading || requirementsLoading;
   const uploadError = requirementUpload.error ?? extraUpload.error;
   const canUpload = Boolean(file && effectiveAssetId && !uploading);
+
+  const summaryItems = useMemo<RegistrySummaryItem[]>(
+    () => [
+      {
+        label: "Intake",
+        value: isRequirementFlow ? "Requirement document" : "Supporting document",
+        helper: isRequirementFlow
+          ? "linked to an active certificate requirement"
+          : "reviewed before creating a structured record",
+        tone: isRequirementFlow ? "accent" : "info",
+      },
+      {
+        label: "Vessel",
+        value: selectedVessel?.name ?? "Pending",
+        helper: selectedVessel ? "current certificate context" : "select the vessel before upload",
+        tone: selectedVessel ? "ok" : "neutral",
+      },
+      {
+        label: "Target",
+        value: requirement?.certificateName ?? "Reviewer decides",
+        helper: requirement?.certificateCode ?? "final certificate type is confirmed after review",
+        tone: requirement ? requirementTone(requirement.status) : "info",
+      },
+      {
+        label: "Document",
+        value: file ? "Selected" : "Pending",
+        helper: file?.name ?? "PDF, JPG, JPEG, or PNG",
+        tone: documentStateTone(Boolean(file)),
+      },
+    ],
+    [file, isRequirementFlow, requirement, selectedVessel],
+  );
+
+  function goBack() {
+    router.replace(`/projects/${pid}/certificates`);
+  }
+
+  function openVessel() {
+    if (!selectedVessel) return;
+    router.push(`/projects/${pid}/vessels/${selectedVessel.id}`);
+  }
 
   async function pickDocument() {
     setLocalError(null);
@@ -192,307 +267,242 @@ export default function CertificateUploadScreen() {
     }
   }
 
+  if (fixedAssetId && vesselsLoading && !selectedVessel) return <Loading fullScreen />;
+
   return (
-    <View className="flex-1 bg-shellCanvas">
-      <ScrollView
-        contentContainerClassName="gap-6 p-4 pb-10 web:p-6"
-        showsVerticalScrollIndicator={false}
-      >
-        <PageHeader
+    <ScrollView
+      contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="gap-4">
+        <RegistryWorkspaceHeader
           title={
             isRequirementFlow
-              ? "Upload Requirement Document"
-              : "Add Extra Certificate"
+              ? "Upload certificate evidence"
+              : "Add supporting certificate"
           }
-          subTitle="Upload the source document first so ARXIS can extract a candidate, then confirm the real certificate after review."
+          eyebrow="Certificate intake task"
+          subtitle="Upload the source document first so ARXIS can create a review candidate. The structured certificate record appears only after that review is confirmed."
           actions={
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-              onPress={() => router.replace(`/projects/${pid}/certificates`)}
-            >
-              Back to Certificate Compliance
-            </Button>
+            <>
+              <RegistryHeaderActionButton
+                variant="soft"
+                iconName="chevron-back-outline"
+                iconSide="left"
+                onPress={goBack}
+              >
+                Certificate compliance
+              </RegistryHeaderActionButton>
+
+              {selectedVessel ? (
+                <RegistryHeaderActionButton
+                  variant="outline"
+                  iconName="boat-outline"
+                  iconSide="right"
+                  onPress={openVessel}
+                >
+                  Open vessel
+                </RegistryHeaderActionButton>
+              ) : null}
+            </>
           }
         />
 
-        <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
-          <StatCard
-            iconName="folder-open-outline"
-            iconLib="ion"
-            title="Flow"
-            value={isRequirementFlow ? "Requirement" : "Extra"}
-            suffix={
-              isRequirementFlow
-                ? "bound to an existing certificate requirement"
-                : "outside the current rule set"
-            }
-          />
-          <StatCard
-            iconName="boat-outline"
-            iconLib="ion"
-            title="Vessel context"
-            value={selectedVessel ? "Ready" : "Pending"}
-            suffix={
-              selectedVessel
-                ? selectedVessel.name
-                : "select the vessel before upload"
-            }
-          />
-          <StatCard
-            iconName="document-attach-outline"
-            iconLib="ion"
+        <RegistrySummaryStrip items={summaryItems} />
+      </View>
+
+      <View className="gap-5 web:xl:flex-row web:xl:items-start">
+        <View className="min-w-0 flex-[1.35] gap-5">
+          <RegistryWorkspaceSection
             title="Source document"
-            value={file ? "Attached" : "Missing"}
-            suffix={file?.name ?? "pick PDF or image"}
-          />
-        </View>
+            subtitle="Use one PDF or image as the source of truth for this intake. Upload creates the review candidate, not the final certificate record."
+          >
+            <View className="gap-5">
+              <View className="gap-3">
+                <Text className="text-[13px] font-semibold text-textMain">
+                  Vessel context
+                </Text>
 
-        <View className="rounded-[20px] border border-shellLine bg-shellGlass px-4 py-4">
-          <View className="flex-row flex-wrap items-start justify-between gap-4">
-            <View className="max-w-[720px] gap-1">
-              <Text className="text-[12px] uppercase tracking-[1.6px] text-muted">
-                Evidence-first flow
-              </Text>
-              <Text className="text-[13px] leading-[20px] text-textMain">
-                Upload only creates an ingestion candidate. The final structured
-                certificate appears after the review screen confirms certificate
-                type, dates, issuer, and notes.
-              </Text>
-            </View>
-            <View className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5">
-              <Text className="text-[10px] font-semibold uppercase tracking-[1.5px] text-accent">
-                Review required
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="gap-5 web:xl:flex-row">
-          <View className="flex-[1.2] gap-5">
-            <Card className="gap-0 overflow-hidden p-0">
-              <CardHeaderRow>
-                <View className="gap-1">
-                  <CardTitle className="text-[16px] text-textMain">
-                    Upload package
-                  </CardTitle>
-                  <Text className="text-[13px] text-muted">
-                    Keep the upload anchored to the right vessel and document
-                    before the candidate is extracted.
-                  </Text>
-                </View>
-              </CardHeaderRow>
-
-              <CardContent className="px-6">
-                <View className="gap-5">
-                  <View className="gap-3">
-                    <Text className="text-[13px] font-semibold text-textMain">
-                      Vessel context
+                {fixedAssetId ? (
+                  selectedVessel ? (
+                    <VesselPill vessel={selectedVessel} />
+                  ) : vesselsError ? (
+                    <Text className="text-[12px] text-destructive">
+                      {vesselsError}
                     </Text>
-
-                    {fixedAssetId ? (
-                      selectedVessel ? (
-                        <VesselPill vessel={selectedVessel} />
-                      ) : (
-                        <Loading />
-                      )
-                    ) : vessels.length === 0 && !vesselsLoading ? (
-                      <EmptyVesselsState
-                        onCreateVessel={() =>
-                          router.push(`/projects/${pid}/vessels/new`)
-                        }
-                      />
-                    ) : (
-                      <View className="gap-2">
-                        <SearchableVesselSelect
-                          vessels={vessels}
-                          value={selectedVessel}
-                          onChange={(vessel) =>
-                            setValue("selectedVesselId", vessel?.id ?? null, {
-                              shouldDirty: true,
-                              shouldTouch: true,
-                            })
-                          }
-                          disabled={vesselsLoading}
-                        />
-                        {vesselsError ? (
-                          <Text className="text-[12px] text-destructive">
-                            {vesselsError}
-                          </Text>
-                        ) : null}
-                      </View>
-                    )}
-
-                    {isRequirementFlow && requirement ? (
-                      <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
-                        <Text className="text-[12px] text-muted">Requirement</Text>
-                        <Text className="text-textMain font-semibold">
-                          {requirement.certificateName} ({requirement.certificateCode})
-                        </Text>
-                        <Text className="text-[12px] text-muted">
-                          Current status: {requirement.status}
-                        </Text>
-                      </View>
-                    ) : (
-                      <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
-                        <Text className="text-[12px] text-muted">
-                          Extra certificate mode
-                        </Text>
-                        <Text className="text-[13px] leading-[20px] text-textMain">
-                          This file sits outside the current requirement
-                          baseline, so the reviewer chooses the final
-                          certificate type after extraction.
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
-                  <View className="h-px bg-shellLine" />
-
-                  <View className="gap-4">
-                    <View className="flex-row flex-wrap items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onPress={pickDocument}
-                        className="rounded-full"
-                      >
-                        {file ? "Change document" : "Pick PDF or image"}
-                      </Button>
-
-                      {file ? (
-                        <View className="rounded-full border border-success/30 bg-success/10 px-3 py-1.5">
-                          <Text className="text-[10px] font-semibold uppercase tracking-[1.5px] text-success">
-                            Ready for review
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
-
-                    <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-1">
-                      <Text className="text-[12px] text-muted">Selected file</Text>
-                      <Text className="text-textMain font-semibold">
-                        {file?.name ?? "No file selected yet"}
-                      </Text>
-                      <Text className="text-[12px] text-muted">
-                        {file?.mimeType ?? "PDF, JPG, JPEG, PNG"}
-                      </Text>
-                    </View>
-
-                    <Field
-                      label="Notes for reviewer (optional)"
-                      placeholder="Context before we create the candidate"
-                      value={notes}
-                      onChangeText={(value) =>
-                        setValue("notes", value, {
+                  ) : (
+                    <Loading />
+                  )
+                ) : vessels.length === 0 && !vesselsLoading ? (
+                  <EmptyVesselsState
+                    onCreateVessel={() => router.push(`/projects/${pid}/vessels/new`)}
+                  />
+                ) : (
+                  <View className="gap-2">
+                    <SearchableVesselSelect
+                      vessels={vessels}
+                      value={selectedVessel}
+                      onChange={(vessel) =>
+                        setValue("selectedVesselId", vessel?.id ?? null, {
                           shouldDirty: true,
                           shouldTouch: true,
                         })
                       }
-                      multiline
-                      hint="Capture context the reviewer should see before confirming the candidate."
+                      disabled={vesselsLoading}
                     />
-
-                    {localError ? (
+                    {vesselsError ? (
                       <Text className="text-[12px] text-destructive">
-                        {localError}
+                        {vesselsError}
                       </Text>
                     ) : null}
-                    {uploadError ? (
-                      <Text className="text-[12px] text-destructive">
-                        {uploadError}
-                      </Text>
-                    ) : null}
-
-                    <Button
-                      variant="default"
-                      size="lg"
-                      onPress={onUpload}
-                      loading={uploading}
-                      disabled={!canUpload}
-                      className="self-start rounded-full"
-                      rightIcon={
-                        <Ionicons
-                          name="arrow-forward-outline"
-                          size={16}
-                          className="text-textMain"
-                        />
-                      }
-                    >
-                      Upload and extract candidate
-                    </Button>
                   </View>
-                </View>
-              </CardContent>
-            </Card>
-          </View>
+                )}
 
-          <View className="flex-1 gap-5">
-            <Card className="gap-0 overflow-hidden p-0">
-              <CardHeaderRow>
-                <View className="gap-1">
-                  <CardTitle className="text-[16px] text-textMain">
-                    What happens next
-                  </CardTitle>
-                  <Text className="text-[13px] text-muted">
-                    The flow stays aligned with the current compliance model and
-                    never jumps straight from file to approved record.
-                  </Text>
-                </View>
-              </CardHeaderRow>
+                {isRequirementFlow && requirement ? (
+                  <View className="rounded-[20px] border border-accent/25 bg-accent/10 p-4">
+                    <View className="flex-row flex-wrap items-start justify-between gap-4">
+                      <View className="min-w-[220px] flex-1 gap-1">
+                        <Text className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent/80">
+                          Requirement target
+                        </Text>
+                        <Text className="text-[14px] font-semibold text-textMain">
+                          {requirement.certificateName} ({requirement.certificateCode})
+                        </Text>
+                        <Text className="text-[12px] leading-[18px] text-muted">
+                          This upload can satisfy the active vessel certificate requirement after review.
+                        </Text>
+                      </View>
 
-              <CardContent className="px-6">
-                <View className="gap-4">
-                  <FlowRow
-                    icon="cloud-upload-outline"
-                    title="Upload evidence"
-                    description="Store the original document and create a candidate for review."
+                      <RegistryTablePill
+                          label={requirementStatusLabel(requirement.status)}
+                          tone={requirementTone(requirement.status)}
+                        />
+                    </View>
+                  </View>
+                ) : null}
+              </View>
+
+              <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
+                <View className="flex-row flex-wrap items-start justify-between gap-4">
+                  <View className="min-w-[220px] flex-1 gap-2">
+                    <View className="flex-row items-center gap-2">
+                      <View className="h-9 w-9 items-center justify-center rounded-[12px] border border-shellLine bg-shellCanvas">
+                        <Ionicons
+                          name={file ? "document-text-outline" : "cloud-upload-outline"}
+                          size={16}
+                          className="text-accent"
+                        />
+                      </View>
+                      <View className="gap-0.5">
+                        <Text className="text-[13px] font-semibold text-textMain">
+                          {file ? "Selected document" : "No document selected yet"}
+                        </Text>
+                        <Text className="text-[12px] leading-[18px] text-muted">
+                          {file?.name ?? "Pick PDF, JPG, JPEG, or PNG before upload."}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text className="text-[12px] leading-[18px] text-muted">
+                      {file?.mimeType ?? "Accepted formats: application/pdf, image/jpeg, image/png"}
+                    </Text>
+                  </View>
+
+                  <RegistryTablePill
+                    label={humanizeTechnicalLabel(
+                      file ? "READY_TO_EXTRACT" : "PENDING_FILE",
+                    )}
+                    tone={file ? "ok" : "warn"}
                   />
-                  <FlowRow
-                    icon="search-outline"
-                    title="Review the candidate"
-                    description="Check certificate type, dates, issuer, and extracted notes before confirming."
-                  />
-                  <FlowRow
-                    icon="checkmark-circle-outline"
-                    title="Create the real record"
-                    description="Only the reviewed candidate becomes a structured certificate inside the project."
-                  />
                 </View>
-              </CardContent>
-            </Card>
+              </View>
 
-            <Card className="gap-0 overflow-hidden p-0">
-              <CardHeaderRow>
-                <View className="gap-1">
-                  <CardTitle className="text-[16px] text-textMain">
-                    Review checkpoint
-                  </CardTitle>
-                  <Text className="text-[13px] text-muted">
-                    This protects compliance from creating records that were not
-                    reviewed against the source document.
-                  </Text>
-                </View>
-              </CardHeaderRow>
+              <View className="flex-row flex-wrap items-center gap-2">
+                <Button
+                  variant={file ? "softAccent" : "default"}
+                  size="pillSm"
+                  className="rounded-full"
+                  onPress={pickDocument}
+                >
+                  {file ? "Change document" : "Select document"}
+                </Button>
 
-              <CardContent className="px-6">
-                <View className="gap-3 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
-                  <Text className="text-[13px] font-semibold text-textMain">
-                    Candidate first, record second
-                  </Text>
-                  <Text className="text-[12px] leading-[18px] text-muted">
-                    After upload, ARXIS routes you to the review screen. That is
-                    where the team confirms the extracted candidate before the
-                    certificate record becomes part of compliance.
-                  </Text>
-                </View>
-              </CardContent>
-            </Card>
-          </View>
+                {file ? (
+                  <Button
+                    variant="default"
+                    size="pillSm"
+                    className="rounded-full"
+                    onPress={handleSubmit(onUpload)}
+                    loading={uploading}
+                    disabled={!canUpload}
+                    rightIcon={
+                      <Ionicons
+                        name="arrow-forward-outline"
+                        size={15}
+                        className="text-textMain"
+                      />
+                    }
+                  >
+                    Upload and extract candidate
+                  </Button>
+                ) : null}
+              </View>
+
+              <Field
+                label="Notes for reviewer (optional)"
+                placeholder="Capture context before the candidate is reviewed"
+                value={notes}
+                onChangeText={(value) =>
+                  setValue("notes", value, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  })
+                }
+                multiline
+                surfaceTone="raised"
+                hint="Keep notes operational. The reviewer sees this context before confirming the structured certificate."
+              />
+
+              {localError ? (
+                <Text className="text-[12px] text-destructive">{localError}</Text>
+              ) : null}
+              {uploadError ? (
+                <Text className="text-[12px] text-destructive">{uploadError}</Text>
+              ) : null}
+            </View>
+          </RegistryWorkspaceSection>
         </View>
-      </ScrollView>
-    </View>
+
+        <View className="min-w-0 flex-1 gap-5 web:xl:max-w-[400px]">
+          <RegistryWorkspaceSection
+            title="What happens next"
+            subtitle="The lane stays aligned with compliance work. ARXIS never jumps straight from file to approved record."
+          >
+            <View className="gap-1">
+              <FlowStep
+                step="01"
+                title="Upload the source document"
+                description="Store the original PDF or image and create one review candidate from it."
+                tone="accent"
+              />
+              <FlowStep
+                step="02"
+                title="Review the extracted candidate"
+                description="Confirm certificate type, dates, issuer, and notes against the source document."
+                tone="info"
+              />
+              <FlowStep
+                step="03"
+                title="Create the submitted record"
+                description="Only the reviewed candidate becomes the structured certificate inside the registry."
+                tone="ok"
+              />
+            </View>
+          </RegistryWorkspaceSection>
+
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 

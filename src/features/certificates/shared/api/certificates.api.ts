@@ -7,9 +7,7 @@ import {
   ConfirmCertificateIngestionInput,
   ConfirmCertificateIngestionResultDto,
   CreateCertificateIngestionInput,
-  CreateCertificateInput,
   GenerateRequirementsResult,
-  UpdateCertificateInput,
 } from "@/src/features/certificates/shared";
 
 export async function fetchCertificateTypes(
@@ -42,28 +40,6 @@ export async function fetchCertificatesById(
 ): Promise<CertificateDto> {
   return apiClient.get<CertificateDto>(
     `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}`,
-  );
-}
-
-export async function createCertificate(
-  projectId: string,
-  input: CreateCertificateInput,
-): Promise<CertificateDto> {
-  return apiClient.post<CertificateDto>(
-    `/projects/${projectId}/certificates`,
-    input,
-  );
-}
-
-export async function updateCertificate(
-  projectId: string,
-  assetId: string,
-  certificateId: string,
-  input: UpdateCertificateInput,
-): Promise<CertificateDto> {
-  return apiClient.patch<CertificateDto>(
-    `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}`,
-    input,
   );
 }
 

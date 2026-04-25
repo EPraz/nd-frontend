@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { render, screen } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMaintenanceByAsset } from "@/src/features/maintenance/core/hooks/useMaintenanceByAsset";
 import MaintenanceByAssetScreen from "../MaintenanceByAssetScreen";
@@ -40,7 +40,7 @@ describe("MaintenanceByAssetScreen", () => {
     });
   });
 
-  it("renders the vessel maintenance workspace framing", () => {
+  it("GIVEN a vessel maintenance lane WHEN rendered SHOULD expose the vessel-scoped maintenance registry", () => {
     render(<MaintenanceByAssetScreen />);
 
     expect(screen.getByText("Maintenance")).toBeOnTheScreen();
@@ -50,13 +50,10 @@ describe("MaintenanceByAssetScreen", () => {
     expect(screen.getByText("In progress")).toBeOnTheScreen();
   });
 
-  it("navigates to create maintenance from the header action", () => {
+  it("GIVEN maintenance create is dormant WHEN rendered SHOULD not expose the create action", () => {
     render(<MaintenanceByAssetScreen />);
 
-    fireEvent.press(screen.getByText("Add Task"));
-
-    expect(push).toHaveBeenCalledWith(
-      "/projects/project-atlantic/vessels/vessel-one/maintenance/new",
-    );
+    expect(screen.queryByText("Add Task")).toBeNull();
+    expect(push).not.toHaveBeenCalled();
   });
 });

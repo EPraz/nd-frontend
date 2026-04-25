@@ -33,11 +33,7 @@ export default function MaintenanceByAssetScreen() {
           title="Maintenance"
           eyebrow="Vessel maintenance registry"
           actions={
-            <MaintenanceByAssetHeaderActions
-              projectId={pid}
-              assetId={aid}
-              onRefresh={page.refresh}
-            />
+            <MaintenanceByAssetHeaderActions onRefresh={page.refresh} />
           }
         />
 

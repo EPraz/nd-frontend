@@ -129,11 +129,6 @@ export default function FuelQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${fuel.assetId}/fuel/${fuel.id}`);
   };
 
-  const handleEdit = () => {
-    onClose();
-    router.push(`/projects/${projectId}/vessels/${fuel.assetId}/fuel/${fuel.id}/edit`);
-  };
-
   return (
     <QuickViewModalFrame
       portalName={`Fuel-${fuel.id}`}
@@ -142,23 +137,7 @@ export default function FuelQuickViewModal({
       title="Fuel event"
       subtitle="Operational and commercial snapshot for the logged fuel record."
       headerActions={
-        <QuickViewHeaderActions
-          onClose={onClose}
-          actions={[
-            {
-              label: "Edit",
-              onPress: handleEdit,
-              variant: "softAccent",
-              leftIcon: (
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  className="text-accent"
-                />
-              ),
-            },
-          ]}
-        />
+        <QuickViewHeaderActions onClose={onClose} />
       }
       footer={
         <QuickViewFooterActions
@@ -228,8 +207,7 @@ export default function FuelQuickViewModal({
                     Receipt / BDN
                   </Text>
                   <Text className="text-[11px] leading-[15px] text-muted">
-                    Upload supporting evidence from edit mode to populate this
-                    panel.
+                    No receipt evidence is attached to this entry.
                   </Text>
                 </View>
               </View>

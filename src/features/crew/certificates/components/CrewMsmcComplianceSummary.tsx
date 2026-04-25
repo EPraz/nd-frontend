@@ -6,6 +6,7 @@ import {
 } from "@/src/components/ui/table";
 import { RegistrySummaryStrip } from "@/src/components/ui/registryWorkspace";
 import { Text } from "@/src/components/ui/text/Text";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import { useMemo } from "react";
 import type { CrewComplianceSummaryDto } from "../contracts";
 
@@ -140,7 +141,7 @@ export function CrewMsmcComplianceSummary({
         flex: 0.9,
         render: (row) => (
           <RegistryTablePill
-            label={row.riskLevel}
+            label={humanizeTechnicalLabel(row.riskLevel)}
             tone={getRiskTone(row.riskLevel)}
           />
         ),

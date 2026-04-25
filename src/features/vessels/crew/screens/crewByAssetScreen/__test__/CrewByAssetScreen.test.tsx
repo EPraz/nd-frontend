@@ -90,7 +90,7 @@ describe("CrewByAssetScreen", () => {
     });
   });
 
-  it("renders the vessel crew workspace framing", () => {
+  it("GIVEN the vessel crew lane opens WHEN rendered SHOULD expose overview and certificate entry points", () => {
     render(<CrewByAssetScreen />);
 
     expect(screen.getByText("Crew")).toBeOnTheScreen();
@@ -101,7 +101,7 @@ describe("CrewByAssetScreen", () => {
     expect(screen.getByText("Medical attention")).toBeOnTheScreen();
   });
 
-  it("navigates to create crew from the header action", () => {
+  it("GIVEN the crew create action is pressed WHEN rendered SHOULD navigate to the vessel-scoped create route", () => {
     render(<CrewByAssetScreen />);
 
     fireEvent.press(screen.getByText("New Crew"));
@@ -111,7 +111,7 @@ describe("CrewByAssetScreen", () => {
     );
   });
 
-  it("switches to the certificates tab", () => {
+  it("GIVEN the certificates tab is pressed WHEN rendered SHOULD show the vessel crew certificates workspace", () => {
     render(<CrewByAssetScreen />);
 
     fireEvent.press(screen.getByText("Certificates"));

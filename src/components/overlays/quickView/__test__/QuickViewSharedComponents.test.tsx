@@ -7,7 +7,7 @@ import { QuickViewLeadSection } from "../QuickViewLeadSection";
 import { QuickViewSummaryBadge } from "../QuickViewSummaryBadge";
 
 describe("quick view shared components", () => {
-  it("renders header actions and close action", () => {
+  it("GIVEN header actions WHEN pressed SHOULD call each exposed handler", () => {
     const onEdit = jest.fn();
     const onClose = jest.fn();
 
@@ -30,7 +30,7 @@ describe("quick view shared components", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("renders footer actions with built-in close button", () => {
+  it("GIVEN footer actions WHEN pressed SHOULD call close and custom handlers", () => {
     const onClose = jest.fn();
     const onOpen = jest.fn();
 
@@ -53,7 +53,7 @@ describe("quick view shared components", () => {
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
-  it("renders lead section main and aside content", () => {
+  it("GIVEN lead content WHEN rendered SHOULD expose main and aside regions", () => {
     render(
       <QuickViewLeadSection
         main={<Text>Main content</Text>}
@@ -61,13 +61,13 @@ describe("quick view shared components", () => {
       />,
     );
 
-    expect(screen.getByText("Main content")).toBeTruthy();
-    expect(screen.getByText("Aside content")).toBeTruthy();
+    expect(screen.getByText("Main content")).toBeOnTheScreen();
+    expect(screen.getByText("Aside content")).toBeOnTheScreen();
   });
 
-  it("renders a summary badge label", () => {
+  it("GIVEN a summary badge WHEN rendered SHOULD expose the status label", () => {
     render(<QuickViewSummaryBadge label="Status: Active" tone="ok" />);
 
-    expect(screen.getByText("Status: Active")).toBeTruthy();
+    expect(screen.getByText("Status: Active")).toBeOnTheScreen();
   });
 });

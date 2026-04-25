@@ -1,5 +1,5 @@
 import { Button, ErrorState, Loading, Text } from "@/src/components";
-import { useToast } from "@/src/context";
+import { useToast } from "@/src/context/ToastProvider";
 import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";

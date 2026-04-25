@@ -14,6 +14,7 @@ type FieldProps = {
   multiline?: boolean;
   error?: string | null;
   hint?: string | null;
+  surfaceTone?: "default" | "raised";
 };
 
 export function Field({
@@ -29,6 +30,7 @@ export function Field({
   multiline,
   error,
   hint,
+  surfaceTone = "default",
 }: FieldProps) {
   return (
     <View className="gap-2">
@@ -42,7 +44,10 @@ export function Field({
         autoCapitalize={autoCapitalize ?? "none"}
         editable={editable}
         className={[
-          "rounded-[20px] bg-shellPanelSoft px-4 text-textMain web:backdrop-blur-md focus:border-accent",
+          [
+            "rounded-[20px] px-4 text-textMain web:backdrop-blur-md focus:border-accent",
+            surfaceTone === "raised" ? "bg-shellCanvas" : "bg-shellPanelSoft",
+          ].join(" "),
           multiline ? "min-h-[120px] py-3" : "h-12",
           error ? "border border-destructive" : "border border-shellLine",
         ].join(" ")}

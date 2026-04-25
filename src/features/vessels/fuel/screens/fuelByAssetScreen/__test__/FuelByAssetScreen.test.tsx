@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { render, screen } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useFuelByAsset } from "@/src/features/fuel/core/hooks/useFuelByAsset";
 import FuelByAssetScreen from "../FuelByAssetScreen";
@@ -53,7 +53,7 @@ describe("FuelByAssetScreen", () => {
     });
   });
 
-  it("renders the vessel fuel workspace framing", () => {
+  it("GIVEN a vessel fuel lane WHEN rendered SHOULD expose the vessel-scoped fuel registry", () => {
     render(<FuelByAssetScreen />);
 
     expect(screen.getByText("Fuel")).toBeOnTheScreen();
@@ -63,13 +63,10 @@ describe("FuelByAssetScreen", () => {
     expect(screen.getByText("Critical gaps")).toBeOnTheScreen();
   });
 
-  it("navigates to create fuel from the header action", () => {
+  it("GIVEN fuel create is dormant WHEN rendered SHOULD not expose the create action", () => {
     render(<FuelByAssetScreen />);
 
-    fireEvent.press(screen.getByText("Add Fuel Log"));
-
-    expect(push).toHaveBeenCalledWith(
-      "/projects/project-atlantic/vessels/vessel-one/fuel/new",
-    );
+    expect(screen.queryByText("Add Fuel Log")).toBeNull();
+    expect(push).not.toHaveBeenCalled();
   });
 });

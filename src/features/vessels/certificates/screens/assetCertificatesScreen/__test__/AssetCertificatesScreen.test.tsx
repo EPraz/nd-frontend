@@ -137,7 +137,7 @@ describe("AssetCertificatesScreen", () => {
     });
   });
 
-  it("renders the vessel certificates registry framing", () => {
+  it("GIVEN the vessel certificates lane opens WHEN rendered SHOULD default to certificate records", () => {
     render(<AssetCertificatesScreen />);
 
     expect(screen.getByText("Certificates")).toBeOnTheScreen();
@@ -147,7 +147,7 @@ describe("AssetCertificatesScreen", () => {
     expect(screen.getByText("Vessel Records")).toBeOnTheScreen();
   });
 
-  it("switches to the requirements tab", () => {
+  it("GIVEN the requirements tab is pressed WHEN rendered SHOULD switch to the requirements workspace", () => {
     render(<AssetCertificatesScreen />);
 
     fireEvent.press(screen.getAllByText("Requirements")[0]);

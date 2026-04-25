@@ -1,23 +1,22 @@
-import { Button } from "@/src/components/ui/button/Button";
-import { Text } from "@/src/components/ui/text/Text";
+import { Button, OperationalEditorHeader } from "@/src/components";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
-import { pickImageUpload } from "@/src/helpers/pickImageUpload";
 import { useVessels } from "@/src/features/vessels/core";
-import { useCreateCrew } from "../../hooks/useCreateCrew";
+import { pickImageUpload } from "@/src/helpers/pickImageUpload";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { uploadCrewPhoto } from "../../api/crew.api";
+import CrewEditorPreviewRail from "../../components/crewEditorPreviewRail/CrewEditorPreviewRail";
 import CrewFormCard from "../../components/crewFormCard/CrewFormCard";
-import CrewPreviewCard from "../../components/crewPreviewCard/CrewPreviewCard";
 import {
   emptyCrewFormValues,
   toCreateCrewInput,
   type CrewFormValues,
 } from "../../components/crewFormTypes";
-import { uploadCrewPhoto } from "../../api/crew.api";
+import { useCreateCrew } from "../../hooks/useCreateCrew";
 
 export default function CreateCrewScreen() {
   const router = useRouter();
@@ -34,7 +33,9 @@ export default function CreateCrewScreen() {
 
   const [values, setValues] = useState<CrewFormValues>(emptyCrewFormValues());
   const [localError, setLocalError] = useState<string | null>(null);
-  const [pendingPhoto, setPendingPhoto] = useState<UploadFileInput | null>(null);
+  const [pendingPhoto, setPendingPhoto] = useState<UploadFileInput | null>(
+    null,
+  );
 
   const {
     vessels,
@@ -59,22 +60,22 @@ export default function CreateCrewScreen() {
   }, [fixedAssetId, currentVessel, values.assetId]);
 
   const effectiveAssetId = fixedAssetId ?? values.assetId;
-
   const crewHref = effectiveAssetId
     ? `/projects/${pid}/vessels/${effectiveAssetId}/crew`
     : `/projects/${pid}/crew`;
-
   const createVesselHref = `/projects/${pid}/vessels/new`;
+  const isBusy = loading;
+  const photoPreviewUrl = pendingPhoto?.previewUri ?? pendingPhoto?.uri ?? null;
 
   const canSubmit = useMemo(() => {
-    if (loading) return false;
+    if (isBusy) return false;
     if (!effectiveAssetId) return false;
     if (values.fullName.trim().length < 3) return false;
     return true;
-  }, [loading, effectiveAssetId, values.fullName]);
+  }, [isBusy, effectiveAssetId, values.fullName]);
 
-  function patch(p: Partial<CrewFormValues>) {
-    setValues((prev) => ({ ...prev, ...p }));
+  function patch(patchValue: Partial<CrewFormValues>) {
+    setValues((prev) => ({ ...prev, ...patchValue }));
   }
 
   async function handlePickPhoto() {
@@ -85,14 +86,6 @@ export default function CreateCrewScreen() {
 
   function handleRemovePhoto() {
     setPendingPhoto(null);
-  }
-
-  function goBackOrTo(fallbackHref: string) {
-    try {
-      router.back();
-    } catch {
-      router.replace(fallbackHref);
-    }
   }
 
   async function onCreate() {
@@ -118,7 +111,12 @@ export default function CreateCrewScreen() {
 
       if (pendingPhoto) {
         try {
-          await uploadCrewPhoto(pid, effectiveAssetId, created.id, pendingPhoto);
+          await uploadCrewPhoto(
+            pid,
+            effectiveAssetId,
+            created.id,
+            pendingPhoto,
+          );
         } catch {
           show("Crew profile saved, but the photo upload failed.", "error");
         }
@@ -131,105 +129,89 @@ export default function CreateCrewScreen() {
   }
 
   return (
-    <View className="flex-1 bg-shellCanvas">
+    <View className="flex-1">
       <ScrollView
-        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
+        contentContainerClassName="p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="gap-3">
-          <Pressable
-            onPress={() => goBackOrTo(crewHref)}
-            disabled={loading}
-            className={[
-              "self-start flex-row items-center gap-2",
-              loading ? "opacity-50" : "web:hover:opacity-90",
-            ].join(" ")}
-          >
-            <Ionicons name="chevron-back" size={16} className="text-accent" />
-            <Text className="font-semibold text-accent">Back to Crew</Text>
-          </Pressable>
+        <View className="mx-auto w-full max-w-[1480px] gap-5">
+          <OperationalEditorHeader
+            title="Add Crew Member"
+            description="Create the operational crew baseline, vessel assignment, and live profile signals the crew workspace and quick views will read."
+            backLabel="Back to crew"
+            onBack={() => router.replace(crewHref)}
+            disabled={isBusy}
+            actions={
+              <>
+                <Button
+                  variant="outline"
+                  size="pillSm"
+                  onPress={() => router.replace(crewHref)}
+                  disabled={isBusy}
+                >
+                  Cancel
+                </Button>
 
-          <View className="gap-4 web:flex-row web:items-start web:justify-between">
-            <View className="flex-1 gap-1">
-              <Text className="text-[34px] font-semibold leading-[110%] text-textMain web:text-[44px]">
-                Add Crew Member
-              </Text>
-              <Text className="text-[14px] text-muted">
-                Register a crew member, capture their operational status, and
-                attach a real portrait from the start.
-              </Text>
+                <Button
+                  variant="default"
+                  size="pillSm"
+                  onPress={onCreate}
+                  disabled={!canSubmit}
+                  rightIcon={
+                    <Ionicons
+                      name="save-outline"
+                      size={15}
+                      className="text-textMain"
+                    />
+                  }
+                >
+                  {isBusy ? "Saving..." : "Save crew"}
+                </Button>
+              </>
+            }
+          />
+
+          <View className="gap-5 web:xl:flex-row web:xl:items-start">
+            <View className="flex-1 gap-4">
+              <CrewFormCard
+                fixedAssetId={fixedAssetId}
+                currentVessel={currentVessel}
+                vessels={vessels}
+                vesselsLoading={vesselsLoading}
+                vesselsError={vesselsError}
+                onCreateVessel={() => router.push(createVesselHref)}
+                values={{
+                  ...values,
+                  assetId: effectiveAssetId,
+                }}
+                onChange={(patchValue: Partial<CrewFormValues>) => {
+                  setLocalError(null);
+                  patch(patchValue);
+                }}
+                localError={localError}
+                apiError={error}
+                disabled={isBusy}
+              />
             </View>
 
-            <View className="flex-row items-center gap-2">
-              <Button
-                variant="outline"
-                size="lg"
-                onPress={() => goBackOrTo(crewHref)}
-                disabled={loading}
-                className="rounded-full"
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="default"
-                size="lg"
-                onPress={onCreate}
-                disabled={!canSubmit}
-                className="rounded-full"
-                rightIcon={
-                  <Ionicons
-                    name="save-outline"
-                    size={16}
-                    className="text-textMain"
-                  />
-                }
-              >
-                {loading ? "Saving..." : "Save"}
-              </Button>
+            <View className="gap-4 web:xl:w-[430px]">
+              <CrewEditorPreviewRail
+                values={{
+                  ...values,
+                  assetId: effectiveAssetId,
+                  selectedVessel: fixedAssetId
+                    ? currentVessel
+                    : values.selectedVessel,
+                }}
+                photoPreviewUrl={photoPreviewUrl}
+                pendingPhotoName={pendingPhoto?.name ?? null}
+                onSelectPhoto={handlePickPhoto}
+                onRemovePhoto={handleRemovePhoto}
+                canManagePhoto={!isBusy}
+                photoBusy={isBusy}
+                disabled={isBusy}
+              />
             </View>
-          </View>
-        </View>
-
-        <View className="gap-5 web:lg:flex-row">
-          <View className="flex-1 gap-5 web:lg:w-[60%]">
-            <CrewFormCard
-              fixedAssetId={fixedAssetId}
-              currentVessel={currentVessel}
-              vessels={vessels}
-              vesselsLoading={vesselsLoading}
-              vesselsError={vesselsError}
-              onCreateVessel={() => router.push(createVesselHref)}
-              values={{
-                ...values,
-                assetId: effectiveAssetId,
-              }}
-              onChange={(patchValue: Partial<CrewFormValues>) => {
-                setLocalError(null);
-                patch(patchValue);
-              }}
-              photoPreviewUrl={pendingPhoto?.uri ?? null}
-              pendingPhotoName={pendingPhoto?.name ?? null}
-              onSelectPhoto={handlePickPhoto}
-              onRemovePhoto={handleRemovePhoto}
-              canManagePhoto={!loading}
-              photoBusy={loading}
-              localError={localError}
-              apiError={error}
-              disabled={loading}
-            />
-          </View>
-
-          <View className="flex-1 gap-5 web:lg:w-[40%]">
-            <CrewPreviewCard
-              values={{
-                ...values,
-                assetId: effectiveAssetId,
-                selectedVessel: fixedAssetId
-                  ? currentVessel
-                  : values.selectedVessel,
-              }}
-            />
           </View>
         </View>
       </ScrollView>

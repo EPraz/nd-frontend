@@ -1,10 +1,6 @@
 import { getBaseUrl } from "@/src/api/baseUrl";
 import {
   Button,
-  Card,
-  CardContent,
-  CardHeaderRow,
-  CardTitle,
   ConfirmModal,
   DocumentPreview,
   ErrorState,
@@ -13,6 +9,13 @@ import {
   MiniPill,
   Text,
 } from "@/src/components";
+import {
+  RegistryHeaderActionButton,
+  RegistrySummaryStrip,
+  RegistryWorkspaceHeader,
+  RegistryWorkspaceSection,
+  type RegistrySummaryItem,
+} from "@/src/components/ui/registryWorkspace";
 import { useToast } from "@/src/context/ToastProvider";
 import {
   CertificateStatusPill,
@@ -28,6 +31,19 @@ import {
   useCrewCertificatesById,
   useCrewCertificateWorkflowActions,
 } from "../../hooks";
+
+function getCertificateTone(status: string): RegistrySummaryItem["tone"] {
+  if (status === "EXPIRED") return "danger";
+  if (status === "EXPIRING_SOON") return "warn";
+  return "ok";
+}
+
+function getWorkflowTone(status: string): RegistrySummaryItem["tone"] {
+  if (status === "REJECTED") return "danger";
+  if (status === "SUBMITTED") return "warn";
+  if (status === "APPROVED") return "ok";
+  return "neutral";
+}
 
 export default function CrewCertificateViewScreen() {
   const router = useRouter();
@@ -67,6 +83,43 @@ export default function CrewCertificateViewScreen() {
   } = useCrewCertificateWorkflowActions(pid, aid, cid, certId);
 
   const attachments = useMemo(() => certificate?.attachments ?? [], [certificate]);
+  const summaryItems = useMemo<RegistrySummaryItem[]>(() => {
+    if (!certificate) return [];
+
+    return [
+      {
+        label: "Certificate",
+        value: certificate.status,
+        helper: certificate.expiryDate
+          ? `expires ${formatDate(certificate.expiryDate)}`
+          : "expiry not set",
+        tone: getCertificateTone(certificate.status),
+      },
+      {
+        label: "Workflow",
+        value: certificate.workflowStatus,
+        helper:
+          certificate.workflowStatus === "APPROVED"
+            ? "ready for compliance reads"
+            : "still needs workflow attention",
+        tone: getWorkflowTone(certificate.workflowStatus),
+      },
+      {
+        label: "Attachments",
+        value: String(certificate.attachmentCount),
+        helper: certificate.attachmentCount === 1 ? "file attached" : "files attached",
+        tone: certificate.attachmentCount > 0 ? "accent" : "neutral",
+      },
+      {
+        label: "Requirement",
+        value: certificate.requirementStatus ?? "Extra",
+        helper: certificate.requirementStatus
+          ? "linked to structured requirement"
+          : "outside the active requirement set",
+        tone: certificate.requirementStatus ? "info" : "neutral",
+      },
+    ];
+  }, [certificate]);
 
   useEffect(() => {
     if (!certificate) return;
@@ -93,8 +146,13 @@ export default function CrewCertificateViewScreen() {
     [attachments, selectedAttachmentId],
   );
 
-  const goBack = () => router.back();
-  const goCrew = () => router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`);
+  function goCrewCertificates() {
+    router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}/certificates`);
+  }
+
+  function goCrew() {
+    router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`);
+  }
 
   async function openAttachment(url: string) {
     const absoluteUrl = url.startsWith("http") ? url : `${getBaseUrl()}${url}`;
@@ -154,319 +212,317 @@ export default function CrewCertificateViewScreen() {
   }
 
   return (
-    <View className="flex-1 bg-shellCanvas p-4 web:p-6 gap-5">
-      <View className="gap-3">
-        <Pressable
-          onPress={goBack}
-          className="self-start flex-row items-center gap-2"
-        >
-          <Ionicons name="chevron-back" size={16} className="text-accent" />
-          <Text className="text-accent font-semibold">Back</Text>
-        </Pressable>
+    <View className="gap-5 p-4 web:p-6">
+      <View className="gap-4">
+        <RegistryWorkspaceHeader
+          title="Certificate Record"
+          eyebrow="Crew certificates lane"
+          subtitle={`Review metadata, uploaded evidence, and workflow state for ${certificate.certificateName} under ${certificate.crewMemberName}.`}
+          actions={
+            <>
+              <RegistryHeaderActionButton
+                variant="soft"
+                iconName="chevron-back-outline"
+                iconSide="left"
+                onPress={goCrewCertificates}
+              >
+                Certificates
+              </RegistryHeaderActionButton>
 
-        <View className="flex-row items-start justify-between gap-4">
-          <View className="gap-1 flex-1">
-            <Text className="text-textMain text-[34px] font-semibold leading-[110%]">
-              Crew Certificate - {certificate.certificateName}
-            </Text>
-            <Text className="text-muted text-[14px]">
-              Review the metadata, uploaded evidence, and approval state for
-              this crew certificate.
-            </Text>
-          </View>
+              <RegistryHeaderActionButton
+                variant="soft"
+                iconName="refresh-outline"
+                onPress={refresh}
+              >
+                Refresh
+              </RegistryHeaderActionButton>
 
-          <View className="flex-row items-center gap-2">
-            <Button
-              variant="icon"
-              size="iconLg"
-              onPress={refresh}
-              leftIcon={
-                <Ionicons name="refresh" size={18} className="text-textMain" />
-              }
-              accessibilityLabel="Refresh"
-            />
+              <RegistryHeaderActionButton
+                variant="outline"
+                onPress={() =>
+                  router.push({
+                    pathname: "/projects/[projectId]/crew/certificates/upload",
+                    params: {
+                      projectId: pid,
+                      assetId: aid,
+                      crewId: cid,
+                      certificateTypeId: certificate.certificateTypeId,
+                    },
+                  })
+                }
+              >
+                Upload new version
+              </RegistryHeaderActionButton>
 
-            <Button
-              variant="destructive"
-              size="lg"
-              onPress={() => setIsDeleteOpen(true)}
-              loading={workflowLoading}
-              className="rounded-full"
-            >
-              Delete
-            </Button>
+              {certificate.workflowStatus !== "APPROVED" &&
+              certificate.workflowStatus !== "ARCHIVED" ? (
+                <RegistryHeaderActionButton
+                  variant="default"
+                  onPress={onApprove}
+                  loading={workflowLoading}
+                >
+                  Approve
+                </RegistryHeaderActionButton>
+              ) : null}
 
-            <Button
-              variant="outline"
-              size="lg"
-              onPress={() =>
-                router.push({
-                  pathname: "/projects/[projectId]/crew/certificates/upload",
-                  params: {
-                    projectId: pid,
-                    assetId: aid,
-                    crewId: cid,
-                    certificateTypeId: certificate.certificateTypeId,
-                  },
-                })
-              }
-              className="rounded-full"
-            >
-              Upload new version
-            </Button>
-
-            {certificate.workflowStatus !== "APPROVED" &&
-            certificate.workflowStatus !== "ARCHIVED" ? (
               <Button
-                variant="default"
-                size="lg"
-                onPress={onApprove}
+                variant="softDestructive"
+                size="pillSm"
+                onPress={() => setIsDeleteOpen(true)}
                 loading={workflowLoading}
                 className="rounded-full"
+                rightIcon={
+                  <Ionicons
+                    name="trash-outline"
+                    size={15}
+                    className="text-destructive"
+                  />
+                }
               >
-                Approve
+                Delete
               </Button>
-            ) : null}
-          </View>
-        </View>
+            </>
+          }
+        />
+
+        <RegistrySummaryStrip items={summaryItems} />
       </View>
 
-      <View className="gap-5 web:lg:flex-row">
+      <View className="gap-5 web:xl:flex-row web:xl:items-start">
         <View className="flex-1 gap-5">
-          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-            <CardHeaderRow>
-              <CardTitle className="text-[16px] text-textMain">
-                Certificate Details
-              </CardTitle>
-              <View className="flex-row gap-2 flex-wrap">
+          <RegistryWorkspaceSection
+            title="Certificate details"
+            subtitle="Core certificate metadata, requirement linkage, and approval trace for this record."
+            actions={
+              <View className="flex-row flex-wrap gap-2">
                 <CertificateStatusPill status={certificate.status} />
                 <WorkflowStatusPill status={certificate.workflowStatus} />
               </View>
-            </CardHeaderRow>
+            }
+          >
+            <View className="gap-4">
+              <View className="gap-2">
+                <Text className="text-textMain text-[22px] font-semibold">
+                  {certificate.certificateName}
+                </Text>
 
-            <CardContent className="px-6">
-              <View className="gap-4">
-                <View className="gap-2">
-                  <Text className="text-textMain text-[22px] font-semibold">
-                    {certificate.certificateName}
-                  </Text>
-
-                  <View className="flex-row flex-wrap gap-2">
-                    <MiniPill>{`Code: ${certificate.certificateCode}`}</MiniPill>
-                    <MiniPill>{`Crew: ${certificate.crewMemberName}`}</MiniPill>
-                    <MiniPill>{`Vessel: ${certificate.assetName}`}</MiniPill>
-                    <MiniPill>
-                      {`Approved by: ${certificate.approvedByUserName ?? "Pending review"}`}
-                    </MiniPill>
-                  </View>
-                </View>
-
-                <View className="gap-4 web:flex-row">
-                  <View className="flex-1 gap-4">
-                    <FieldDisplay label="Number" value={certificate.number ?? "-"} />
-                    <FieldDisplay label="Issuer" value={certificate.issuer ?? "-"} />
-                    <FieldDisplay
-                      label="Issue Date"
-                      value={formatDate(certificate.issueDate)}
-                    />
-                    <FieldDisplay
-                      label="Expiry Date"
-                      value={formatDate(certificate.expiryDate)}
-                    />
-                  </View>
-
-                  <View className="flex-1 gap-4">
-                    <FieldDisplay
-                      label="Requirement"
-                      value={
-                        <RequirementStatusPill
-                          status={certificate.requirementStatus ?? null}
-                        />
-                      }
-                    />
-                    <FieldDisplay
-                      label="Workflow"
-                      value={<WorkflowStatusPill status={certificate.workflowStatus} />}
-                    />
-                    <FieldDisplay
-                      label="Approved At"
-                      value={formatDate(certificate.approvedAt)}
-                    />
-                    <FieldDisplay
-                      label="Updated At"
-                      value={formatDate(certificate.updatedAt)}
-                    />
-                  </View>
-                </View>
-
-                <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
-                  <Text className="text-[12px] text-muted">Notes</Text>
-                  <Text className="text-[13px] text-textMain mt-1">
-                    {certificate.notes ?? "-"}
-                  </Text>
-                </View>
-
-                <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
-                  <Text className="text-[12px] text-muted">Attachments</Text>
-                  {certificate.attachments.length === 0 ? (
-                    <Text className="text-[13px] text-textMain">
-                      No files uploaded yet.
-                    </Text>
-                  ) : (
-                    certificate.attachments.map((attachment) => (
-                      <View
-                        key={attachment.id}
-                        className="rounded-[16px] border border-shellLine bg-shellPanelSoft p-3 gap-2"
-                      >
-                        <Text className="text-textMain font-semibold text-[13px]">
-                          {attachment.fileName}
-                        </Text>
-                        <Text className="text-muted text-[12px]">
-                          {attachment.mimeType} - version {attachment.version}
-                        </Text>
-                        <Text className="text-muted text-[12px]">
-                          Uploaded {formatDate(attachment.uploadedAt)}
-                        </Text>
-                        <Button
-                          variant={
-                            selectedAttachment?.id === attachment.id
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onPress={() => setSelectedAttachmentId(attachment.id)}
-                          className="rounded-full self-start"
-                        >
-                          Preview
-                        </Button>
-                        <Button
-                          variant="softAccent"
-                          size="sm"
-                          onPress={() => openAttachment(attachment.url)}
-                          className="rounded-full self-start"
-                        >
-                          Open file
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onPress={() =>
-                            setAttachmentToDelete({
-                              id: attachment.id,
-                              fileName: attachment.fileName,
-                            })
-                          }
-                          loading={workflowLoading}
-                          className="rounded-full self-start"
-                        >
-                          Delete file
-                        </Button>
-                      </View>
-                    ))
-                  )}
+                <View className="flex-row flex-wrap gap-2">
+                  <MiniPill>{`Code: ${certificate.certificateCode}`}</MiniPill>
+                  <MiniPill>{`Crew: ${certificate.crewMemberName}`}</MiniPill>
+                  <MiniPill>{`Vessel: ${certificate.assetName}`}</MiniPill>
+                  <MiniPill>
+                    {`Approved by: ${certificate.approvedByUserName ?? "Pending review"}`}
+                  </MiniPill>
                 </View>
               </View>
-            </CardContent>
-          </Card>
+
+              <View className="gap-4 web:flex-row">
+                <View className="flex-1 gap-4">
+                  <FieldDisplay label="Number" value={certificate.number ?? "-"} />
+                  <FieldDisplay label="Issuer" value={certificate.issuer ?? "-"} />
+                  <FieldDisplay
+                    label="Issue Date"
+                    value={formatDate(certificate.issueDate)}
+                  />
+                  <FieldDisplay
+                    label="Expiry Date"
+                    value={formatDate(certificate.expiryDate)}
+                  />
+                </View>
+
+                <View className="flex-1 gap-4">
+                  <FieldDisplay
+                    label="Requirement"
+                    value={
+                      <RequirementStatusPill
+                        status={certificate.requirementStatus ?? null}
+                      />
+                    }
+                  />
+                  <FieldDisplay
+                    label="Workflow"
+                    value={<WorkflowStatusPill status={certificate.workflowStatus} />}
+                  />
+                  <FieldDisplay
+                    label="Approved At"
+                    value={formatDate(certificate.approvedAt)}
+                  />
+                  <FieldDisplay
+                    label="Updated At"
+                    value={formatDate(certificate.updatedAt)}
+                  />
+                </View>
+              </View>
+
+              <View className="rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
+                <Text className="text-[12px] text-muted">Notes</Text>
+                <Text className="mt-1 text-[13px] text-textMain">
+                  {certificate.notes ?? "-"}
+                </Text>
+              </View>
+            </View>
+          </RegistryWorkspaceSection>
+
+          <RegistryWorkspaceSection
+            title="Attachments"
+            subtitle="Choose the current file for preview, open the original asset, or remove obsolete evidence."
+          >
+            {certificate.attachments.length === 0 ? (
+              <Text className="text-[13px] text-textMain">
+                No files uploaded yet.
+              </Text>
+            ) : (
+              <View className="gap-3">
+                {certificate.attachments.map((attachment) => (
+                  <View
+                    key={attachment.id}
+                    className="gap-2 rounded-[16px] border border-shellLine bg-shellPanelSoft p-3"
+                  >
+                    <Text className="text-[13px] font-semibold text-textMain">
+                      {attachment.fileName}
+                    </Text>
+                    <Text className="text-[12px] text-muted">
+                      {attachment.mimeType} | version {attachment.version}
+                    </Text>
+                    <Text className="text-[12px] text-muted">
+                      Uploaded {formatDate(attachment.uploadedAt)}
+                    </Text>
+
+                    <View className="flex-row flex-wrap gap-2">
+                      <Button
+                        variant={
+                          selectedAttachment?.id === attachment.id
+                            ? "default"
+                            : "outline"
+                        }
+                        size="pillXs"
+                        onPress={() => setSelectedAttachmentId(attachment.id)}
+                        className="rounded-full"
+                      >
+                        Preview
+                      </Button>
+
+                      <Button
+                        variant="softAccent"
+                        size="pillXs"
+                        onPress={() => openAttachment(attachment.url)}
+                        className="rounded-full"
+                      >
+                        Open file
+                      </Button>
+
+                      <Button
+                        variant="softDestructive"
+                        size="pillXs"
+                        onPress={() =>
+                          setAttachmentToDelete({
+                            id: attachment.id,
+                            fileName: attachment.fileName,
+                          })
+                        }
+                        loading={workflowLoading}
+                        className="rounded-full"
+                      >
+                        Delete file
+                      </Button>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </RegistryWorkspaceSection>
         </View>
 
-        <View className="w-full web:lg:w-[380px] gap-5">
-          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-            <CardHeaderRow>
-              <CardTitle className="text-[16px] text-textMain">
-                Compliance Summary
-              </CardTitle>
-            </CardHeaderRow>
-            <CardContent className="px-6">
+        <View className="w-full gap-5 web:xl:w-[380px]">
+          <RegistryWorkspaceSection
+            title="Compliance summary"
+            subtitle="Quick read of where this certificate sits in the crew compliance flow."
+          >
+            <View className="gap-4">
+              <FieldDisplay
+                label="Crew Member"
+                value={
+                  <Pressable onPress={goCrew}>
+                    <Text className="font-semibold text-accent">
+                      {certificate.crewMemberName}
+                    </Text>
+                  </Pressable>
+                }
+              />
+              <FieldDisplay label="Rank" value={certificate.crewRank ?? "-"} />
+              <FieldDisplay
+                label="Risk"
+                value={
+                  certificate.status === "EXPIRED"
+                    ? "CRITICAL"
+                    : certificate.status === "EXPIRING_SOON"
+                      ? "ATTN"
+                      : "OK"
+                }
+              />
+              <FieldDisplay
+                label="Approved By"
+                value={certificate.approvedByUserName ?? "-"}
+              />
+              <FieldDisplay
+                label="Next step"
+                value={
+                  certificate.workflowStatus === "APPROVED"
+                    ? "Certificate approved"
+                    : certificate.workflowStatus === "REJECTED"
+                      ? "Correct metadata, then approve again"
+                      : certificate.workflowStatus === "ARCHIVED"
+                        ? "Historical record only"
+                        : "Review metadata and approve"
+                }
+              />
+
+              {certificate.workflowStatus === "SUBMITTED" ? (
+                <Button
+                  variant="outline"
+                  size="pillXs"
+                  onPress={onReject}
+                  loading={workflowLoading}
+                  className="self-start rounded-full"
+                >
+                  Send back
+                </Button>
+              ) : null}
+            </View>
+          </RegistryWorkspaceSection>
+
+          <RegistryWorkspaceSection
+            title="Certificate preview"
+            subtitle="Preview the currently selected attachment without leaving this lane."
+          >
+            {selectedAttachment ? (
               <View className="gap-4">
-                <FieldDisplay
-                  label="Crew Member"
-                  value={
-                    <Pressable onPress={goCrew}>
-                      <Text className="text-accent font-semibold">
-                        {certificate.crewMemberName}
-                      </Text>
-                    </Pressable>
-                  }
-                />
-                <FieldDisplay label="Rank" value={certificate.crewRank ?? "-"} />
-                <FieldDisplay
-                  label="Risk"
-                  value={
-                    certificate.status === "EXPIRED"
-                      ? "CRITICAL"
-                      : certificate.status === "EXPIRING_SOON"
-                        ? "ATTN"
-                        : "OK"
-                  }
-                />
-                <FieldDisplay
-                  label="Approved By"
-                  value={certificate.approvedByUserName ?? "-"}
-                />
-                <FieldDisplay
-                  label="Next step"
-                  value={
-                    certificate.workflowStatus === "APPROVED"
-                      ? "Certificate approved"
-                      : certificate.workflowStatus === "REJECTED"
-                        ? "Correct metadata, then approve again"
-                        : certificate.workflowStatus === "ARCHIVED"
-                          ? "Historical record only"
-                          : "Review metadata and approve"
-                  }
-                />
-                {certificate.workflowStatus === "SUBMITTED" ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onPress={onReject}
-                    loading={workflowLoading}
-                    className="rounded-full self-start"
-                  >
-                    Send back
-                  </Button>
-                ) : null}
-              </View>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-            <CardHeaderRow>
-              <CardTitle className="text-[16px] text-textMain">
-                Certificate Preview
-              </CardTitle>
-            </CardHeaderRow>
-            <CardContent className="px-6">
-              {selectedAttachment ? (
-                <View className="gap-4">
-                  <View className="flex-row flex-wrap gap-2">
-                    <MiniPill>{selectedAttachment.fileName}</MiniPill>
-                    <MiniPill>{selectedAttachment.mimeType}</MiniPill>
-                    <MiniPill>{`Version ${selectedAttachment.version}`}</MiniPill>
-                  </View>
-
-                  <DocumentPreview
-                    attachmentUrl={toAbsoluteUrl(selectedAttachment.url)}
-                    mimeType={selectedAttachment.mimeType}
-                  />
-
-                  <Button
-                    variant="softAccent"
-                    size="sm"
-                    onPress={() => openAttachment(selectedAttachment.url)}
-                    className="rounded-full self-start"
-                  >
-                    Open original
-                  </Button>
+                <View className="flex-row flex-wrap gap-2">
+                  <MiniPill>{selectedAttachment.fileName}</MiniPill>
+                  <MiniPill>{selectedAttachment.mimeType}</MiniPill>
+                  <MiniPill>{`Version ${selectedAttachment.version}`}</MiniPill>
                 </View>
-              ) : (
-                <Text className="text-[13px] text-textMain">
-                  Upload at least one file to preview the certificate here.
-                </Text>
-              )}
-            </CardContent>
-          </Card>
+
+                <DocumentPreview
+                  attachmentUrl={toAbsoluteUrl(selectedAttachment.url)}
+                  mimeType={selectedAttachment.mimeType}
+                />
+
+                <Button
+                  variant="softAccent"
+                  size="pillXs"
+                  onPress={() => openAttachment(selectedAttachment.url)}
+                  className="self-start rounded-full"
+                >
+                  Open original
+                </Button>
+              </View>
+            ) : (
+              <Text className="text-[13px] text-textMain">
+                Upload at least one file to preview the certificate here.
+              </Text>
+            )}
+          </RegistryWorkspaceSection>
         </View>
       </View>
 

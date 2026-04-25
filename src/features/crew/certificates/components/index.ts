@@ -5,6 +5,5 @@ export * from "./CrewCertificatesProjectWorkspaceSection";
 export * from "./CrewCertificatesProjectTableActions";
 export * from "./CrewCertificatesProjectWorkspaceContent";
 export * from "./CrewCertificateRequirementsTable";
-export * from "./CrewCertificateTypePicker";
 export * from "./CrewCertificatesTable";
 export * from "./CrewMsmcComplianceSummary";

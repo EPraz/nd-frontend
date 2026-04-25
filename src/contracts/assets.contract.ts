@@ -18,19 +18,29 @@ export type AssetDto = {
   vessel?: VesselProfileDto;
 };
 
+type VesselCreateSharedInput = {
+  flag?: string;
+  email?: string;
+  callSign?: string;
+  mmsi?: string;
+  homePort?: string;
+  vesselType?: string;
+  classSociety?: string;
+  builder?: string;
+  yearBuilt?: number;
+};
+
 export type CreateAssetInput =
-  | {
+  | ({
       type: "VESSEL";
       name: string;
       identifierType: "IMO";
       imo: string;
-      flag?: string;
-    }
-  | {
+    } & VesselCreateSharedInput)
+  | ({
       type: "VESSEL";
       name: string;
       identifierType: "LICENSE";
       licenseNumber: string;
-      flag?: string;
-    }
+    } & VesselCreateSharedInput)
   | { type: Exclude<AssetType, "VESSEL">; name: string };

@@ -17,7 +17,7 @@ export function TableLink({ children, onPress, tooltip }: Props) {
         e?.stopPropagation?.();
         onPress();
       }}
-      className="web:cursor-pointer"
+      className="self-start web:cursor-pointer"
       {...(tooltip ? { accessibilityLabel: tooltip } : {})}
     >
       {(state) => {

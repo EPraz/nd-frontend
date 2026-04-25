@@ -4,12 +4,12 @@ import {
   EntryPortalHeader,
   EntryPortalSummaryItem,
   EntryPortalSummaryStrip,
-  EntryPortalTopBar,
 } from "@/src/components/ui/entryPortal";
 import Loading from "@/src/components/ui/loading/Loading";
 import { Text } from "@/src/components/ui/text/Text";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { ProjectDto } from "@/src/contracts/projects.contract";
+import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { useProjects } from "@/src/hooks/useProjects";
 import { useRouter } from "expo-router";
 import { Search } from "lucide-react-native";
@@ -27,9 +27,10 @@ export default function ProjectsScreen() {
   const { projects, loading, error, refresh } = useProjects();
   const { session } = useSessionContext();
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query);
 
   const filteredProjects = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = debouncedQuery.trim().toLowerCase();
 
     if (!normalizedQuery) return projects;
 
@@ -38,7 +39,7 @@ export default function ProjectsScreen() {
         .toLowerCase()
         .includes(normalizedQuery),
     );
-  }, [projects, query]);
+  }, [projects, debouncedQuery]);
 
   const summaryItems = useMemo<EntryPortalSummaryItem[]>(() => {
     const active = projects.filter((project) =>
@@ -117,31 +118,16 @@ export default function ProjectsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="w-full gap-6 web:max-w-[1180px]">
-          <EntryPortalTopBar
-            companyName={session?.company?.name}
-            actions={<ProjectsHeaderActions onRefresh={refresh} />}
-          />
-
           <EntryPortalHeader
             eyebrow="Entry portal"
             title="Workspaces"
             subtitle="Choose the right operational context and continue into its active modules without extra ceremony."
-            meta={
-              <>
-                <View className="rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2">
-                  <Text className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-                    {session?.role === "ADMIN"
-                      ? "Admin session"
-                      : "Workspace session"}
-                  </Text>
-                </View>
-              </>
-            }
+            actions={<ProjectsHeaderActions onRefresh={refresh} />}
           />
 
           <EntryPortalSummaryStrip items={summaryItems} />
 
-          <View className="gap-4 rounded-[30px] border border-shellLine bg-shellPanel p-4 web:p-5 web:backdrop-blur-md">
+          <View className="gap-4">
             <View className="gap-3 web:flex-row web:items-end web:justify-between">
               <View className="gap-1">
                 <Text className="text-[24px] font-semibold tracking-tight text-textMain">
@@ -158,20 +144,22 @@ export default function ProjectsScreen() {
               </Text>
             </View>
 
-            <View className="flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChrome px-4 py-3 web:max-w-[560px] web:backdrop-blur-md">
-              <Search size={18} color={SEARCH_ICON_COLOR} />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Search by workspace, vertical, or status..."
-                placeholderTextColor={PLACEHOLDER_COLOR}
-                className="flex-1 text-textMain web:outline-none"
-                autoCapitalize="none"
-              />
+            <View className="web:flex-row web:items-center web:justify-between web:gap-4">
+              <View className="flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChrome px-4 py-3 web:max-w-[560px] web:flex-1 web:backdrop-blur-md">
+                <Search size={18} color={SEARCH_ICON_COLOR} />
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Search by workspace, vertical, or status..."
+                  placeholderTextColor={PLACEHOLDER_COLOR}
+                  className="flex-1 text-textMain web:outline-none"
+                  autoCapitalize="none"
+                />
+              </View>
             </View>
 
             {filteredProjects.length === 0 ? (
-              <View className="items-center gap-3 rounded-[28px] border border-shellLine bg-shellPanelSoft p-8">
+              <View className="items-center gap-3 rounded-[24px] border border-shellLine bg-shellPanel p-8">
                 <Text className="text-lg font-semibold text-textMain">
                   No workspaces match that search
                 </Text>
@@ -181,7 +169,7 @@ export default function ProjectsScreen() {
                 </Text>
               </View>
             ) : (
-              <View className="overflow-hidden rounded-[26px] border border-shellLine bg-shellChromeSoft">
+              <View className="overflow-hidden rounded-[24px] border border-shellLine bg-shellPanel web:backdrop-blur-md">
                 <View className="hidden web:flex web:flex-row web:items-center web:border-b web:border-shellLine web:bg-shellPanelSoft web:px-5 web:py-3">
                   <Text className="flex-[2.6] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
                     Workspace

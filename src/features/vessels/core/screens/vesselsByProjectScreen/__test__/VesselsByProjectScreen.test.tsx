@@ -77,7 +77,7 @@ describe("VesselsByProjectScreen", () => {
     });
   });
 
-  it("GIVEN the vessels workspace opens WHEN the screen renders SHOULD show the refreshed workspace framing", () => {
+  it("GIVEN the vessels workspace opens WHEN rendered SHOULD expose the project vessel registry", () => {
     render(<VesselsByProjectScreen />);
 
     expect(screen.getByText("Vessels")).toBeOnTheScreen();

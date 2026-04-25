@@ -2,15 +2,17 @@ import { WorkspaceBackdrop } from "@/src/components/layout/AtmosphericBackdrop";
 import { Button } from "@/src/components/ui/button/Button";
 import { Card, CardContent } from "@/src/components/ui/card/Card";
 import {
+  EntryPortalHeader,
   EntryPortalSummaryItem,
   EntryPortalSummaryStrip,
-  EntryPortalTopBar,
 } from "@/src/components/ui/entryPortal";
 import { RegistrySegmentedTabs } from "@/src/components/ui/registryWorkspace/RegistrySegmentedTabs";
 import { Text } from "@/src/components/ui/text/Text";
+import { PROJECT_MODULE_CATALOG } from "@/src/constants/projectModules";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AdminProjectDto, UserRole } from "@/src/contracts/admin.contract";
+import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -28,8 +30,10 @@ import {
 import { ProjectAccessModal } from "../components/ProjectAccessModal";
 import { useAdminWorkspace } from "../hooks/useAdminWorkspace";
 import { SuperAdminHeaderActions } from "./superAdminWorkspaceScreen/SuperAdminHeaderActions";
-
-type AdminWorkspaceTab = "projects" | "users" | "setup";
+import {
+  SuperAdminWorkspaceTabs,
+  type AdminWorkspaceTab,
+} from "./superAdminWorkspaceScreen/SuperAdminWorkspaceTabs";
 
 export default function SuperAdminWorkspaceScreen() {
   const router = useRouter();
@@ -43,9 +47,11 @@ export default function SuperAdminWorkspaceScreen() {
     error,
     refresh,
     createProject,
+    saveProjectModules,
     createUser,
     saveProjectUsers,
     savingProject,
+    savingProjectModules,
     savingUser,
     savingAccess,
   } = useAdminWorkspace(isAdmin);
@@ -61,6 +67,8 @@ export default function SuperAdminWorkspaceScreen() {
   const [draftAssignedUserIds, setDraftAssignedUserIds] = useState<string[]>(
     [],
   );
+  const debouncedProjectSearch = useDebouncedValue(projectSearch);
+  const debouncedUserSearch = useDebouncedValue(userSearch);
 
   const projectsById = useMemo(
     () => new Map(projects.map((project) => [project.id, project])),
@@ -109,7 +117,7 @@ export default function SuperAdminWorkspaceScreen() {
   );
 
   const filteredProjects = useMemo(() => {
-    const search = normalizeSearch(projectSearch);
+    const search = normalizeSearch(debouncedProjectSearch);
     if (!search) return projects;
 
     return projects.filter((project) =>
@@ -124,10 +132,10 @@ export default function SuperAdminWorkspaceScreen() {
         ]),
       ]),
     );
-  }, [projectSearch, projects]);
+  }, [debouncedProjectSearch, projects]);
 
   const filteredUsers = useMemo(() => {
-    const search = normalizeSearch(userSearch);
+    const search = normalizeSearch(debouncedUserSearch);
 
     return users.filter((user) => {
       if (roleFilter !== "ALL" && user.role !== roleFilter) return false;
@@ -142,7 +150,7 @@ export default function SuperAdminWorkspaceScreen() {
         ),
       ]);
     });
-  }, [projectsById, roleFilter, userSearch, users]);
+  }, [debouncedUserSearch, projectsById, roleFilter, users]);
 
   if (!isAdmin) {
     return (
@@ -183,6 +191,30 @@ export default function SuperAdminWorkspaceScreen() {
         name: values.name.trim(),
         kind: values.kind,
       });
+
+      try {
+        await saveProjectModules(created.id, {
+          modules: PROJECT_MODULE_CATALOG.map((module) => {
+            const enabled = values.enabledModuleKeys.includes(module.key);
+
+            return {
+              key: module.key,
+              enabled,
+              submodules: module.submodules.map((submodule) => ({
+                key: submodule.key,
+                enabled: enabled && submodule.defaultEnabled,
+              })),
+            };
+          }),
+        });
+      } catch {
+        show(
+          "Project created, but module availability needs review in Project settings.",
+          "warning",
+        );
+        return true;
+      }
+
       show(`Project created: ${created.name}`, "success");
       return true;
     } catch (error) {
@@ -257,40 +289,16 @@ export default function SuperAdminWorkspaceScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="w-full gap-6 web:max-w-[1480px]">
-          <EntryPortalTopBar
-            companyName={session?.company?.name}
+          <EntryPortalHeader
+            eyebrow="Company control"
+            title="Admin workspace"
+            subtitle="Manage workspaces, user identities, and project access from the same calm control surface."
             actions={<SuperAdminHeaderActions onRefresh={refresh} />}
           />
 
-          {/* <EntryPortalHeader
-            eyebrow="Admin control"
-            title="Admin workspace"
-            subtitle="Manage company workspaces, identities, and project visibility without leaving the same calm portal layer."
-            meta={
-              <>
-                <View className="rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2">
-                  <Text className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-                    Company governance
-                  </Text>
-                </View>
-
-                <View className="rounded-full border border-shellLine bg-shellPanelSoft px-4 py-2">
-                  <Text className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-                    RBAC pending by design
-                  </Text>
-                </View>
-              </>
-            }
-          /> */}
-
           <EntryPortalSummaryStrip items={summaryItems} />
 
-          <RegistrySegmentedTabs
-            tabs={[
-              { key: "projects", label: "Projects" },
-              { key: "users", label: "Users" },
-              { key: "setup", label: "Setup" },
-            ]}
+          <SuperAdminWorkspaceTabs
             activeKey={activeTab}
             onChange={setActiveTab}
           />
@@ -337,24 +345,21 @@ export default function SuperAdminWorkspaceScreen() {
           ) : null}
 
           {activeTab === "setup" ? (
-            <View className="gap-6 web:max-w-[920px]">
-              <Card className="border-shellLine bg-shellPanel">
-                <CardContent className="gap-3 py-6">
-                  <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
-                    Setup
-                  </Text>
-                  <Text className="text-xl font-semibold text-textMain">
-                    Choose one creation flow, complete it, then verify it in the
-                    directories.
-                  </Text>
-                  <Text className="text-sm leading-6 text-muted">
-                    Keep creation sequential so projects, users, and access stay
-                    easy to follow.
-                  </Text>
-                </CardContent>
-              </Card>
+            <View className="gap-6">
+              <View className="gap-2">
+                <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
+                  Setup
+                </Text>
+                <Text className="text-[24px] font-semibold tracking-tight text-textMain">
+                  Create the next access object
+                </Text>
+                <Text className="max-w-[720px] text-[13px] leading-6 text-muted">
+                  Add one workspace or one user at a time, then verify access in
+                  the directories.
+                </Text>
+              </View>
 
-              <View className="gap-4 rounded-[28px] border border-shellLine bg-shellPanel p-5">
+              <View className="gap-4">
                 <RegistrySegmentedTabs
                   tabs={[
                     { key: "project", label: "Create project" },
@@ -366,7 +371,7 @@ export default function SuperAdminWorkspaceScreen() {
 
                 {setupTab === "project" ? (
                   <CreateProjectPanel
-                    saving={savingProject}
+                    saving={savingProject || savingProjectModules}
                     onSubmit={handleCreateProject}
                     onInvalid={() =>
                       show("Project name is required", "warning")

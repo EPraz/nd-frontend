@@ -93,14 +93,16 @@ describe("CrewCertificateUploadScreen", () => {
   it("GIVEN a crew requirement upload WHEN choosing a file and submitting SHOULD upload evidence and route to review", async () => {
     render(<CrewCertificateUploadScreen />);
 
-    fireEvent.press(screen.getByText("Pick PDF or image"));
+    fireEvent.press(screen.getByText("Select document"));
 
     await waitFor(() => {
-      expect(screen.getByText("master-coc.pdf")).toBeOnTheScreen();
+      expect(screen.getAllByText("master-coc.pdf").length).toBeGreaterThan(0);
     });
 
     fireEvent.changeText(
-      screen.getByPlaceholderText("Context before we create the candidate"),
+      screen.getByPlaceholderText(
+        "Capture context before the candidate is reviewed",
+      ),
       "MSMC evidence package",
     );
     fireEvent.press(screen.getByText("Upload and extract candidate"));

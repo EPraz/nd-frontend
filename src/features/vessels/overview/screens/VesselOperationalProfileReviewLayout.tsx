@@ -187,7 +187,10 @@ export function VesselOperationalProfileReviewLayout({
               description="Assigned people and immediate staffing posture."
             >
               <MetricRow label="Active" value={String(summary.crew.active)} />
-              <MetricRow label="Inactive" value={String(summary.crew.inactive)} />
+              <MetricRow
+                label="Inactive"
+                value={String(summary.crew.inactive)}
+              />
               <MetricRow label="Total" value={String(summary.crew.total)} />
               <Button
                 variant="outline"
@@ -207,7 +210,10 @@ export function VesselOperationalProfileReviewLayout({
               title="Workload"
               description="Operational pressure across open, active, and overdue maintenance."
             >
-              <MetricRow label="Open" value={String(summary.maintenance.open)} />
+              <MetricRow
+                label="Open"
+                value={String(summary.maintenance.open)}
+              />
               <MetricRow
                 label="In progress"
                 value={String(summary.maintenance.inProgress)}

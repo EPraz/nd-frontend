@@ -137,7 +137,7 @@ describe("VesselShellLayout", () => {
     });
   });
 
-  it("renders the review shell framing with module rail", () => {
+  it("GIVEN an enabled vessel shell WHEN rendered SHOULD expose module navigation and the active child content", () => {
     render(
       <VesselShellLayout>
         <mockReactNative.Text>Module body</mockReactNative.Text>

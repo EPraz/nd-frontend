@@ -11,11 +11,14 @@ import { SearchableVesselSelect } from "@/src/components/ui/forms/SearchableVess
 import { VesselPill } from "@/src/components/ui/forms/VesselPill";
 import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import type { CertificateTypeDto } from "@/src/features/certificates/shared";
+import {
+  CertificateTypeCombobox,
+  type CertificateTypeDto,
+} from "@/src/features/certificates/shared";
 import { Ionicons } from "@expo/vector-icons";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 import { CertificateFormValues } from "@/src/features/certificates/shared";
-import { CertificateTypePicker } from "./CertificateTypePicker";
 
 type Props = {
   fixedAssetId?: string | null;
@@ -35,6 +38,28 @@ type Props = {
   showFilesNextHint?: boolean;
 };
 
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-5">
+      <View className="gap-1">
+        <Text className="text-[14px] font-semibold text-textMain">{title}</Text>
+        <Text className="text-[12px] leading-[18px] text-muted">
+          {description}
+        </Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
 export default function CertificateFormCard({
   fixedAssetId,
   currentVessel,
@@ -53,30 +78,28 @@ export default function CertificateFormCard({
   showFilesNextHint = true,
 }: Props) {
   return (
-    <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-      <CardHeaderRow>
+    <Card className="overflow-hidden rounded-[28px] bg-shellPanel shadow-sm shadow-black/10 web:shadow-black/30">
+      <CardHeaderRow className="items-start border-b border-shellLine px-5 py-4">
         <View className="gap-1">
-          <CardTitle className="text-[16px] text-textMain">
+          <Text className="text-[11px] font-semibold uppercase tracking-[0.32em] text-accent">
+            Record Intake
+          </Text>
+          <CardTitle className="text-[18px] text-textMain">
             Certificate Record
           </CardTitle>
-          <Text className="text-muted text-[13px]">
-            Pick the vessel and type first, then fill in the validity details.
+          <Text className="text-muted text-[13px] leading-[19px]">
+            Capture the structured certificate baseline the compliance
+            workspace, quick view, and approval flow will read.
           </Text>
         </View>
       </CardHeaderRow>
 
-      <CardContent className="px-6">
+      <CardContent className="px-5 py-5">
         <View className="gap-5">
-          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
-            <View className="gap-1">
-              <Text className="text-textMain font-semibold text-[14px]">
-                1. Assign the record
-              </Text>
-              <Text className="text-muted text-[12px] leading-[18px]">
-                Choose the vessel and the certificate type first. The selected
-                type is what connects this record to compliance requirements.
-              </Text>
-            </View>
+          <Section
+            title="1. Assign the record"
+            description="Choose the vessel and certificate type first. That assignment is what anchors this record to compliance."
+          >
 
             {fixedAssetId ? (
               currentVessel ? (
@@ -116,26 +139,32 @@ export default function CertificateFormCard({
               </View>
             )}
 
-            <CertificateTypePicker
+            <CertificateTypeCombobox
               certificateTypes={certificateTypes}
               certificateTypesLoading={certificateTypesLoading}
               certificateTypesError={certificateTypesError}
-              values={values}
-              onChange={onChange}
+              selectedType={values.selectedCertificateType}
+              selectedTypeId={values.certificateTypeId}
+              onSelect={(type) =>
+                onChange({
+                  certificateTypeId: type.id,
+                  selectedCertificateType: type,
+                })
+              }
+              onClear={() =>
+                onChange({
+                  certificateTypeId: null,
+                  selectedCertificateType: null,
+                })
+              }
               disabled={disabled}
             />
-          </View>
+          </Section>
 
-          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
-            <View className="gap-1">
-              <Text className="text-textMain font-semibold text-[14px]">
-                2. Add validity details
-              </Text>
-              <Text className="text-muted text-[12px] leading-[18px]">
-                Add the certificate number, issuer, and dates. Notes are
-                optional.
-              </Text>
-            </View>
+          <Section
+            title="2. Add record details"
+            description="Capture certificate number, issuer, and validity dates. Notes stay optional and operational."
+          >
 
             <View className="gap-4 web:flex-row">
               <View className="flex-1">
@@ -144,6 +173,8 @@ export default function CertificateFormCard({
                   placeholder="e.g. CERT-12345"
                   value={values.number}
                   onChangeText={(value) => onChange({ number: value })}
+                  editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -152,6 +183,8 @@ export default function CertificateFormCard({
                   placeholder="e.g. Class Society / Flag"
                   value={values.issuer}
                   onChangeText={(value) => onChange({ issuer: value })}
+                  editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -163,6 +196,8 @@ export default function CertificateFormCard({
                   placeholder="Select issue date"
                   value={values.issueDate}
                   onChange={(value) => onChange({ issueDate: value })}
+                  disabled={disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -171,6 +206,8 @@ export default function CertificateFormCard({
                   placeholder="Select expiry date"
                   value={values.expiryDate}
                   onChange={(value) => onChange({ expiryDate: value })}
+                  disabled={disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -180,11 +217,14 @@ export default function CertificateFormCard({
               placeholder="Optional operational notes"
               value={values.notes}
               onChangeText={(value) => onChange({ notes: value })}
+              editable={!disabled}
+              multiline
+              surfaceTone="raised"
             />
-          </View>
+          </Section>
 
           {showFilesNextHint ? (
-            <View className="rounded-[20px] border border-dashed border-shellLine bg-shellGlass p-4 gap-2">
+            <View className="rounded-[20px] border border-dashed border-shellLine bg-shellCanvas p-4 gap-2">
               <View className="flex-row items-center gap-2">
                 <Ionicons
                   name="cloud-upload-outline"
@@ -204,10 +244,10 @@ export default function CertificateFormCard({
           ) : null}
 
           {localError ? (
-            <Text className="text-destructive">{localError}</Text>
+            <Text className="text-[13px] text-destructive">{localError}</Text>
           ) : null}
           {apiError ? (
-            <Text className="text-destructive">{apiError}</Text>
+            <Text className="text-[13px] text-destructive">{apiError}</Text>
           ) : null}
         </View>
       </CardContent>

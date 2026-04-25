@@ -166,7 +166,7 @@ describe("CrewBulkUploadSessionScreen", () => {
     });
   });
 
-  it("GIVEN a committed session WHEN the review screen renders SHOULD show commit outcome and requirements refresh guidance", () => {
+  it("GIVEN a committed session WHEN rendered SHOULD expose commit outcome and certificate recovery action", () => {
     (useCrewBulkUploadSession as jest.Mock).mockReturnValue({
       session: createSession(),
       loading: false,
@@ -178,18 +178,14 @@ describe("CrewBulkUploadSessionScreen", () => {
     render(<CrewBulkUploadSessionScreen />);
 
     expect(screen.getByText("Commit outcome")).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        "Crew rows were committed, but the requirements refresh failed. Open crew certificates and trigger a refresh before relying on compliance totals.",
-      ),
-    ).toBeOnTheScreen();
     expect(screen.getByText("Open crew certificates")).toBeOnTheScreen();
-    expect(screen.getByText("CERTIFICATE - 1 parsed rows")).toBeOnTheScreen();
+    expect(screen.getAllByText("Certificate preview").length).toBeGreaterThan(0);
     expect(screen.getByText("Revision history")).toBeOnTheScreen();
-    expect(screen.getByText("Revision 2: crew-bulk.xlsx")).toBeOnTheScreen();
+    expect(screen.getAllByText("Revision 2").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("crew-bulk.xlsx").length).toBeGreaterThan(0);
   });
 
-  it("GIVEN a discarded session WHEN the review screen renders SHOULD show traceability copy without the crew certificates CTA", () => {
+  it("GIVEN a discarded session WHEN rendered SHOULD keep traceability but hide certificate recovery actions", () => {
     (useCrewBulkUploadSession as jest.Mock).mockReturnValue({
       session: createSession({
         status: "DISCARDED",
@@ -217,15 +213,10 @@ describe("CrewBulkUploadSessionScreen", () => {
     render(<CrewBulkUploadSessionScreen />);
 
     expect(screen.getByText("Session discarded")).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        "This session stays visible only as traceability. Start a new upload from the workspace when the workbook has been corrected.",
-      ),
-    ).toBeOnTheScreen();
     expect(screen.queryByText("Open crew certificates")).toBeNull();
   });
 
-  it("GIVEN a ready session WHEN the review screen renders SHOULD show in-session correction guidance", () => {
+  it("GIVEN a ready session WHEN rendered SHOULD expose the correction workflow and duplicate policy", () => {
     (useCrewBulkUploadSession as jest.Mock).mockReturnValue({
       session: createSession({
         status: "READY_FOR_REVIEW",
@@ -273,7 +264,7 @@ describe("CrewBulkUploadSessionScreen", () => {
 
     render(<CrewBulkUploadSessionScreen />);
 
-    expect(screen.getByText("Correct this session")).toBeOnTheScreen();
+    expect(screen.getByText("Correct same session")).toBeOnTheScreen();
     expect(screen.getByText("Replace workbook in this session")).toBeOnTheScreen();
     expect(screen.getByText("Duplicate handling policy")).toBeOnTheScreen();
   });

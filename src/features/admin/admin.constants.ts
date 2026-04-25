@@ -1,5 +1,8 @@
 import type { UserRole } from "@/src/contracts/admin.contract";
-import type { ProjectKind } from "@/src/contracts/projects.contract";
+import type {
+  ProjectKind,
+  ProjectStatus,
+} from "@/src/contracts/projects.contract";
 
 export const PROJECT_KIND_OPTIONS: ProjectKind[] = ["MARITIME"];
 
@@ -10,6 +13,11 @@ export const KIND_LABEL: Record<ProjectKind, string> = {
   STORE: "Store",
   BARBERSHOP: "Barbershop",
   OTHER: "Other",
+};
+
+export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
+  ACTIVE: "Active",
+  ARCHIVED: "Archived",
 };
 
 export const ROLE_LABEL: Record<UserRole, string> = {

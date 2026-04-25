@@ -163,13 +163,6 @@ export default function MaintenanceQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${task.assetId}/maintenance/${task.id}`);
   };
 
-  const handleEdit = () => {
-    onClose();
-    router.push(
-      `/projects/${projectId}/vessels/${task.assetId}/maintenance/${task.id}/edit`,
-    );
-  };
-
   return (
     <QuickViewModalFrame
       portalName={task.title}
@@ -178,23 +171,7 @@ export default function MaintenanceQuickViewModal({
       title="Maintenance task"
       subtitle="Execution, urgency, and scheduling snapshot for the active maintenance item."
       headerActions={
-        <QuickViewHeaderActions
-          onClose={onClose}
-          actions={[
-            {
-              label: "Edit",
-              onPress: handleEdit,
-              variant: "softAccent",
-              leftIcon: (
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  className="text-accent"
-                />
-              ),
-            },
-          ]}
-        />
+        <QuickViewHeaderActions onClose={onClose} />
       }
       footer={
         <QuickViewFooterActions

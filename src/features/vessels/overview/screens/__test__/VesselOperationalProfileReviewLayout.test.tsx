@@ -30,7 +30,7 @@ describe("VesselOperationalProfileReviewLayout", () => {
     (useRouter as jest.Mock).mockReturnValue({ push });
   });
 
-  it("renders the operational profile review composition", () => {
+  it("GIVEN a vessel profile WHEN rendered SHOULD publish operational facts into the overview", () => {
     render(
       <VesselOperationalProfileReviewLayout
         projectId="project-atlantic"
@@ -107,15 +107,14 @@ describe("VesselOperationalProfileReviewLayout", () => {
       />,
     );
 
-    expect(screen.getAllByText("Operational profile").length).toBeGreaterThan(0);
-    expect(screen.getByText("Compliance pulse")).toBeOnTheScreen();
-    expect(screen.getByText("Readiness")).toBeOnTheScreen();
-    expect(screen.getByText("Workload")).toBeOnTheScreen();
-    expect(screen.getByText("Log context")).toBeOnTheScreen();
+    expect(screen.getByText("MV Navigate One")).toBeOnTheScreen();
+    expect(screen.getByText(/IMO 9876543/)).toBeOnTheScreen();
+    expect(screen.getByText("ops@mvone.test")).toBeOnTheScreen();
+    expect(screen.getByText("Panama")).toBeOnTheScreen();
     expect(screen.getByText("Recent Activity")).toBeOnTheScreen();
   });
 
-  it("navigates to certificates from the review panel", () => {
+  it("GIVEN the certificates action is pressed WHEN rendered SHOULD open vessel certificates", () => {
     render(
       <VesselOperationalProfileReviewLayout
         projectId="project-atlantic"

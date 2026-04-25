@@ -1,6 +1,4 @@
 import { RegistryHeaderActionButton } from "@/src/components/ui/registryWorkspace/RegistryHeaderActionButton";
-import { useRouter } from "expo-router";
-import { ENABLE_MANUAL_CERTIFICATE_CREATE } from "@/src/features/certificates/shared/config";
 
 type Props = {
   projectId: string;
@@ -10,18 +8,16 @@ type Props = {
 };
 
 export function CertificatesByProjectHeaderActions({
-  projectId,
   onRefresh,
   onOpenUpload,
   loading,
 }: Props) {
-  const router = useRouter();
-
   return (
     <>
       <RegistryHeaderActionButton
         variant="soft"
         iconName="refresh-outline"
+        iconSide="right"
         onPress={onRefresh}
         loading={loading}
       >
@@ -32,19 +28,11 @@ export function CertificatesByProjectHeaderActions({
         variant="default"
         iconName="add-outline"
         iconSize={15}
+        iconSide="right"
         onPress={onOpenUpload}
       >
         Add Certificate
       </RegistryHeaderActionButton>
-
-      {ENABLE_MANUAL_CERTIFICATE_CREATE ? (
-        <RegistryHeaderActionButton
-          variant="outline"
-          onPress={() => router.push(`/projects/${projectId}/certificates/new`)}
-        >
-          Manual entry
-        </RegistryHeaderActionButton>
-      ) : null}
     </>
   );
 }

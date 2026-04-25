@@ -43,8 +43,6 @@ export default function FuelViewScreen() {
 
   const goBack = () => router.back();
   const goVessel = () => router.push(`/projects/${pid}/vessels/${vid}`);
-  const goEdit = () =>
-    router.push(`/projects/${pid}/vessels/${vid}/fuel/${fid}/edit`);
 
   if (loading) return <Loading fullScreen />;
   if (error) return <ErrorState message={error} onRetry={refresh} />;
@@ -85,22 +83,6 @@ export default function FuelViewScreen() {
               }
               accessibilityLabel="Refresh"
             />
-
-            <Button
-              variant="default"
-              size="lg"
-              onPress={goEdit}
-              className="rounded-full"
-              rightIcon={
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  className="text-textMain"
-                />
-              }
-            >
-              Edit
-            </Button>
           </View>
         </View>
       </View>

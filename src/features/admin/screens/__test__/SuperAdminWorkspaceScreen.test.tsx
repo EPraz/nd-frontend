@@ -26,6 +26,7 @@ const routerReplace = jest.fn();
 const routerPush = jest.fn();
 const showToast = jest.fn();
 const createProject = jest.fn();
+const saveProjectModules = jest.fn();
 const createUser = jest.fn();
 const saveProjectUsers = jest.fn();
 const refresh = jest.fn();
@@ -61,9 +62,11 @@ function mockAdminWorkspace(
     error: null,
     refresh,
     createProject,
+    saveProjectModules,
     createUser,
     saveProjectUsers,
     savingProject: false,
+    savingProjectModules: false,
     savingUser: false,
     savingAccess: null,
     ...overrides,
@@ -79,6 +82,7 @@ describe("SuperAdminWorkspaceScreen", () => {
     });
     (useToast as jest.Mock).mockReturnValue({ show: showToast });
     createProject.mockResolvedValue(project);
+    saveProjectModules.mockResolvedValue({ projectId: project.id, modules: [] });
     createUser.mockResolvedValue(user);
     saveProjectUsers.mockResolvedValue(project);
     mockAdminSession();
@@ -97,19 +101,21 @@ describe("SuperAdminWorkspaceScreen", () => {
     ).toBeOnTheScreen();
   });
 
-  it("GIVEN admin data WHEN the admin screen renders SHOULD show company metrics and directories", () => {
+  it("GIVEN admin data WHEN rendered SHOULD expose workspace directories and project actions", () => {
     render(<SuperAdminWorkspaceScreen />);
 
     expect(screen.getByText("Admin workspace")).toBeOnTheScreen();
     expect(screen.getAllByText("Atlantic Ops").length).toBeGreaterThan(0);
-    expect(screen.getByText("company identities on file")).toBeOnTheScreen();
     expect(screen.getByText("1 project")).toBeOnTheScreen();
     expect(screen.getAllByText("Projects").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Users").length).toBeGreaterThan(0);
     expect(screen.getByText("Setup")).toBeOnTheScreen();
+    expect(screen.getByText("Open")).toBeOnTheScreen();
+    expect(screen.getByText("Settings")).toBeOnTheScreen();
+    expect(screen.getByText("Access")).toBeOnTheScreen();
   });
 
-  it("GIVEN project search text WHEN no project matches SHOULD show the project empty state", () => {
+  it("GIVEN project search text WHEN no project matches SHOULD show the project empty state", async () => {
     render(<SuperAdminWorkspaceScreen />);
 
     fireEvent.changeText(
@@ -117,11 +123,13 @@ describe("SuperAdminWorkspaceScreen", () => {
       "Pacific",
     );
 
-    expect(
-      screen.getByText(
-        "No projects matched this filter. Create a workspace or adjust the search.",
-      ),
-    ).toBeOnTheScreen();
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "No projects matched this filter. Create a workspace or adjust the search.",
+        ),
+      ).toBeOnTheScreen();
+    });
   });
 
   it("GIVEN a role filter WHEN selecting viewer SHOULD show only viewer users in the user table", () => {
@@ -168,6 +176,15 @@ describe("SuperAdminWorkspaceScreen", () => {
         kind: "MARITIME",
       });
     });
+    expect(saveProjectModules).toHaveBeenCalledWith("project-pacific", {
+      modules: [
+        { key: "vessels", enabled: true, submodules: [] },
+        { key: "certificates", enabled: true, submodules: [] },
+        { key: "crew", enabled: true, submodules: [] },
+        { key: "maintenance", enabled: true, submodules: [] },
+        { key: "fuel", enabled: false, submodules: [] },
+      ],
+    });
     expect(showToast).toHaveBeenCalledWith(
       "Project created: Pacific Fleet",
       "success",
@@ -192,6 +209,7 @@ describe("SuperAdminWorkspaceScreen", () => {
       screen.getByPlaceholderText("Use a clear but strong password"),
       "ClientPass-2026",
     );
+    fireEvent.press(screen.getByLabelText("Project access selector"));
     fireEvent.press(screen.getByLabelText("Atlantic Ops Maritime"));
     fireEvent.press(screen.getAllByText("Create user").at(-1)!);
 
@@ -213,7 +231,7 @@ describe("SuperAdminWorkspaceScreen", () => {
   it("GIVEN a project access modal WHEN changing assigned users SHOULD save the updated access list", async () => {
     render(<SuperAdminWorkspaceScreen />);
 
-    fireEvent.press(screen.getByText("Manage access"));
+    fireEvent.press(screen.getByText("Access"));
     fireEvent.press(screen.getAllByText("Viewer User").at(-1)!);
     fireEvent.press(screen.getByText("Save access"));
 

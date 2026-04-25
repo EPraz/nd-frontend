@@ -1,4 +1,5 @@
 import { fetchAssetAuditEvents } from "@/src/api/audit.api";
+import { ApiError } from "@/src/api/client";
 import type { AuditEventDto } from "@/src/contracts/audit.contract";
 import { useCallback, useEffect, useState } from "react";
 
@@ -32,6 +33,11 @@ export function useAssetAuditEvents(
       const data = await fetchAssetAuditEvents(projectId, assetId, limit);
       setEvents(data);
     } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        setEvents([]);
+        setError(null);
+        return;
+      }
       setError(e instanceof Error ? e.message : "Unknown error");
       setEvents([]);
     } finally {

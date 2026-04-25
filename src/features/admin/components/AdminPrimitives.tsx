@@ -2,37 +2,6 @@ import { Text } from "@/src/components/ui/text/Text";
 import { Feather } from "@expo/vector-icons";
 import { Pressable, View } from "react-native";
 
-export function AdminMetricCard({
-  label,
-  value,
-  caption,
-  tone = "default",
-}: {
-  label: string;
-  value: string;
-  caption: string;
-  tone?: "default" | "accent";
-}) {
-  return (
-    <View
-      className={[
-        "min-w-[170px] flex-1 rounded-[24px] border p-5",
-        tone === "accent"
-          ? "border-accent/35 bg-accent/10"
-          : "border-shellLine bg-shellPanelSoft",
-      ].join(" ")}
-    >
-      <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted">
-        {label}
-      </Text>
-      <Text className="mt-3 text-[34px] font-semibold leading-none text-textMain">
-        {value}
-      </Text>
-      <Text className="mt-2 text-sm leading-5 text-muted">{caption}</Text>
-    </View>
-  );
-}
-
 export function ChoicePill({
   label,
   active,
@@ -63,36 +32,6 @@ export function ChoicePill({
         {label}
       </Text>
     </Pressable>
-  );
-}
-
-export function MiniTag({
-  label,
-  tone = "default",
-}: {
-  label: string;
-  tone?: "default" | "accent" | "success" | "warning";
-}) {
-  const toneClass = {
-    accent: "border-accent/35 bg-accent/12",
-    default: "border-shellLine bg-shellPanelSoft",
-    success: "border-success/35 bg-success/15",
-    warning: "border-warning/35 bg-warning/15",
-  }[tone];
-
-  const textClass = {
-    accent: "text-accent",
-    default: "text-muted",
-    success: "text-success",
-    warning: "text-warning",
-  }[tone];
-
-  return (
-    <View className={["rounded-full border px-3 py-1.5", toneClass].join(" ")}>
-      <Text className={["text-xs font-medium", textClass].join(" ")}>
-        {label}
-      </Text>
-    </View>
   );
 }
 

@@ -85,15 +85,18 @@ describe("ProjectModuleSettingsScreen", () => {
   it("GIVEN project entitlements WHEN the settings screen renders SHOULD explain inherited vessel access instead of submodule toggles", () => {
     render(<ProjectModuleSettingsScreen />);
 
-    expect(screen.getByText("Availability by project")).toBeOnTheScreen();
-    expect(screen.getByText("Inheritance")).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText("Toggle Certificates module availability"),
+    ).toBeOnTheScreen();
     expect(screen.queryByText("Submodules")).toBeNull();
   });
 
   it("GIVEN a module change WHEN saving SHOULD send project-level modules with empty submodule arrays", async () => {
     render(<ProjectModuleSettingsScreen />);
 
-    fireEvent.press(screen.getByText("Enabled"));
+    fireEvent.press(
+      screen.getByLabelText("Toggle Certificates module availability"),
+    );
     fireEvent.press(screen.getByText("Save changes"));
 
     await waitFor(() => {

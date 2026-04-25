@@ -1,7 +1,7 @@
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Text } from "../text/Text";
@@ -12,6 +12,7 @@ type DateFieldProps = {
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  surfaceTone?: "default" | "raised";
 };
 
 function formatIsoDate(value: Date): string {
@@ -37,8 +38,10 @@ export function DateField({
   onChange,
   placeholder = "Select date",
   disabled = false,
+  surfaceTone = "default",
 }: DateFieldProps) {
   const [showPicker, setShowPicker] = useState(false);
+  const webInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedDate = useMemo(() => parseIsoDate(value), [value]);
 
@@ -56,26 +59,70 @@ export function DateField({
     onChange(formatIsoDate(nextDate));
   }
 
+  function openWebPicker() {
+    if (disabled) return;
+
+    const input = webInputRef.current;
+    if (!input) return;
+
+    input.focus();
+
+    try {
+      if (typeof input.showPicker === "function") {
+        input.showPicker();
+        return;
+      }
+    } catch {
+      // Fall back to click for browsers without showPicker support.
+    }
+
+    input.click();
+  }
+
   if (Platform.OS === "web") {
     return (
       <View className="gap-2">
         <Text className="text-sm font-medium text-muted">{label}</Text>
-        <input
-          type="date"
-          value={value}
+        <Pressable
+          onPress={openWebPicker}
           disabled={disabled}
-          onChange={(event) => onChange(event.currentTarget.value)}
-          style={{
-            height: 48,
-            width: "100%",
-            borderRadius: 16,
-            border: "1px solid hsl(var(--shell-line))",
-            background: "hsl(var(--shell-panel-soft))",
-            color: "hsl(var(--text-main))",
-            padding: "0 16px",
-            outline: "none",
-          }}
-        />
+          className={[
+            [
+              "relative h-12 justify-center rounded-[20px] border border-shellLine px-4",
+              surfaceTone === "raised" ? "bg-shellCanvas" : "bg-shellPanelSoft",
+            ].join(" "),
+            disabled ? "opacity-60" : "",
+          ].join(" ")}
+        >
+          <View className="flex-row items-center justify-between gap-3">
+            <Text className={value ? "text-textMain" : "text-muted"}>
+              {value || placeholder}
+            </Text>
+            <Ionicons
+              name="calendar-outline"
+              size={16}
+              className="text-muted"
+            />
+          </View>
+
+          <input
+            ref={webInputRef}
+            type="date"
+            aria-label={label}
+            value={value}
+            disabled={disabled}
+            tabIndex={-1}
+            onChange={(event) => onChange(event.currentTarget.value)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: 1,
+              height: 1,
+              opacity: 0,
+              pointerEvents: "none",
+            }}
+          />
+        </Pressable>
       </View>
     );
   }
@@ -88,7 +135,10 @@ export function DateField({
         onPress={() => setShowPicker(true)}
         disabled={disabled}
         className={[
-          "h-12 justify-center rounded-[20px] border border-shellLine bg-shellPanelSoft px-4",
+          [
+            "h-12 justify-center rounded-[20px] border border-shellLine px-4",
+            surfaceTone === "raised" ? "bg-shellCanvas" : "bg-shellPanelSoft",
+          ].join(" "),
           disabled ? "opacity-60" : "",
         ].join(" ")}
       >

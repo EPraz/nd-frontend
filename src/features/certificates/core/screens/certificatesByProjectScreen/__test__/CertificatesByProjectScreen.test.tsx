@@ -103,10 +103,6 @@ jest.mock("@/src/features/certificates/core/components/certificateTable/Certific
   },
 }));
 
-jest.mock("@/src/features/certificates/shared/config", () => ({
-  ENABLE_MANUAL_CERTIFICATE_CREATE: false,
-}));
-
 describe("CertificatesByProjectScreen", () => {
   const push = jest.fn();
 
@@ -157,7 +153,7 @@ describe("CertificatesByProjectScreen", () => {
     });
   });
 
-  it("GIVEN the certificates workspace opens WHEN the screen renders SHOULD show the registry framing", () => {
+  it("GIVEN the certificates workspace opens WHEN rendered SHOULD default to project certificate records", () => {
     render(<CertificatesByProjectScreen />);
 
     expect(screen.getByText("Certificates")).toBeOnTheScreen();

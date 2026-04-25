@@ -1,4 +1,5 @@
 import { RegistryTablePill } from "@/src/components";
+import { humanizeTechnicalLabel } from "@/src/helpers";
 import { MaintenancePriority, MaintenanceStatus } from "../../../shared/contracts";
 
 export function MaintenanceStatusPill(props: {
@@ -10,7 +11,7 @@ export function MaintenanceStatusPill(props: {
   const isOverdue = overdue && status !== "DONE";
 
   if (isOverdue) {
-    return <RegistryTablePill label="OVERDUE" tone="danger" />;
+    return <RegistryTablePill label="Overdue" tone="danger" />;
   }
 
   const tone: Record<MaintenanceStatus, "danger" | "warn" | "ok"> = {
@@ -20,7 +21,12 @@ export function MaintenanceStatusPill(props: {
     OVERDUE: "danger",
   };
 
-  return <RegistryTablePill label={status} tone={tone[status]} />;
+  return (
+    <RegistryTablePill
+      label={humanizeTechnicalLabel(status)}
+      tone={tone[status]}
+    />
+  );
 }
 
 export function MaintenancePriorityPill(props: {
@@ -34,5 +40,10 @@ export function MaintenancePriorityPill(props: {
     HIGH: "danger",
   };
 
-  return <RegistryTablePill label={p} tone={tone[p]} />;
+  return (
+    <RegistryTablePill
+      label={humanizeTechnicalLabel(p)}
+      tone={tone[p]}
+    />
+  );
 }

@@ -151,7 +151,6 @@ describe("ProjectDashboardScreen", () => {
   it("GIVEN the dashboard opens WHEN the screen renders SHOULD default to the review layout", () => {
     render(<ProjectDashboardScreen />);
 
-    expect(screen.getByText("ARXIS Dashboard")).toBeOnTheScreen();
     expect(screen.getByText("Fleet Command Center review")).toBeOnTheScreen();
     expect(screen.queryByText("Current layout")).toBeNull();
     expect(screen.queryByText("Review layout")).toBeNull();

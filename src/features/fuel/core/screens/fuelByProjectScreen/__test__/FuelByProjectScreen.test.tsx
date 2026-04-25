@@ -97,7 +97,7 @@ describe("FuelByProjectScreen", () => {
     });
   });
 
-  it("GIVEN the fuel workspace opens WHEN the screen renders SHOULD show the registry framing", () => {
+  it("GIVEN the fuel workspace opens WHEN rendered SHOULD expose the read-only fuel registry without create actions", () => {
     render(<FuelByProjectScreen />);
 
     expect(screen.getByText("Fuel")).toBeOnTheScreen();
@@ -105,5 +105,6 @@ describe("FuelByProjectScreen", () => {
     expect(screen.getByText("Fuel log")).toBeOnTheScreen();
     expect(screen.getByText("All events")).toBeOnTheScreen();
     expect(screen.getByText("Latest first")).toBeOnTheScreen();
+    expect(screen.queryByText("Add Fuel Log")).toBeNull();
   });
 });

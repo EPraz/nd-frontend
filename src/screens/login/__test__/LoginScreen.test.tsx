@@ -28,11 +28,11 @@ describe("LoginScreen", () => {
     signIn.mockResolvedValue(undefined);
   });
 
-  it("GIVEN the entry portal WHEN rendered SHOULD show the new access composition", () => {
+  it("GIVEN the entry portal WHEN rendered SHOULD expose the credential form", () => {
     render(<LoginScreen />);
 
-    expect(screen.getByText("Welcome to ARXIS")).toBeOnTheScreen();
-    expect(screen.getByText("ARXIS Maritime")).toBeOnTheScreen();
+    expect(screen.getByText("Email")).toBeOnTheScreen();
+    expect(screen.getByText("Password")).toBeOnTheScreen();
     expect(screen.getByText("Enter workspace")).toBeOnTheScreen();
   });
 
@@ -40,7 +40,7 @@ describe("LoginScreen", () => {
     render(<LoginScreen />);
 
     fireEvent.changeText(
-      screen.getByPlaceholderText("admin@navigate.test"),
+      screen.getByPlaceholderText("your@email.test"),
       "  admin@navigate.test  ",
     );
     fireEvent.changeText(

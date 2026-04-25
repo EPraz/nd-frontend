@@ -133,30 +133,6 @@ export type GenerateRequirementsResult = {
   assetIds: string[];
 };
 
-export type CreateCertificateInput = {
-  certificateTypeId: string;
-  number?: string;
-  issuer?: string;
-  issueDate?: string;
-  expiryDate?: string;
-  status?: CertificateStatus;
-  workflowStatus?: CertificateWorkflowStatus;
-  notes?: string;
-  assetId: string;
-};
-
-export type UpdateCertificateInput = {
-  assetId?: string;
-  certificateTypeId?: string;
-  number?: string | null;
-  issuer?: string | null;
-  issueDate?: string | null;
-  expiryDate?: string | null;
-  status?: CertificateStatus;
-  workflowStatus?: CertificateWorkflowStatus;
-  notes?: string | null;
-};
-
 export type UploadableDocument = {
   uri: string;
   name: string;

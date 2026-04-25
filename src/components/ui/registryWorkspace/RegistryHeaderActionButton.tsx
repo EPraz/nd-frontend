@@ -12,6 +12,7 @@ type RegistryHeaderActionButtonProps = Omit<
   children: ReactNode;
   iconName?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
+  iconSide?: "left" | "right";
   variant?: ButtonVariant;
   size?: ButtonSize;
 };
@@ -20,21 +21,23 @@ export function RegistryHeaderActionButton({
   children,
   iconName,
   iconSize = 14,
+  iconSide = "right",
   variant = "outline",
   size = "pillSm",
   className,
   ...props
 }: RegistryHeaderActionButtonProps) {
+  const icon = iconName ? (
+    <Ionicons name={iconName} size={iconSize} className="text-textMain" />
+  ) : undefined;
+
   return (
     <Button
       variant={variant}
       size={size}
       className={["rounded-full", className].filter(Boolean).join(" ")}
-      leftIcon={
-        iconName ? (
-          <Ionicons name={iconName} size={iconSize} className="text-textMain" />
-        ) : undefined
-      }
+      leftIcon={iconSide === "left" ? icon : undefined}
+      rightIcon={iconSide === "right" ? icon : undefined}
       {...props}
     >
       {children}

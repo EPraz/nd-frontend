@@ -1,7 +1,8 @@
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import { AnchoredPopover } from "@/src/components/ui/popover";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, TextInput, View } from "react-native";
+import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { Text } from "../text/Text";
 
 type Props = {
@@ -81,131 +82,147 @@ export function SearchableVesselSelect({
     setQ("");
   }
 
+  function handleOpenChange(nextOpen: boolean) {
+    if (disabled && nextOpen) return;
+
+    if (nextOpen) {
+      setOpen(true);
+      return;
+    }
+
+    close();
+  }
+
   const selectedLabel = value ? value.name : placeholder;
 
   return (
     <View className="gap-2">
       <Text className="text-[13px] text-muted">{label}</Text>
 
-      <Pressable
-        disabled={disabled}
-        onPress={() => setOpen(true)}
-        className={[
-          "h-12 flex-row items-center justify-between rounded-2xl border border-shellLine bg-shellGlass px-4 web:backdrop-blur-md",
-          disabled ? "opacity-50" : "active:opacity-90",
-        ].join(" ")}
-      >
-        <Text className={value ? "text-textMain" : "text-muted"}>
-          {selectedLabel}
-        </Text>
-        <Ionicons name="chevron-down" size={18} color="rgba(221,230,237,0.9)" />
-      </Pressable>
-
-      <Modal
-        visible={open}
-        animationType="fade"
-        transparent
-        onRequestClose={close}
-      >
-        <Pressable onPress={close} className="flex-1 bg-black/60">
-          <Pressable
-            onPress={() => {}}
-            className="mx-4 mt-24 rounded-3xl border border-shellLine bg-shellPanel p-4 web:mx-auto web:w-[560px] web:backdrop-blur-md"
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-[16px] font-semibold text-textMain">
-                Select vessel
-              </Text>
-              <Pressable onPress={close} className="p-2 active:opacity-80">
-                <Ionicons
-                  name="close"
-                  size={20}
-                  color="rgba(221,230,237,0.9)"
-                />
-              </Pressable>
-            </View>
-
-            <View className="mt-3 flex-row items-center gap-2 rounded-2xl border border-shellLine bg-shellPanelSoft px-3">
-              <Ionicons
-                name="search"
-                size={16}
-                color="rgba(221,230,237,0.65)"
-              />
-              <TextInput
-                value={q}
-                onChangeText={setQ}
-                placeholder="Search by name, IMO, license, flag..."
-                placeholderTextColor="rgba(221,230,237,0.35)"
-                className="h-11 flex-1 text-textMain"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <ScrollView
-              className="mt-3 max-h-[360px]"
-              showsVerticalScrollIndicator={false}
+      <AnchoredPopover
+        open={open}
+        onOpenChange={handleOpenChange}
+        minWidth={440}
+        maxWidth={560}
+        estimatedHeight={520}
+        backdropClassName="bg-black/50"
+        trigger={({ anchorRef, openPopover }) => (
+          <View ref={anchorRef} collapsable={false}>
+            <Pressable
+              disabled={disabled}
+              onPress={openPopover}
+              className={[
+                "h-12 flex-row items-center justify-between rounded-2xl border border-shellLine bg-shellCanvas px-4 web:backdrop-blur-md",
+                disabled ? "opacity-50" : "active:opacity-90",
+              ].join(" ")}
             >
-              {filtered.length === 0 ? (
-                <View className="items-center py-8">
-                  <Text className="text-muted">No vessels found.</Text>
-                </View>
-              ) : (
-                <View className="gap-2">
-                  {filtered.map((v) => {
-                    const active = value?.id === v.id;
-                    const meta = vesselMeta(v);
+              <Text className={value ? "text-textMain" : "text-muted"}>
+                {selectedLabel}
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={18}
+                color="rgba(221,230,237,0.9)"
+              />
+            </Pressable>
+          </View>
+        )}
+      >
+        <View className="gap-3">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-[16px] font-semibold text-textMain">
+              Select vessel
+            </Text>
+            <Pressable onPress={close} className="p-2 active:opacity-80">
+              <Ionicons
+                name="close"
+                size={20}
+                color="rgba(221,230,237,0.9)"
+              />
+            </Pressable>
+          </View>
 
-                    return (
-                      <Pressable
-                        key={v.id}
-                        onPress={() => {
-                          onChange(v);
-                          close();
-                        }}
-                        className={[
-                          "rounded-2xl border px-4 py-3",
-                          active
-                            ? "border-accent bg-accent/10"
-                            : "border-shellLine bg-shellPanelSoft active:opacity-90",
-                        ].join(" ")}
-                      >
-                        <View className="flex-row items-start justify-between gap-3">
-                          <View className="flex-1">
-                            <Text className="font-semibold text-textMain">
-                              {v.name}
-                            </Text>
-                            <Text className="mt-1 text-[12px] text-muted">
-                              {meta.primary}
-                              {meta.secondary ? ` - ${meta.secondary}` : ""}
-                            </Text>
-                          </View>
+          <View className="flex-row items-center gap-2 rounded-2xl border border-shellLine bg-shellPanelSoft px-3">
+            <Ionicons
+              name="search"
+              size={16}
+              color="rgba(221,230,237,0.65)"
+            />
+            <TextInput
+              value={q}
+              onChangeText={setQ}
+              placeholder="Search by name, IMO, license, flag..."
+              placeholderTextColor="rgba(221,230,237,0.35)"
+              className="h-11 flex-1 text-textMain"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoFocus
+            />
+          </View>
 
-                          {active ? (
-                            <View className="h-7 w-7 items-center justify-center rounded-full bg-accent">
-                              <Ionicons
-                                name="checkmark"
-                                size={18}
-                                color="#0b0b0b"
-                              />
-                            </View>
-                          ) : (
-                            <Ionicons
-                              name="chevron-forward"
-                              size={16}
-                              color="rgba(221,230,237,0.55)"
-                            />
-                          )}
+          <ScrollView
+            className="max-h-[360px]"
+            showsVerticalScrollIndicator={false}
+          >
+            {filtered.length === 0 ? (
+              <View className="items-center py-8">
+                <Text className="text-muted">No vessels found.</Text>
+              </View>
+            ) : (
+              <View className="gap-2">
+                {filtered.map((v) => {
+                  const active = value?.id === v.id;
+                  const meta = vesselMeta(v);
+
+                  return (
+                    <Pressable
+                      key={v.id}
+                      onPress={() => {
+                        onChange(v);
+                        close();
+                      }}
+                      className={[
+                        "rounded-2xl border px-4 py-3",
+                        active
+                          ? "border-accent bg-accent/10"
+                          : "border-shellLine bg-shellPanelSoft active:opacity-90",
+                      ].join(" ")}
+                    >
+                      <View className="flex-row items-start justify-between gap-3">
+                        <View className="flex-1">
+                          <Text className="font-semibold text-textMain">
+                            {v.name}
+                          </Text>
+                          <Text className="mt-1 text-[12px] text-muted">
+                            {meta.primary}
+                            {meta.secondary ? ` - ${meta.secondary}` : ""}
+                          </Text>
                         </View>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              )}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+
+                        {active ? (
+                          <View className="h-7 w-7 items-center justify-center rounded-full bg-accent">
+                            <Ionicons
+                              name="checkmark"
+                              size={18}
+                              color="#0b0b0b"
+                            />
+                          </View>
+                        ) : (
+                          <Ionicons
+                            name="chevron-forward"
+                            size={16}
+                            color="rgba(221,230,237,0.55)"
+                          />
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </AnchoredPopover>
     </View>
   );
 }

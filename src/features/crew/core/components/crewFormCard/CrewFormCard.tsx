@@ -1,4 +1,3 @@
-import { Button } from "@/src/components/ui/button/Button";
 import {
   Card,
   CardContent,
@@ -12,15 +11,11 @@ import { SearchableVesselSelect } from "@/src/components/ui/forms/SearchableVess
 import { VesselPill } from "@/src/components/ui/forms/VesselPill";
 import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, Switch, View } from "react-native";
-import type {
-  CrewDepartment,
-  CrewInactiveReason,
-} from "../../contracts";
-import { CrewFormValues } from "../crewFormTypes";
+import type { CrewDepartment, CrewInactiveReason } from "../../contracts";
+import type { CrewFormValues } from "../crewFormTypes";
 
 const departmentOptions: {
   value: CrewDepartment;
@@ -51,13 +46,6 @@ type Props = {
   onCreateVessel: () => void;
   values: CrewFormValues;
   onChange: (patch: Partial<CrewFormValues>) => void;
-  photoPreviewUrl?: string | null;
-  photoFileName?: string | null;
-  pendingPhotoName?: string | null;
-  onSelectPhoto?: () => void;
-  onRemovePhoto?: () => void;
-  canManagePhoto?: boolean;
-  photoBusy?: boolean;
   localError?: string | null;
   apiError?: string | null;
   disabled?: boolean;
@@ -73,7 +61,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <View className="gap-4 rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
+    <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-5">
       <View className="gap-1">
         <Text className="text-[14px] font-semibold text-textMain">{title}</Text>
         <Text className="text-[12px] leading-[18px] text-muted">
@@ -104,115 +92,16 @@ function SelectorOption({
         "rounded-full border px-3 py-2",
         selected
           ? "border-accent bg-accent/10"
-          : "border-shellLine bg-shellPanelSoft",
+          : "border-shellLine bg-shellCanvas",
         disabled ? "opacity-60" : "",
       ].join(" ")}
     >
-      <Text className={selected ? "font-semibold text-accent" : "text-textMain"}>
+      <Text
+        className={selected ? "font-semibold text-accent" : "text-textMain"}
+      >
         {label}
       </Text>
     </Pressable>
-  );
-}
-
-function CrewPhotoPanel({
-  photoPreviewUrl,
-  photoFileName,
-  pendingPhotoName,
-  onSelectPhoto,
-  onRemovePhoto,
-  canManagePhoto,
-  photoBusy,
-  disabled,
-}: {
-  photoPreviewUrl?: string | null;
-  photoFileName?: string | null;
-  pendingPhotoName?: string | null;
-  onSelectPhoto?: () => void;
-  onRemovePhoto?: () => void;
-  canManagePhoto: boolean;
-  photoBusy: boolean;
-  disabled: boolean;
-}) {
-  const resolvedPhotoLabel =
-    pendingPhotoName ?? photoFileName ?? "No image selected yet";
-
-  return (
-    <View className="gap-4 rounded-[18px] border border-shellLine bg-shellCanvas p-4">
-      <View className="gap-1">
-        <Text className="font-semibold text-textMain">Crew Photo</Text>
-        <Text className="text-[12px] leading-[18px] text-muted">
-          Use a real uploaded portrait so quick views and profile cards stop
-          relying on placeholders or manual URLs.
-        </Text>
-      </View>
-
-      <View className="gap-4 web:flex-row">
-        <View className="h-[220px] flex-1 overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft">
-          {photoPreviewUrl ? (
-            <Image
-              source={{ uri: photoPreviewUrl }}
-              contentFit="cover"
-              style={{ width: "100%", height: "100%" }}
-            />
-          ) : (
-            <View className="flex-1 items-center justify-center gap-2 px-4">
-              <Ionicons
-                name="person-circle-outline"
-                size={48}
-                className="text-muted"
-              />
-              <Text className="font-semibold text-textMain">No crew photo</Text>
-              <Text className="text-center text-[12px] leading-[18px] text-muted">
-                Add a portrait to make crew quick views and cards feel current.
-              </Text>
-            </View>
-          )}
-        </View>
-
-        <View className="flex-1 gap-3">
-          <View className="gap-1 rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3">
-            <Text className="text-[12px] text-muted">Selected file</Text>
-            <Text className="font-semibold text-textMain">{resolvedPhotoLabel}</Text>
-            <Text className="text-[12px] text-muted">JPG, PNG or WEBP</Text>
-          </View>
-
-          <View className="flex-row flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={onSelectPhoto}
-              disabled={disabled || !canManagePhoto || photoBusy}
-              className="rounded-full"
-            >
-              {photoPreviewUrl ? "Change photo" : "Select photo"}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={onRemovePhoto}
-              disabled={
-                disabled ||
-                !canManagePhoto ||
-                photoBusy ||
-                (!photoPreviewUrl && !pendingPhotoName)
-              }
-              className="rounded-full"
-            >
-              Remove photo
-            </Button>
-          </View>
-
-          {!canManagePhoto ? (
-            <Text className="text-[12px] leading-[18px] text-muted">
-              Save the crew member first if you want the image persisted to
-              storage.
-            </Text>
-          ) : null}
-        </View>
-      </View>
-    </View>
   );
 }
 
@@ -225,13 +114,6 @@ export default function CrewFormCard({
   onCreateVessel,
   values,
   onChange,
-  photoPreviewUrl,
-  photoFileName,
-  pendingPhotoName,
-  onSelectPhoto,
-  onRemovePhoto,
-  canManagePhoto = false,
-  photoBusy = false,
   localError,
   apiError,
   disabled = false,
@@ -239,20 +121,23 @@ export default function CrewFormCard({
   const isActive = values.status === "ACTIVE";
 
   return (
-    <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-      <CardHeaderRow>
+    <Card className="overflow-hidden rounded-[28px] bg-shellPanel shadow-sm shadow-black/10 web:shadow-black/30">
+      <CardHeaderRow className="items-start border-b border-shellLine px-5 py-4">
         <View className="gap-1">
-          <CardTitle className="text-[16px] text-textMain">
+          <Text className="text-[11px] font-semibold uppercase tracking-[0.32em] text-accent">
+            Profile Intake
+          </Text>
+          <CardTitle className="text-[18px] text-textMain">
             Crew Profile
           </CardTitle>
-          <Text className="text-[13px] text-muted">
-            Capture operational crew data in a way that later supports
-            certificates, compliance, and contract visibility.
+          <Text className="text-[13px] leading-[19px] text-muted">
+            Capture the operational crew baseline the profile, quick view, and
+            registry surfaces will read.
           </Text>
         </View>
       </CardHeaderRow>
 
-      <CardContent className="px-6">
+      <CardContent className="px-5 py-5">
         <View className="gap-5">
           <Section
             title="1. Assignment"
@@ -262,7 +147,9 @@ export default function CrewFormCard({
               currentVessel ? (
                 <VesselPill vessel={currentVessel} />
               ) : (
-                <Text className="text-[12px] text-muted">Loading vessel...</Text>
+                <Text className="text-[12px] text-muted">
+                  Loading vessel...
+                </Text>
               )
             ) : (
               <View className="gap-2">
@@ -297,7 +184,7 @@ export default function CrewFormCard({
 
           <Section
             title="2. Basic Info"
-            description="Core identity, onboard role data, and a real portrait for the crew member."
+            description="Core identity and onboard role data for the crew member."
           >
             <Field
               label="Full Name *"
@@ -305,6 +192,7 @@ export default function CrewFormCard({
               value={values.fullName}
               onChangeText={(value) => onChange({ fullName: value })}
               editable={!disabled}
+              surfaceTone="raised"
             />
 
             <View className="gap-4 web:flex-row">
@@ -315,6 +203,7 @@ export default function CrewFormCard({
                   value={values.rank}
                   onChangeText={(value) => onChange({ rank: value })}
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -324,6 +213,7 @@ export default function CrewFormCard({
                   value={values.nationality}
                   onChangeText={(value) => onChange({ nationality: value })}
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -334,6 +224,7 @@ export default function CrewFormCard({
               onChange={(value) => onChange({ dateOfBirth: value })}
               placeholder="Select birth date"
               disabled={disabled}
+              surfaceTone="raised"
             />
 
             <View className="gap-4 web:flex-row">
@@ -344,6 +235,7 @@ export default function CrewFormCard({
                   value={values.passportNumber}
                   onChangeText={(value) => onChange({ passportNumber: value })}
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -353,6 +245,7 @@ export default function CrewFormCard({
                   value={values.seafarerId}
                   onChangeText={(value) => onChange({ seafarerId: value })}
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -364,17 +257,7 @@ export default function CrewFormCard({
               onChangeText={(value) => onChange({ personalEmail: value })}
               keyboardType="email-address"
               editable={!disabled}
-            />
-
-            <CrewPhotoPanel
-              photoPreviewUrl={photoPreviewUrl}
-              photoFileName={photoFileName}
-              pendingPhotoName={pendingPhotoName}
-              onSelectPhoto={onSelectPhoto}
-              onRemovePhoto={onRemovePhoto}
-              canManagePhoto={canManagePhoto}
-              photoBusy={photoBusy}
-              disabled={disabled}
+              surfaceTone="raised"
             />
 
             <View className="gap-2">
@@ -414,6 +297,7 @@ export default function CrewFormCard({
                   onChange={(value) => onChange({ dateOfEmbarkation: value })}
                   placeholder="Select embarkation date"
                   disabled={disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -425,6 +309,7 @@ export default function CrewFormCard({
                   }
                   placeholder="Select disembarkation date"
                   disabled={disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -439,6 +324,7 @@ export default function CrewFormCard({
                     onChange({ portOfEmbarkation: value })
                   }
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -448,6 +334,7 @@ export default function CrewFormCard({
                   value={values.contractType}
                   onChangeText={(value) => onChange({ contractType: value })}
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -462,6 +349,7 @@ export default function CrewFormCard({
                     onChange({ operatingCompany: value })
                   }
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -473,11 +361,12 @@ export default function CrewFormCard({
                     onChange({ crewManagementAgency: value })
                   }
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
 
-            <View className="flex-row items-center justify-between rounded-[18px] border border-shellLine bg-shellCanvas p-4">
+            <View className="flex-row items-center justify-between rounded-[18px] border border-shellLine  p-4">
               <View className="gap-1">
                 <Text className="font-semibold text-textMain">Status</Text>
                 <Text className="text-[12px] text-muted">
@@ -535,6 +424,7 @@ export default function CrewFormCard({
               onChange={(value) => onChange({ nextVacationDate: value })}
               placeholder="Select next vacation date"
               disabled={disabled}
+              surfaceTone="raised"
             />
 
             <Text className="text-[12px] leading-[18px] text-muted">
@@ -558,6 +448,7 @@ export default function CrewFormCard({
                   }
                   keyboardType="numeric"
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -570,6 +461,7 @@ export default function CrewFormCard({
                   }
                   keyboardType="numeric"
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -584,6 +476,7 @@ export default function CrewFormCard({
                     onChange({ vesselTypeExperience: value })
                   }
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -596,6 +489,7 @@ export default function CrewFormCard({
                   }
                   keyboardType="numeric"
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
@@ -606,6 +500,7 @@ export default function CrewFormCard({
               value={values.previousVessels}
               onChangeText={(value) => onChange({ previousVessels: value })}
               editable={!disabled}
+              surfaceTone="raised"
             />
           </Section>
 
@@ -623,6 +518,7 @@ export default function CrewFormCard({
                   }
                   placeholder="Select familiarization date"
                   disabled={disabled}
+                  surfaceTone="raised"
                 />
               </View>
               <View className="flex-1">
@@ -634,11 +530,12 @@ export default function CrewFormCard({
                     onChange({ responsibleOfficer: value })
                   }
                   editable={!disabled}
+                  surfaceTone="raised"
                 />
               </View>
             </View>
 
-            <View className="flex-row items-center justify-between rounded-[18px] border border-shellLine bg-shellCanvas p-4">
+            <View className="flex-row items-center justify-between rounded-[18px] border border-shellLine  p-4">
               <View className="gap-1">
                 <Text className="font-semibold text-textMain">
                   Familiarization Checklist
@@ -665,6 +562,7 @@ export default function CrewFormCard({
                 onChange({ crewDigitalSignatureUrl: value })
               }
               editable={!disabled}
+              surfaceTone="raised"
             />
           </Section>
 
@@ -706,6 +604,7 @@ export default function CrewFormCard({
               }
               placeholder="Select expiration date"
               disabled={disabled}
+              surfaceTone="raised"
             />
 
             <Field
@@ -714,6 +613,7 @@ export default function CrewFormCard({
               value={values.medicalRestrictions}
               onChangeText={(value) => onChange({ medicalRestrictions: value })}
               editable={!disabled}
+              surfaceTone="raised"
             />
           </Section>
 
@@ -728,6 +628,7 @@ export default function CrewFormCard({
               onChangeText={(value) => onChange({ notes: value })}
               multiline
               editable={!disabled}
+              surfaceTone="raised"
             />
 
             <View className="gap-2 rounded-[18px] border border-shellLine bg-shellCanvas p-4">
@@ -738,7 +639,7 @@ export default function CrewFormCard({
                   className="text-textMain"
                 />
                 <Text className="text-[13px] font-semibold text-textMain">
-                  Next branch reminder
+                  Scope note
                 </Text>
               </View>
               <Text className="text-[12px] leading-[18px] text-muted">
@@ -748,8 +649,12 @@ export default function CrewFormCard({
             </View>
           </Section>
 
-          {localError ? <Text className="text-destructive">{localError}</Text> : null}
-          {apiError ? <Text className="text-destructive">{apiError}</Text> : null}
+          {localError ? (
+            <Text className="text-[13px] text-destructive">{localError}</Text>
+          ) : null}
+          {apiError ? (
+            <Text className="text-[13px] text-destructive">{apiError}</Text>
+          ) : null}
         </View>
       </CardContent>
     </Card>

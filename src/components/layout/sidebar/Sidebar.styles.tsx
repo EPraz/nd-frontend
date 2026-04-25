@@ -70,7 +70,7 @@ export const SidebarContainer = ({
   className,
   ...rest
 }: PropsWithChildren<SidebarContainerProps>) => {
-  const desktopWidth = collapsed ? "w-[76px]" : "w-[136px]";
+  const desktopWidth = collapsed ? "w-[76px]" : "w-[176px]";
   const mobileWidth = "w-[74vw] max-w-[264px]";
   const mobileTransform = collapsed ? "-translate-x-full" : "translate-x-0";
   const animateWeb = Platform.OS === "web";

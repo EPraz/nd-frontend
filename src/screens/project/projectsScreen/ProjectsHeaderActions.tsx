@@ -1,9 +1,11 @@
 import { Button } from "@/src/components/ui/button/Button";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useRouter } from "expo-router";
-import { LogOut, RefreshCw } from "lucide-react-native";
+import { LogOut, RefreshCw, ShieldCheck } from "lucide-react-native";
 
 const ICON_COLOR = "#cad5e7";
+const ACCENT_ICON_COLOR = "#ff8a3d";
+const DESTRUCTIVE_ICON_COLOR = "#ff6b6b";
 
 export function ProjectsHeaderActions({
   onRefresh,
@@ -17,12 +19,13 @@ export function ProjectsHeaderActions({
     <>
       {session?.role === "ADMIN" ? (
         <Button
-          variant="outline"
+          variant="softAccent"
           size="pillSm"
           className="rounded-full"
           onPress={() => router.push("/admin")}
+          rightIcon={<ShieldCheck size={14} color={ACCENT_ICON_COLOR} />}
         >
-          Admin console
+          Manage access
         </Button>
       ) : null}
 
@@ -36,12 +39,12 @@ export function ProjectsHeaderActions({
       </Button>
 
       <Button
-        variant="icon"
+        variant="softDestructive"
         size="icon"
         onPress={signOut}
         accessibilityLabel="Sign out"
       >
-        <LogOut size={17} color={ICON_COLOR} />
+        <LogOut size={17} color={DESTRUCTIVE_ICON_COLOR} />
       </Button>
     </>
   );

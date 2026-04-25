@@ -66,24 +66,13 @@ export default function FuelByProjectScreen() {
           title="Fuel"
           eyebrow="Project fuel registry"
           actions={
-            <>
-              <RegistryHeaderActionButton
-                variant="soft"
-                iconName="refresh-outline"
-                onPress={page.refetch}
-              >
-                Refresh
-              </RegistryHeaderActionButton>
-
-              {/* <RegistryHeaderActionButton
-                variant="default"
-                iconName="add-outline"
-                iconSize={15}
-                onPress={() => router.push(`/projects/${pid}/fuel/new`)}
-              >
-                Add Fuel Log
-              </RegistryHeaderActionButton> */}
-            </>
+            <RegistryHeaderActionButton
+              variant="soft"
+              iconName="refresh-outline"
+              onPress={page.refetch}
+            >
+              Refresh
+            </RegistryHeaderActionButton>
           }
         />
 

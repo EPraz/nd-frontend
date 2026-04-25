@@ -194,13 +194,6 @@ export default function CertificateQuickViewModal({
     router.push(`/projects/${projectId}/vessels/${certificate.assetId}`);
   };
 
-  const handleEdit = () => {
-    onClose();
-    router.push(
-      `/projects/${projectId}/vessels/${certificate.assetId}/certificates/${certificate.id}/edit`,
-    );
-  };
-
   return (
     <QuickViewModalFrame
       portalName={certificate.certificateName}
@@ -209,23 +202,7 @@ export default function CertificateQuickViewModal({
       title="Certificate record"
       subtitle="Validity, workflow, and requirement snapshot for the active certificate."
       headerActions={
-        <QuickViewHeaderActions
-          onClose={onClose}
-          actions={[
-            {
-              label: "Edit",
-              onPress: handleEdit,
-              variant: "softAccent",
-              leftIcon: (
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  className="text-accent"
-                />
-              ),
-            },
-          ]}
-        />
+        <QuickViewHeaderActions onClose={onClose} />
       }
       footer={
         <QuickViewFooterActions

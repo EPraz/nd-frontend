@@ -1,7 +1,7 @@
 import { getCrewBulkUploadSummaryItems } from "../crewBulkUploadWorkspace.helpers";
 
 describe("getCrewBulkUploadSummaryItems", () => {
-  it("counts critical before commit using only open review sessions", () => {
+  it("GIVEN mixed bulk upload sessions WHEN summarizing SHOULD count critical issues only from open review sessions", () => {
     const items = getCrewBulkUploadSummaryItems([
       {
         id: "session-ready",

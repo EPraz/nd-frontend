@@ -1,16 +1,21 @@
 import {
   DataTable,
   RegistryTableTextStack,
+  TableActionMenu,
+  type TableActionMenuItem,
   type Column,
 } from "@/src/components/ui/table";
 import { TableLink } from "@/src/components/ui/table/TableLink";
 import { Text } from "@/src/components/ui/text/Text";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { formatDate } from "@/src/helpers";
+import { useRouter } from "expo-router";
 import { type ReactNode, useMemo } from "react";
-import type { CrewDto } from "../../contracts";
+import { View } from "react-native";
+import type { CrewDepartment, CrewDto } from "../../contracts";
 import { CrewMedicalPill, CrewStatusPill } from "./crew.ui";
 
 type Props = {
+  projectId: string;
   title: string;
   subtitleRight?: string;
   headerActions?: ReactNode;
@@ -25,10 +30,43 @@ type Props = {
   selectedRowId?: string | null;
 };
 
+function humanizeDepartment(value: CrewDepartment | null): string {
+  if (!value) return "Department not set";
+
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
+function nextChangeDetails(crew: CrewDto): {
+  primary: string;
+  secondary: string;
+} {
+  if (crew.expectedDateOfDisembarkation) {
+    return {
+      primary: formatDate(crew.expectedDateOfDisembarkation),
+      secondary: "Expected disembarkation",
+    };
+  }
+
+  if (crew.nextVacationDate) {
+    return {
+      primary: formatDate(crew.nextVacationDate),
+      secondary: "Next vacation",
+    };
+  }
+
+  return {
+    primary: "Not set",
+    secondary: "Rotation not planned",
+  };
+}
+
 export function CrewTable(props: Props) {
   const router = useRouter();
-  const { projectId } = useLocalSearchParams();
-  const pid = String(projectId);
+  const pid = props.projectId;
 
   const rows = useMemo(() => {
     const arr = [...props.data];
@@ -61,10 +99,21 @@ export function CrewTable(props: Props) {
         header: "Crew Member",
         flex: 2,
         render: (row) => (
-          <RegistryTableTextStack
-            primary={row.fullName}
-            secondary={row.nationality ?? "Crew member"}
-          />
+          <View className="gap-1">
+            <View className="self-start">
+              <TableLink
+                tooltip="Open crew profile"
+                onPress={() =>
+                  router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`)
+                }
+              >
+                {row.fullName}
+              </TableLink>
+            </View>
+            <Text className="text-[12px] text-muted">
+              {row.nationality ?? "Crew member"}
+            </Text>
+          </View>
         ),
       },
     ];
@@ -89,16 +138,15 @@ export function CrewTable(props: Props) {
 
     cols.push(
       {
-        key: "rank",
-        header: "Rank",
-        flex: 1.5,
-        render: (row) => <Text>{row.rank ?? "-"}</Text>,
-      },
-      {
-        key: "department",
-        header: "Department",
-        flex: 1,
-        render: (row) => <Text>{row.department ?? "-"}</Text>,
+        key: "assignment",
+        header: "Rank / Department",
+        flex: 1.8,
+        render: (row) => (
+          <RegistryTableTextStack
+            primary={row.rank ?? "Rank not set"}
+            secondary={humanizeDepartment(row.department)}
+          />
+        ),
       },
       {
         key: "status",
@@ -117,6 +165,61 @@ export function CrewTable(props: Props) {
         flex: 1,
         render: (row) => <CrewMedicalPill valid={row.medicalCertificateValid} />,
       },
+      {
+        key: "nextChange",
+        header: "Next Change",
+        flex: 1.35,
+        render: (row) => {
+          const change = nextChangeDetails(row);
+
+          return (
+            <RegistryTableTextStack
+              primary={change.primary}
+              secondary={change.secondary}
+            />
+          );
+        },
+      },
+      {
+        key: "actions",
+        header: "",
+        flex: 0.38,
+        render: (row) => {
+          const actions: TableActionMenuItem[] = [
+            {
+              label: "Open profile",
+              icon: "person-outline",
+              onPress: () =>
+                router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`),
+            },
+            {
+              label: "Edit crew",
+              icon: "create-outline",
+              onPress: () =>
+                router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}/edit`),
+            },
+            {
+              label: "Certificates",
+              icon: "ribbon-outline",
+              onPress: () =>
+                router.push(
+                  `/projects/${pid}/vessels/${row.assetId}/crew/${row.id}/certificates`,
+                ),
+            },
+          ];
+
+          if (props.showVesselColumn) {
+            actions.push({
+              label: "Open vessel",
+              icon: "open-outline",
+              onPress: () => router.push(`/projects/${pid}/vessels/${row.assetId}`),
+              tone: "accent",
+            });
+          }
+
+          return <TableActionMenu items={actions} />;
+        },
+      },
     );
 
     return cols;
@@ -132,7 +235,7 @@ export function CrewTable(props: Props) {
       error={props.error}
       onRetry={props.onRetry}
       columns={columns}
-      minWidth={props.minWidth ?? (props.showVesselColumn ? 1080 : 900)}
+      minWidth={props.minWidth ?? (props.showVesselColumn ? 1110 : 930)}
       getRowId={(row) => row.id}
       onRowPress={props.onRowPress}
       emptyText="No crew members found."

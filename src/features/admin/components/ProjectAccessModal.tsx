@@ -12,9 +12,12 @@ import type {
   AdminUserDto,
 } from "@/src/contracts/admin.contract";
 import { Feather } from "@expo/vector-icons";
+import { Save } from "lucide-react-native";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { ROLE_LABEL } from "../admin.constants";
 import { SelectRow } from "./AdminPrimitives";
+
+const PRIMARY_ICON_COLOR = "#f8fafc";
 
 type ProjectAccessModalProps = {
   project: AdminProjectDto | null;
@@ -114,6 +117,7 @@ export function ProjectAccessModal({
                 className="rounded-full"
                 onPress={onSave}
                 loading={saving}
+                rightIcon={<Save size={14} color={PRIMARY_ICON_COLOR} />}
               >
                 Save access
               </Button>

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useToast } from "@/src/context/ToastProvider";
-import { useCertificateTypes } from "@/src/features/certificates/core";
+import { useCertificateTypes } from "@/src/features/certificates/core/hooks/useCertificateTypes";
 import { useCrewById } from "../../../../core/hooks/useCrewById";
 import {
   fakeConfirmCrewCertificateIngestionResult,
@@ -9,11 +9,9 @@ import {
   fakeCrewCertificateType,
   fakeCrewMember,
 } from "@/src/test/fakes/crewCertificates";
-import {
-  useConfirmCrewCertificateIngestion,
-  useCrewCertificateIngestionById,
-  useCrewCertificateWorkflowActions,
-} from "../../../hooks";
+import { useConfirmCrewCertificateIngestion } from "../../../hooks/useConfirmCrewCertificateIngestion";
+import { useCrewCertificateIngestionById } from "../../../hooks/useCrewCertificateIngestionById";
+import { useCrewCertificateWorkflowActions } from "../../../hooks/useCrewCertificateWorkflowActions";
 import CrewCertificateIngestionReviewScreen from "../CrewCertificateIngestionReviewScreen";
 
 jest.mock("expo-router", () => ({
@@ -25,7 +23,7 @@ jest.mock("@/src/context/ToastProvider", () => ({
   useToast: jest.fn(),
 }));
 
-jest.mock("@/src/features/certificates", () => ({
+jest.mock("@/src/features/certificates/core/hooks/useCertificateTypes", () => ({
   useCertificateTypes: jest.fn(),
 }));
 
@@ -33,9 +31,15 @@ jest.mock("../../../../core/hooks/useCrewById", () => ({
   useCrewById: jest.fn(),
 }));
 
-jest.mock("../../../hooks", () => ({
+jest.mock("../../../hooks/useConfirmCrewCertificateIngestion", () => ({
   useConfirmCrewCertificateIngestion: jest.fn(),
+}));
+
+jest.mock("../../../hooks/useCrewCertificateIngestionById", () => ({
   useCrewCertificateIngestionById: jest.fn(),
+}));
+
+jest.mock("../../../hooks/useCrewCertificateWorkflowActions", () => ({
   useCrewCertificateWorkflowActions: jest.fn(),
 }));
 

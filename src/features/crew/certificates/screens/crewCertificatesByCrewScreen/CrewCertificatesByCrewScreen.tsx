@@ -1,9 +1,16 @@
-import { Button, ErrorState, Loading, PageHeader, StatCard, Text } from "@/src/components";
+import { ErrorState, Loading, Text } from "@/src/components";
+import {
+  RegistryHeaderActionButton,
+  RegistrySummaryStrip,
+  RegistryWorkspaceHeader,
+  RegistryWorkspaceSection,
+  type RegistrySummaryItem,
+} from "@/src/components/ui/registryWorkspace";
 import { useToast } from "@/src/context/ToastProvider";
-import { useCrewById } from "../../../core/hooks/useCrewById";
-import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useMemo } from "react";
 import { View } from "react-native";
+import { useCrewById } from "../../../core/hooks/useCrewById";
 import {
   CrewCertificateRequirementsTable,
   CrewCertificatesTable,
@@ -11,15 +18,15 @@ import {
 } from "../../components";
 import type { CrewCertificateRequirementDto } from "../../contracts";
 import {
+  summarizeCrewCertificateRequirements,
+  summarizeCrewCertificates,
+} from "../../helpers";
+import {
   useCrewComplianceSummaryByAsset,
   useCrewCertificateRequirementsByCrew,
   useCrewCertificatesByCrew,
   useGenerateCrewCertificateRequirements,
 } from "../../hooks";
-import {
-  summarizeCrewCertificateRequirements,
-  summarizeCrewCertificates,
-} from "../../helpers";
 
 export default function CrewCertificatesByCrewScreen() {
   const router = useRouter();
@@ -34,8 +41,12 @@ export default function CrewCertificatesByCrewScreen() {
   const aid = String(assetId);
   const cid = String(crewId);
 
-  const { crew, loading: crewLoading, error: crewError, refresh: refreshCrew } =
-    useCrewById(pid, aid, cid);
+  const {
+    crew,
+    loading: crewLoading,
+    error: crewError,
+    refresh: refreshCrew,
+  } = useCrewById(pid, aid, cid);
   const {
     requirements,
     loading: requirementsLoading,
@@ -64,6 +75,41 @@ export default function CrewCertificatesByCrewScreen() {
   const certificateStats = summarizeCrewCertificates(certificates);
   const statsLoading = requirementsLoading || certificatesLoading;
 
+  const assignedVesselName = crew?.assetName ?? crew?.asset?.name ?? "Assigned vessel";
+
+  const summaryItems = useMemo<RegistrySummaryItem[]>(
+    () => [
+      {
+        label: "Requirements",
+        value: String(requirementStats.totalRequirements),
+        helper: "active crew certificate requirements",
+        tone: "accent",
+      },
+      {
+        label: "Missing",
+        value: String(requirementStats.missingRequirements),
+        helper: "need evidence upload",
+        tone: requirementStats.missingRequirements > 0 ? "danger" : "ok",
+      },
+      {
+        label: "Under review",
+        value: String(requirementStats.underReviewRequirements),
+        helper: "awaiting confirmation",
+        tone: requirementStats.underReviewRequirements > 0 ? "warn" : "ok",
+      },
+      {
+        label: "Active certificates",
+        value: String(certificateStats.activeCertificates),
+        helper:
+          certificateStats.expiringSoonCertificates > 0
+            ? `${certificateStats.expiringSoonCertificates} expiring in 30 days`
+            : "currently valid or approved",
+        tone: certificateStats.expiringSoonCertificates > 0 ? "warn" : "ok",
+      },
+    ],
+    [certificateStats.activeCertificates, certificateStats.expiringSoonCertificates, requirementStats.missingRequirements, requirementStats.totalRequirements, requirementStats.underReviewRequirements],
+  );
+
   async function refreshAll() {
     await Promise.all([
       refreshCrew(),
@@ -75,16 +121,9 @@ export default function CrewCertificatesByCrewScreen() {
 
   async function onGenerate() {
     try {
-      const result = await generateCrew();
-      await Promise.all([
-        refreshRequirements(),
-        refreshCertificates(),
-        refreshMsmc(),
-      ]);
-      show(
-        `Requirements refreshed for ${result.processedCrewMembers} crew member${result.processedCrewMembers === 1 ? "" : "s"}.`,
-        "success",
-      );
+      await generateCrew();
+      await Promise.all([refreshRequirements(), refreshCertificates(), refreshMsmc()]);
+      show(`Requirements refreshed for ${crew?.fullName ?? "this crew member"}.`, "success");
     } catch {
       show("Failed to refresh crew certificate requirements", "error");
     }
@@ -102,151 +141,116 @@ export default function CrewCertificatesByCrewScreen() {
     });
   }
 
-  const headerActions = (
-    <>
-      <Button
-        variant="default"
-        size="sm"
-        onPress={onGenerate}
-        loading={generating}
-        className="rounded-full"
-        rightIcon={
-          <Ionicons
-            name="refresh-outline"
-            size={16}
-            className="text-textMain"
-          />
-        }
-      >
-        Refresh requirements
-      </Button>
-
-      <Button
-        variant="outline"
-        size="sm"
-        onPress={() =>
-          router.push({
-            pathname: "/projects/[projectId]/crew/certificates/upload",
-            params: {
-              projectId: pid,
-              assetId: aid,
-              crewId: cid,
-            },
-          })
-        }
-        className="rounded-full"
-      >
-        Add extra certificate
-      </Button>
-
-      <Button
-        variant="icon"
-        size="iconLg"
-        onPress={refreshAll}
-        leftIcon={
-          <Ionicons
-            name="refresh-outline"
-            size={18}
-            className="text-textMain"
-          />
-        }
-        accessibilityLabel="Reload current data"
-      />
-    </>
-  );
+  function goCrewMember() {
+    router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`);
+  }
 
   if (crewLoading) return <Loading fullScreen />;
   if (crewError) return <ErrorState message={crewError} onRetry={refreshCrew} />;
-  if (!crew) return <ErrorState message="Crew member not found." onRetry={refreshCrew} />;
+  if (!crew) {
+    return <ErrorState message="Crew member not found." onRetry={refreshCrew} />;
+  }
 
   return (
-    <View className="gap-6 p-4 web:p-6">
-      <PageHeader
-        title={`Crew Certificates - ${crew.fullName}`}
-        subTitle="Manage rank-based requirements, uploaded evidence, and approval state for this crew member."
-        onRefresh={refreshAll}
-        actions={headerActions}
-      />
+    <View className="gap-5 p-4 web:p-6">
+      <View className="gap-4">
+        <RegistryWorkspaceHeader
+          title="Certificates"
+          eyebrow="Crew certificate workspace"
+          subtitle={`Track rank-based requirements, uploaded evidence, and approval state for ${crew.fullName} on ${assignedVesselName}.`}
+          actions={
+            <>
+              <RegistryHeaderActionButton
+                variant="soft"
+                iconName="chevron-back-outline"
+                iconSide="left"
+                onPress={goCrewMember}
+              >
+                Crew member
+              </RegistryHeaderActionButton>
 
-      <View className="gap-2 xl:gap-5 flex flex-row flex-wrap items-center justify-start xl:justify-between">
-        <StatCard
-          loading={statsLoading}
-          iconName="documents-outline"
-          iconLib="ion"
-          title="Requirements"
-          value={String(requirementStats.totalRequirements)}
-          suffix="active compliance items"
-          badgeValue={String(requirementStats.uploadedRequirements)}
-          badgeColor={requirementStats.uploadedRequirements > 0 ? "success" : "fail"}
-          badgeLabel="uploaded"
+              <RegistryHeaderActionButton
+                variant="soft"
+                iconName="refresh-outline"
+                onPress={refreshAll}
+              >
+                Refresh
+              </RegistryHeaderActionButton>
+
+              <RegistryHeaderActionButton
+                variant="outline"
+                onPress={onGenerate}
+                loading={generating}
+              >
+                Refresh requirements
+              </RegistryHeaderActionButton>
+
+              <RegistryHeaderActionButton
+                variant="default"
+                iconName="add-outline"
+                iconSize={15}
+                onPress={() =>
+                  router.push({
+                    pathname: "/projects/[projectId]/crew/certificates/upload",
+                    params: {
+                      projectId: pid,
+                      assetId: aid,
+                      crewId: cid,
+                    },
+                  })
+                }
+              >
+                Add extra certificate
+              </RegistryHeaderActionButton>
+            </>
+          }
         />
 
-        <StatCard
-          loading={statsLoading}
-          iconName="alert-circle-outline"
-          iconLib="ion"
-          title="Missing"
-          value={String(requirementStats.missingRequirements)}
-          suffix="need certificate evidence"
-          badgeValue={requirementStats.missingRequirements > 0 ? "ACTION" : "OK"}
-          badgeColor={requirementStats.missingRequirements > 0 ? "fail" : "success"}
-          badgeLabel="status"
-        />
-
-        <StatCard
-          loading={statsLoading}
-          iconName="search-outline"
-          iconLib="ion"
-          title="Under Review"
-          value={String(requirementStats.underReviewRequirements)}
-          suffix="uploaded and pending confirmation"
-        />
-
-        <StatCard
-          loading={statsLoading}
-          iconName="checkmark-circle-outline"
-          iconLib="ion"
-          title="Active Certificates"
-          value={String(certificateStats.activeCertificates)}
-          suffix="currently valid or approved"
-        />
-
-        <StatCard
-          loading={statsLoading}
-          iconName="time-outline"
-          iconLib="ion"
-          title="Expiring in 30 days"
-          value={String(certificateStats.expiringSoonCertificates)}
-          suffix="need attention soon"
-        />
+        {!statsLoading ? <RegistrySummaryStrip items={summaryItems} /> : null}
       </View>
 
-      <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-3">
-        <Text className="text-textMain font-semibold text-[14px]">
-          Crew certificate flow
-        </Text>
-        <Text className="text-muted text-[12px] leading-[18px]">
-          Upload from a requirement row when the system expects a certificate for
-          this rank. Use `Add extra certificate` for supporting documents outside
-          the current rule set.
-        </Text>
+      <RegistryWorkspaceSection
+        title="Workflow lane"
+        subtitle="Upload from a requirement row when the system expects a certificate for this crew member. Use extra certificate only for supporting records outside the active rule set."
+      >
+        <View className="gap-4">
+          <View className="flex-row flex-wrap gap-x-8 gap-y-4">
+            <View className="min-w-[180px] gap-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">
+                Crew member
+              </Text>
+              <Text className="text-[15px] font-semibold text-textMain">
+                {crew.fullName}
+              </Text>
+            </View>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onPress={() => router.push(`/projects/${pid}/vessels/${aid}/crew/${cid}`)}
-          className="rounded-full self-start"
-        >
-          Back to crew profile
-        </Button>
+            <View className="min-w-[180px] gap-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">
+                Assigned vessel
+              </Text>
+              <Text className="text-[15px] font-semibold text-textMain">
+                {assignedVesselName}
+              </Text>
+            </View>
 
-        {generationError ? (
-          <Text className="text-[12px] text-destructive">{generationError}</Text>
-        ) : null}
-      </View>
+            <View className="min-w-[180px] gap-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">
+                Rank
+              </Text>
+              <Text className="text-[15px] font-semibold text-textMain">
+                {crew.rank ?? "Not set"}
+              </Text>
+            </View>
+          </View>
+
+          {generationError ? (
+            <Text className="text-[12px] text-destructive">{generationError}</Text>
+          ) : null}
+        </View>
+      </RegistryWorkspaceSection>
 
       <CrewMsmcComplianceSummary
-        title={`MSMC compliance - ${crew.assetName ?? crew.asset?.name ?? "assigned vessel"}`}
+        title={`Safe manning context - ${assignedVesselName}`}
         summaries={msmcSummary ? [msmcSummary] : []}
         loading={msmcLoading}
         error={msmcError}
@@ -255,8 +259,8 @@ export default function CrewCertificatesByCrewScreen() {
 
       <CrewCertificateRequirementsTable
         projectId={pid}
-        title="Crew Requirements"
-        subtitleRight="Upload from the row that is missing or needs fresher evidence"
+        title="Crew certificate requirements"
+        subtitleRight={`${requirements.length} rows in this crew lane`}
         data={requirements}
         isLoading={requirementsLoading}
         error={requirementsError}
@@ -266,8 +270,8 @@ export default function CrewCertificatesByCrewScreen() {
 
       <CrewCertificatesTable
         projectId={pid}
-        title="Uploaded Certificates"
-        subtitleRight="Includes extra certificates outside the current requirement set"
+        title="Uploaded certificates"
+        subtitleRight={`${certificates.length} certificate records`}
         data={certificates}
         isLoading={certificatesLoading}
         error={certificatesError}

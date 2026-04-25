@@ -28,7 +28,6 @@ export function humanizeTechnicalLabel(value: string | null | undefined) {
       if (!token) return "";
       if (UPPERCASE_LABELS.has(upper)) return upper;
       if (/^\d+$/.test(token)) return token;
-      if (/^[A-Z0-9]{2,}$/.test(token) && token === upper) return upper;
 
       return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase();
     })

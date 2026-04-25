@@ -1,5 +1,5 @@
 import { Loading, WorkspaceBackdrop } from "@/src/components";
-import { useSessionContext } from "@/src/context";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { Slot, useRootNavigationState, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";

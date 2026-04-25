@@ -21,6 +21,7 @@ jest.mock("lucide-react-native", () => ({
   LogOut: () => null,
   RefreshCw: () => null,
   Search: () => null,
+  ShieldCheck: () => null,
 }));
 
 const routerPush = jest.fn();
@@ -56,12 +57,12 @@ describe("ProjectsScreen", () => {
     });
   });
 
-  it("GIVEN available workspaces WHEN the screen renders SHOULD show the operational directory", () => {
+  it("GIVEN available workspaces WHEN rendered SHOULD expose each selectable workspace row", () => {
     render(<ProjectsScreen />);
 
-    expect(screen.getByText("Workspace directory")).toBeOnTheScreen();
     expect(screen.getAllByText("Atlantic Ops").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Maritime").length).toBeGreaterThan(0);
+    expect(screen.getByText("Enter")).toBeOnTheScreen();
   });
 
   it("GIVEN a workspace row WHEN pressed SHOULD open the project dashboard", () => {

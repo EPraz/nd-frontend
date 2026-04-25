@@ -2,6 +2,7 @@ export * from "./DateField";
 export * from "./EmptyVesselsState";
 export * from "./Field";
 export * from "./FieldDisplay";
+export * from "./PopoverMultiSelect";
 export * from "./RowInfo";
 export * from "./SearchableVesselSelect";
 export * from "./ToolbarSelect";

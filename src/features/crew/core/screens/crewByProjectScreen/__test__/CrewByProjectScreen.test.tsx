@@ -120,7 +120,7 @@ describe("CrewByProjectScreen", () => {
     });
   });
 
-  it("GIVEN the crew workspace opens WHEN the screen renders SHOULD show the registry framing", () => {
+  it("GIVEN the crew workspace opens WHEN rendered SHOULD expose the roster and crew workflow tabs", () => {
     render(<CrewByProjectScreen />);
 
     expect(screen.getByText("Crew")).toBeOnTheScreen();

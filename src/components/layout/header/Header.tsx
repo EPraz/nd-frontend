@@ -6,8 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import {
   Modal,
+  Platform,
   Pressable,
-  TextInput,
   View,
   useWindowDimensions,
   type View as RNView,
@@ -20,7 +20,6 @@ import { Text } from "../../ui/text/Text";
 type Props = {
   collapsed: boolean;
   handleSetCollapse: (value: boolean) => void;
-  onOpenWorkspaces: () => void;
 };
 
 function getInitials(name: string | null | undefined) {
@@ -35,10 +34,9 @@ function getInitials(name: string | null | undefined) {
 export default function Header({
   collapsed,
   handleSetCollapse,
-  onOpenWorkspaces,
 }: Props) {
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = Platform.OS === "web" && width >= 1024;
   const compactDesktop = isDesktop && width < 1480;
   const showStatusPill = isDesktop && width >= 1620;
   const showProfileName = isDesktop && width >= 1380;
@@ -47,7 +45,6 @@ export default function Header({
   const { show } = useToast();
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
   const [profileAnchor, setProfileAnchor] = useState<{
     top: number;
     left: number;
@@ -56,25 +53,9 @@ export default function Header({
   const profileTriggerRef = useRef<RNView | null>(null);
 
   const iconMain = "#e7edf7";
-  const iconMuted = "#9fb2c9";
   const userName = session?.name ?? (loading ? "Loading user" : "Signed in");
   const initials = getInitials(session?.name);
-  const leftInset = isDesktop ? (collapsed ? 120 : 180) : 12;
-
-  function handleHeaderSearch() {
-    const query = searchValue.trim();
-
-    show(
-      query
-        ? `Search for "${query}" will be connected in a future iteration.`
-        : "Global search will be connected in a future iteration.",
-      "info",
-    );
-  }
-
-  function handleSoon(label: string) {
-    show(`${label} is not wired yet in this workspace.`, "info");
-  }
+  const leftInset = isDesktop ? (collapsed ? 100 : 200) : 12;
 
   async function handleRefreshSession() {
     await refresh();
@@ -87,11 +68,9 @@ export default function Header({
   }
 
   function openProfileMenu() {
-    if (!isDesktop) return;
-
     profileTriggerRef.current?.measureInWindow(
       (x, y, measuredWidth, measuredHeight) => {
-        const menuWidth = 320;
+        const menuWidth = Math.min(320, Math.max(280, width - 32));
         const viewportPadding = 16;
         const anchoredLeft = x + measuredWidth - menuWidth;
         const safeLeft = Math.max(
@@ -121,23 +100,11 @@ export default function Header({
         >
           <View
             className={[
-              "hidden lg:flex min-w-0 flex-row items-center gap-2",
-              compactDesktop ? "max-w-[320px]" : "max-w-[410px]",
+              "min-w-0 flex-1 flex-row items-center gap-2 lg:flex-none",
+              compactDesktop ? "max-w-[360px]" : "max-w-[520px]",
             ].join(" ")}
           >
-            <Button
-              variant="outline"
-              size="pillSm"
-              className="h-9 rounded-full border-shellLine bg-shellPanelSoft px-3"
-              onPress={onOpenWorkspaces}
-              leftIcon={
-                <Ionicons name="grid-outline" size={12} color={iconMain} />
-              }
-            >
-              Workspaces
-            </Button>
-
-            <View className="min-w-0 flex-row items-center gap-2">
+            <View className="min-w-0 flex-row items-center gap-2 rounded-full border border-shellLine bg-shellChromeSoft px-3 py-2 web:backdrop-blur-md">
               <Text
                 numberOfLines={1}
                 className={[
@@ -149,7 +116,7 @@ export default function Header({
               >
                 {projectName}
               </Text>
-              <MiniPill className="rounded-full border border-shellLine bg-shellPanelSoft px-2.5 py-1">
+              <MiniPill className="hidden rounded-full border border-shellLine bg-shellPanelSoft px-2.5 py-1 sm:flex">
                 <Text className="text-[10px] font-semibold text-muted">
                   {humanizeTechnicalLabel(projectKind)}
                 </Text>
@@ -164,82 +131,9 @@ export default function Header({
             </View>
           </View>
 
-          <View className="min-w-0 flex-1 items-stretch justify-center">
-            <View
-              className={[
-                "h-10 w-full flex-row items-center gap-2 self-center rounded-full border border-shellLine bg-shellChromeSoft px-3 web:backdrop-blur-md",
-                compactDesktop ? "max-w-[360px]" : "max-w-[460px]",
-              ].join(" ")}
-            >
-              <Ionicons name="search" size={12} color={iconMain} />
-              <TextInput
-                disableFullscreenUI
-                placeholder="Search modules, vessels, records"
-                placeholderTextColor={iconMuted}
-                className="min-w-0 flex-1 text-[13px] text-textMain web:outline-none"
-                returnKeyType="search"
-                submitBehavior="submit"
-                value={searchValue}
-                onChangeText={setSearchValue}
-                onSubmitEditing={handleHeaderSearch}
-              />
-              <Button
-                variant="soft"
-                size="pillSm"
-                className="h-7 rounded-full border-shellLine bg-shellPanelSoft px-2.5"
-                onPress={handleHeaderSearch}
-              >
-                Search
-              </Button>
-            </View>
-          </View>
+          <View className="hidden lg:flex flex-1" />
 
           <View className="flex-row items-center gap-2">
-            <Button
-              variant="icon"
-              size="icon"
-              className="h-8 w-8 border-shellLine bg-shellPanelSoft lg:hidden"
-              onPress={onOpenWorkspaces}
-              accessibilityLabel="Open workspaces"
-            >
-              <Ionicons name="grid-outline" size={12} color={iconMuted} />
-            </Button>
-
-            <Button
-              variant="icon"
-              size="icon"
-              className="h-8 w-8 border-shellLine bg-shellPanelSoft lg:hidden"
-              onPress={() => handleSoon("Global search")}
-            >
-              <Ionicons name="search" size={12} color={iconMuted} />
-            </Button>
-
-            <Button
-              variant="icon"
-              size="icon"
-              className="h-8 w-8 border-shellLine bg-shellPanelSoft"
-              onPress={() => handleSoon("Messages")}
-            >
-              <Ionicons
-                name="chatbubble-ellipses-outline"
-                size={12}
-                color={iconMain}
-              />
-            </Button>
-
-            <Button
-              variant="icon"
-              size="icon"
-              className="h-8 w-8 border-shellLine bg-shellPanelSoft"
-              onPress={() => handleSoon("Notifications")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={12}
-                color={iconMain}
-              />
-            </Button>
-
             <View className="hidden lg:flex h-5 w-px bg-shellLine mx-1" />
 
             <Pressable
@@ -252,7 +146,7 @@ export default function Header({
 
                 openProfileMenu();
               }}
-              className="hidden lg:flex flex-row items-center gap-2 rounded-full border border-shellLine bg-shellChromeSoft px-2.5 py-1.5 web:backdrop-blur-md"
+              className="flex-row items-center gap-2 rounded-full border border-shellLine bg-shellChromeSoft px-2.5 py-1.5 web:backdrop-blur-md"
             >
               <View className="h-8 w-8 items-center justify-center rounded-full border border-accent/30 bg-accent/18">
                 <Text className="text-[12px] font-semibold text-accent">
@@ -280,7 +174,7 @@ export default function Header({
               className="h-8 w-8 lg:hidden"
               onPress={() => handleSetCollapse(!collapsed)}
             >
-              <Ionicons name="menu" size={12} color="hsl(var(--accent))" />
+              <Ionicons name="menu" size={12} className="text-accent" />
             </Button>
           </View>
         </View>
@@ -331,11 +225,12 @@ export default function Header({
                 size="sm"
                 className="justify-between rounded-[16px] border-shellLine bg-shellPanelSoft px-4"
                 onPress={handleRefreshSession}
-                leftIcon={
-                  <Ionicons name="refresh-outline" size={12} color={iconMain} />
-                }
                 rightIcon={
-                  <Ionicons name="arrow-forward" size={12} color={iconMain} />
+                  <Ionicons
+                    name="refresh-outline"
+                    size={12}
+                    className="text-textMain"
+                  />
                 }
               >
                 <Text className="flex-1 text-left">Refresh session</Text>
@@ -346,11 +241,12 @@ export default function Header({
                 size="default"
                 className="justify-between rounded-[16px] px-4"
                 onPress={handleSignOut}
-                leftIcon={
-                  <Ionicons name="log-out-outline" size={12} color={iconMain} />
-                }
                 rightIcon={
-                  <Ionicons name="arrow-forward" size={12} color={iconMain} />
+                  <Ionicons
+                    name="log-out-outline"
+                    size={12}
+                    className="text-destructive"
+                  />
                 }
               >
                 <Text className="flex-1 text-left text-destructive">

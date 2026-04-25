@@ -15,11 +15,11 @@ import {
 import { useToast } from "@/src/context/ToastProvider";
 import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import type { CrewDto } from "../../contracts";
+import CrewPhotoMedia from "../../components/crewPhotoMedia/CrewPhotoMedia";
 import { useDeleteCrew } from "../../hooks/useDeleteCrew";
 
 type Props = {
@@ -280,10 +280,9 @@ export default function CrewQuickViewModal({
           aside={
             <QuickViewMediaPanel className="h-[128px]">
               {crew.photoUrl ? (
-                <Image
-                  source={{ uri: crew.photoUrl }}
-                  contentFit="cover"
-                  style={{ width: "100%", height: "100%" }}
+                <CrewPhotoMedia
+                  uri={crew.photoUrl}
+                  stageClassName="rounded-[14px]"
                 />
               ) : (
                 <View className="h-full flex-row items-center gap-3 px-4">

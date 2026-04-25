@@ -1,7 +1,16 @@
-import { CreateMaintenanceScreen } from "@/src/features/maintenance";
+import { Redirect, useLocalSearchParams } from "expo-router";
 
-const create = () => {
-  return <CreateMaintenanceScreen />;
-};
+function Create() {
+  const { projectId, assetId } = useLocalSearchParams<{
+    projectId: string;
+    assetId: string;
+  }>();
 
-export default create;
+  return (
+    <Redirect
+      href={`/projects/${String(projectId)}/vessels/${String(assetId)}/maintenance`}
+    />
+  );
+}
+
+export default Create;

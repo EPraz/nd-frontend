@@ -1,18 +1,11 @@
+import { DateField, Field, Text } from "@/src/components";
 import {
-  Card,
-  CardContent,
-  CardHeaderRow,
-  CardTitle,
-  DateField,
-  Field,
-  MiniPill,
-  Text,
-} from "@/src/components";
-import type { CertificateTypeDto } from "@/src/features/certificates/shared";
+  CertificateTypeCombobox,
+  type CertificateTypeDto,
+} from "@/src/features/certificates/shared";
 import { View } from "react-native";
 import type { CrewDto } from "@/src/features/crew/core/contracts";
 import type { CrewCertificateFormValues } from "../helpers";
-import { CrewCertificateTypePicker } from "./CrewCertificateTypePicker";
 
 type Props = {
   crew: CrewDto | null;
@@ -26,6 +19,84 @@ type Props = {
   disabled?: boolean;
 };
 
+type ContextTone = "accent" | "info" | "ok" | "neutral";
+
+function humanizeDepartment(value: string | null | undefined): string {
+  if (!value) return "Not set";
+
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+}
+
+function contextTileClasses(tone: ContextTone) {
+  switch (tone) {
+    case "ok":
+      return {
+        surface: "border-emerald-400/25 bg-emerald-400/10",
+        label: "text-emerald-100/80",
+        value: "text-emerald-50",
+      };
+    case "info":
+      return {
+        surface: "border-sky-400/25 bg-sky-400/10",
+        label: "text-sky-100/80",
+        value: "text-sky-50",
+      };
+    case "neutral":
+      return {
+        surface: "border-shellLine bg-shellPanelSoft",
+        label: "text-muted",
+        value: "text-textMain",
+      };
+    case "accent":
+    default:
+      return {
+        surface: "border-accent/30 bg-accent/12",
+        label: "text-accent/80",
+        value: "text-accent",
+      };
+  }
+}
+
+function ContextTile({
+  label,
+  value,
+  helper,
+  tone,
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  tone: ContextTone;
+}) {
+  const ui = contextTileClasses(tone);
+
+  return (
+    <View
+      className={[
+        "min-w-[160px] flex-1 gap-1.5 rounded-[18px] border px-4 py-3",
+        ui.surface,
+      ].join(" ")}
+    >
+      <Text
+        className={[
+          "text-[10px] font-semibold uppercase tracking-[0.24em]",
+          ui.label,
+        ].join(" ")}
+      >
+        {label}
+      </Text>
+      <Text className={["text-[14px] font-semibold", ui.value].join(" ")}>
+        {value}
+      </Text>
+      <Text className="text-[12px] leading-[18px] text-muted">{helper}</Text>
+    </View>
+  );
+}
+
 export function CrewCertificateFormCard({
   crew,
   certificateTypes,
@@ -38,112 +109,139 @@ export function CrewCertificateFormCard({
   disabled = false,
 }: Props) {
   return (
-    <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
-      <CardHeaderRow>
+    <View className="gap-5">
+      <View className="flex-row flex-wrap gap-3">
+        <ContextTile
+          label="Crew member"
+          value={crew?.fullName ?? "Loading..."}
+          helper="Structured record owner"
+          tone="accent"
+        />
+        <ContextTile
+          label="Assigned vessel"
+          value={crew?.assetName ?? crew?.asset?.name ?? "Not set"}
+          helper="Operational vessel lane"
+          tone={crew?.assetName ?? crew?.asset?.name ? "info" : "neutral"}
+        />
+        <ContextTile
+          label="Rank"
+          value={crew?.rank ?? "Not set"}
+          helper="Current crew role"
+          tone={crew?.rank ? "ok" : "neutral"}
+        />
+        <ContextTile
+          label="Department"
+          value={humanizeDepartment(crew?.department)}
+          helper="Departmental context"
+          tone={crew?.department ? "info" : "neutral"}
+        />
+      </View>
+
+      <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
         <View className="gap-1">
-          <CardTitle className="text-[16px] text-textMain">
-            Crew Certificate Record
-          </CardTitle>
-          <Text className="text-muted text-[13px]">
-            Confirm the crew member, choose the certificate type, and validate
-            the dates before submission.
+          <Text className="text-[15px] font-semibold text-textMain">
+            Certificate type
+          </Text>
+          <Text className="text-[12px] leading-[18px] text-muted">
+            Choose the structured type this upload should create or satisfy
+            inside the crew certificate lane.
           </Text>
         </View>
-      </CardHeaderRow>
 
-      <CardContent className="px-6">
-        <View className="gap-5">
-          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
-            <View className="gap-1">
-              <Text className="text-textMain font-semibold text-[14px]">
-                1. Crew context
-              </Text>
-              <Text className="text-muted text-[12px] leading-[18px]">
-                This record belongs to one crew member. The type selected here
-                is what connects the upload to compliance by rank.
-              </Text>
-            </View>
+        <CertificateTypeCombobox
+          certificateTypes={certificateTypes}
+          certificateTypesLoading={certificateTypesLoading}
+          certificateTypesError={certificateTypesError}
+          selectedType={values.selectedCertificateType}
+          selectedTypeId={values.certificateTypeId}
+          onSelect={(type) =>
+            onChange({
+              certificateTypeId: type.id,
+              selectedCertificateType: type,
+            })
+          }
+          onClear={() =>
+            onChange({
+              certificateTypeId: null,
+              selectedCertificateType: null,
+            })
+          }
+          disabled={disabled}
+        />
+      </View>
 
-            <View className="flex-row flex-wrap gap-2">
-              <MiniPill>{`Crew: ${crew?.fullName ?? "Loading..."}`}</MiniPill>
-              <MiniPill>{`Vessel: ${crew?.assetName ?? crew?.asset?.name ?? "â€”"}`}</MiniPill>
-              {crew?.rank ? <MiniPill>{`Rank: ${crew.rank}`}</MiniPill> : null}
-              {crew?.department ? (
-                <MiniPill>{`Department: ${crew.department}`}</MiniPill>
-              ) : null}
-            </View>
-
-            <CrewCertificateTypePicker
-              certificateTypes={certificateTypes}
-              certificateTypesLoading={certificateTypesLoading}
-              certificateTypesError={certificateTypesError}
-              values={values}
-              onChange={onChange}
-              disabled={disabled}
-            />
-          </View>
-
-          <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
-            <View className="gap-1">
-              <Text className="text-textMain font-semibold text-[14px]">
-                2. Confirm metadata
-              </Text>
-              <Text className="text-muted text-[12px] leading-[18px]">
-                Add the certificate number, issuer, and dates. Notes are
-                optional and should stay operational.
-              </Text>
-            </View>
-
-            <View className="gap-4 web:flex-row">
-              <View className="flex-1">
-                <Field
-                  label="Number"
-                  placeholder="e.g. COC-12345"
-                  value={values.number}
-                  onChangeText={(value) => onChange({ number: value })}
-                />
-              </View>
-              <View className="flex-1">
-                <Field
-                  label="Issuer"
-                  placeholder="e.g. Flag / Authority / Maritime Academy"
-                  value={values.issuer}
-                  onChangeText={(value) => onChange({ issuer: value })}
-                />
-              </View>
-            </View>
-
-            <View className="gap-4 web:flex-row">
-              <View className="flex-1">
-                <DateField
-                  label="Issue Date"
-                  placeholder="Select issue date"
-                  value={values.issueDate}
-                  onChange={(value) => onChange({ issueDate: value })}
-                />
-              </View>
-              <View className="flex-1">
-                <DateField
-                  label="Expiry Date"
-                  placeholder="Select expiry date"
-                  value={values.expiryDate}
-                  onChange={(value) => onChange({ expiryDate: value })}
-                />
-              </View>
-            </View>
-
-            <Field
-              label="Notes"
-              placeholder="Optional operational notes"
-              value={values.notes}
-              onChangeText={(value) => onChange({ notes: value })}
-            />
-          </View>
-
-          {localError ? <Text className="text-destructive">{localError}</Text> : null}
-          {apiError ? <Text className="text-destructive">{apiError}</Text> : null}
+      <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4 gap-4">
+        <View className="gap-1">
+          <Text className="text-[15px] font-semibold text-textMain">
+            Certificate metadata
+          </Text>
+          <Text className="text-[12px] leading-[18px] text-muted">
+            Confirm number, issuer, dates, and notes before the record enters
+            submitted state.
+          </Text>
         </View>
-      </CardContent>
-    </Card>
+
+        <View className="gap-4 web:flex-row">
+          <View className="flex-1">
+            <Field
+              label="Number"
+              placeholder="e.g. COC-12345"
+              value={values.number}
+              onChangeText={(value) => onChange({ number: value })}
+              surfaceTone="raised"
+            />
+          </View>
+          <View className="flex-1">
+            <Field
+              label="Issuer"
+              placeholder="e.g. Flag / Authority / Maritime Academy"
+              value={values.issuer}
+              onChangeText={(value) => onChange({ issuer: value })}
+              surfaceTone="raised"
+            />
+          </View>
+        </View>
+
+        <View className="gap-4 web:flex-row">
+          <View className="flex-1">
+            <DateField
+              label="Issue Date"
+              placeholder="Select issue date"
+              value={values.issueDate}
+              onChange={(value) => onChange({ issueDate: value })}
+              surfaceTone="raised"
+            />
+          </View>
+          <View className="flex-1">
+            <DateField
+              label="Expiry Date"
+              placeholder="Select expiry date"
+              value={values.expiryDate}
+              onChange={(value) => onChange({ expiryDate: value })}
+              surfaceTone="raised"
+            />
+          </View>
+        </View>
+
+        <Field
+          label="Notes"
+          placeholder="Optional operational notes"
+          value={values.notes}
+          onChangeText={(value) => onChange({ notes: value })}
+          surfaceTone="raised"
+        />
+      </View>
+
+      {localError ? (
+        <Text className="text-[12px] leading-[18px] text-destructive">
+          {localError}
+        </Text>
+      ) : null}
+      {apiError ? (
+        <Text className="text-[12px] leading-[18px] text-destructive">
+          {apiError}
+        </Text>
+      ) : null}
+    </View>
   );
 }

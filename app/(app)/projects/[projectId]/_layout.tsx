@@ -6,15 +6,15 @@ import {
   WorkspaceBackdrop,
 } from "@/src/components";
 import { sidebarItems, SidebarKey, sidebarRoutes } from "@/src/constants";
+import { ProjectDataProvider } from "@/src/context/ProjectDataProvider";
 import {
-  ProjectDataProvider,
   ProjectEntitlementsProvider,
-  ProjectProvider,
   useProjectEntitlements,
-  useSessionContext,
-} from "@/src/context";
+} from "@/src/context/ProjectEntitlementsProvider";
+import { ProjectProvider } from "@/src/context/ProjectProvider";
+import { useSessionContext } from "@/src/context/SessionProvider";
 import { getGuardedProjectModule } from "@/src/helpers/projectEntitlements";
-import { useProject } from "@/src/hooks";
+import { useProject } from "@/src/hooks/useProject";
 import { BlurView } from "expo-blur";
 import {
   Slot,
@@ -130,7 +130,7 @@ function ProjectShellScaffold({
   const { session } = useSessionContext();
   const { isModuleEnabled, loading: entitlementsLoading } =
     useProjectEntitlements();
-  const shellInset = isDesktop ? (collapsed ? 76 : 136) : 0;
+  const shellInset = isDesktop ? (collapsed ? 76 : 176) : 0;
 
   const routes = sidebarRoutes(projectId, projectKind);
   const items = sidebarItems(projectKind, {
@@ -179,7 +179,6 @@ function ProjectShellScaffold({
       <Header
         collapsed={collapsed}
         handleSetCollapse={handleSetCollapse}
-        onOpenWorkspaces={() => router.push("/projects")}
       />
 
       <Sidebar
@@ -187,7 +186,8 @@ function ProjectShellScaffold({
         activeKey={activeKey}
         items={items}
         onChangeActive={handleChangeActive}
-        handleSetCollapse={handleSetCollapse}
+        onToggleCollapse={() => handleSetCollapse(!collapsed)}
+        onOpenWorkspaces={() => router.push("/projects")}
       />
 
       <View className="flex-1 flex-row">

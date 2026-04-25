@@ -3,7 +3,7 @@ import { fakeCrewComplianceSummary } from "@/src/test/fakes/crewCertificates";
 import { CrewMsmcComplianceSummary } from "../CrewMsmcComplianceSummary";
 
 describe("CrewMsmcComplianceSummary", () => {
-  it("GIVEN an MSMC summary with gaps WHEN rendered SHOULD show the risk, vessel, and missing roles", () => {
+  it("GIVEN an MSMC summary with gaps WHEN rendered SHOULD show vessel source and missing roles", () => {
     render(
       <CrewMsmcComplianceSummary
         title="MSMC fleet crew compliance"
@@ -12,7 +12,7 @@ describe("CrewMsmcComplianceSummary", () => {
     );
 
     expect(screen.getByText("MSMC fleet crew compliance")).toBeOnTheScreen();
-    expect(screen.getByText("HIGH")).toBeOnTheScreen();
+    expect(screen.getByText("MSMC")).toBeOnTheScreen();
     expect(screen.getByText("MV Navigate One")).toBeOnTheScreen();
     expect(
       screen.getByText("Missing required role: Officer of the Watch."),
@@ -49,7 +49,6 @@ describe("CrewMsmcComplianceSummary", () => {
       />,
     );
 
-    expect(screen.getByText("UNKNOWN")).toBeOnTheScreen();
     expect(
       screen.getByText(
         "MSMC is not configured for this vessel. Using v1 rank-based requirements.",

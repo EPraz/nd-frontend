@@ -3,5 +3,6 @@ export type UploadFileInput = {
   name: string;
   mimeType: string;
   file?: Blob;
+  previewUri?: string;
   size?: number;
 };

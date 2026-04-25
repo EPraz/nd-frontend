@@ -1,7 +1,16 @@
-import { EditFuelScreen } from "@/src/features/fuel";
+import { Redirect, useLocalSearchParams } from "expo-router";
 
-const edit = () => {
-  return <EditFuelScreen />;
-};
+function Edit() {
+  const { projectId, assetId } = useLocalSearchParams<{
+    projectId: string;
+    assetId: string;
+  }>();
 
-export default edit;
+  return (
+    <Redirect
+      href={`/projects/${String(projectId)}/vessels/${String(assetId)}/fuel`}
+    />
+  );
+}
+
+export default Edit;

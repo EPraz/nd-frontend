@@ -14,9 +14,9 @@ import {
 } from "@/src/components/ui/registryWorkspace";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
+import { VesselImageMedia } from "@/src/features/vessels/shared";
 import { formatDate } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
@@ -249,21 +249,12 @@ export default function VesselQuickViewModal({
             </>
           }
           aside={
-            <QuickViewMediaPanel className="relative h-[128px] web:h-[128px]">
+            <QuickViewMediaPanel className="h-[128px] web:h-[128px]">
               {vessel.imageUrl ? (
-                <>
-                  <Image
-                    source={{ uri: vessel.imageUrl }}
-                    contentFit="cover"
-                    style={{ width: "100%", height: "100%" }}
-                  />
-                  <View className="absolute inset-0 bg-black/20" />
-                  <View className="absolute inset-x-0 bottom-0 bg-black/20 px-3 py-1.5">
-                    <Text className="text-[10px] uppercase tracking-[0.22em] text-textMain">
-                      Vessel image
-                    </Text>
-                  </View>
-                </>
+                <VesselImageMedia
+                  uri={vessel.imageUrl}
+                  stageClassName="rounded-[14px]"
+                />
               ) : (
                 <View className="h-full flex-1 flex-row items-center gap-3 px-4">
                   <View className="rounded-full border border-shellLine bg-shellPanel px-3 py-3">

@@ -91,7 +91,7 @@ describe("MaintenanceByProjectScreen", () => {
     });
   });
 
-  it("GIVEN the maintenance workspace opens WHEN the screen renders SHOULD show the registry framing", () => {
+  it("GIVEN the maintenance workspace opens WHEN rendered SHOULD expose the read-only task registry without create actions", () => {
     render(<MaintenanceByProjectScreen />);
 
     expect(screen.getByText("Maintenance")).toBeOnTheScreen();
@@ -99,5 +99,6 @@ describe("MaintenanceByProjectScreen", () => {
     expect(screen.getByText("Task queue")).toBeOnTheScreen();
     expect(screen.getByText("All status")).toBeOnTheScreen();
     expect(screen.getByText("Next due")).toBeOnTheScreen();
+    expect(screen.queryByText("Add Task")).toBeNull();
   });
 });

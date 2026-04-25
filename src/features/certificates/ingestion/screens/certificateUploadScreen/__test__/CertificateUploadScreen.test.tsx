@@ -102,7 +102,7 @@ describe("CertificateUploadScreen", () => {
   it("GIVEN a requirement upload WHEN choosing a file and submitting SHOULD upload evidence and route to review", async () => {
     render(<CertificateUploadScreen />);
 
-    fireEvent.press(screen.getByText("Pick PDF or image"));
+    fireEvent.press(screen.getByText("Select document"));
 
     await waitFor(() => {
       expect(screen.getAllByText("iopp-certificate.pdf").length).toBeGreaterThan(
@@ -111,7 +111,9 @@ describe("CertificateUploadScreen", () => {
     });
 
     fireEvent.changeText(
-      screen.getByPlaceholderText("Context before we create the candidate"),
+      screen.getByPlaceholderText(
+        "Capture context before the candidate is reviewed",
+      ),
       "PSC evidence package",
     );
     fireEvent.press(screen.getByText("Upload and extract candidate"));

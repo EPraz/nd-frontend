@@ -30,6 +30,7 @@ export function CrewByAssetWorkspaceSection({
   return (
     <>
       <CrewTable
+        projectId={projectId}
         title="Vessel roster"
         subtitleRight={`${list.length} crew currently visible`}
         headerActions={
