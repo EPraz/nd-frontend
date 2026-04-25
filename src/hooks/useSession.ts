@@ -10,6 +10,7 @@ export type UserStatus = "loading" | "authenticated" | "unauthenticated";
 export function useSession() {
   const [session, setSessionState] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signingIn, setSigningIn] = useState(false);
   const [status, setStatus] = useState<UserStatus>("loading");
 
   async function bootstrap() {
@@ -46,7 +47,7 @@ export function useSession() {
   }, []);
 
   async function signIn(email: string, password: string) {
-    setLoading(true);
+    setSigningIn(true);
     try {
       const { accessToken } = await apiLogin(email, password);
       await setToken(accessToken);
@@ -56,7 +57,7 @@ export function useSession() {
 
       authEvents.resetUnauthorizedLock();
     } finally {
-      setLoading(false);
+      setSigningIn(false);
     }
   }
 
@@ -75,6 +76,7 @@ export function useSession() {
   return {
     session,
     loading,
+    signingIn,
     signIn,
     signOut,
     refresh: bootstrap,

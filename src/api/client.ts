@@ -89,7 +89,9 @@ async function request<T>(
   const payload = await parseJsonSafe(res);
 
   if (!res.ok) {
-    if (res.status === 401) {
+    const isLoginAttempt = path === "/auth/login";
+
+    if (res.status === 401 && !isLoginAttempt) {
       await clearToken();
       authEvents.emitUnauthorized();
     }

@@ -103,13 +103,20 @@ export function LoginAccessCard({
 
           {errors.root?.message ? (
             <View
-              className="rounded-[18px] border px-4 py-3"
+              className="flex-row items-center gap-3 rounded-[18px] border px-4 py-3"
               style={{
-                borderColor: "#f3b3b3",
-                backgroundColor: "#fff2f2",
+                borderColor: LOGIN_PALETTE.dangerLine,
+                backgroundColor: LOGIN_PALETTE.dangerSoft,
               }}
             >
-              <Text className="text-sm" style={{ color: "#c0392b" }}>
+              <View
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: LOGIN_PALETTE.danger }}
+              />
+              <Text
+                className="flex-1 text-[13px] leading-5"
+                style={{ color: LOGIN_PALETTE.dangerText }}
+              >
                 {errors.root.message}
               </Text>
             </View>

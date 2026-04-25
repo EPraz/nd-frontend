@@ -37,7 +37,7 @@ const AuthInput = (props: {
       <View
         className="h-14 flex-row items-center gap-3 rounded-[18px] border px-4"
         style={{
-          borderColor: error ? "#f3b3b3" : LOGIN_PALETTE.cardLine,
+          borderColor: error ? LOGIN_PALETTE.dangerLine : LOGIN_PALETTE.cardLine,
           backgroundColor: LOGIN_PALETTE.card,
         }}
       >
@@ -64,7 +64,7 @@ const AuthInput = (props: {
         />
       </View>
       {error ? (
-        <Text className="text-sm" style={{ color: "#c0392b" }}>
+        <Text className="text-[12px]" style={{ color: LOGIN_PALETTE.dangerText }}>
           {error}
         </Text>
       ) : null}

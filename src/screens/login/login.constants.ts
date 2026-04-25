@@ -16,4 +16,8 @@ export const LOGIN_PALETTE = {
   accentSoft: "rgba(255, 154, 77, 0.14)",
   aqua: "#21d3b2",
   iris: "#a8b8ff",
+  danger: "#fb7185",
+  dangerSoft: "rgba(251, 113, 133, 0.12)",
+  dangerLine: "rgba(251, 113, 133, 0.36)",
+  dangerText: "#fecdd3",
 };

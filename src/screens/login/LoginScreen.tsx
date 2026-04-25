@@ -18,7 +18,7 @@ type LoginFormValues = {
 };
 
 export default function LoginScreen() {
-  const { signIn, loading } = useSessionContext();
+  const { signIn, signingIn = false } = useSessionContext();
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const isDesktop = width >= 1180;
@@ -94,7 +94,7 @@ export default function LoginScreen() {
                         control={control}
                         errors={errors}
                         onSubmit={onSubmit}
-                        loading={loading}
+                        loading={signingIn}
                         isSubmitting={isSubmitting}
                       />
                     </View>
@@ -105,7 +105,7 @@ export default function LoginScreen() {
                       control={control}
                       errors={errors}
                       onSubmit={onSubmit}
-                      loading={loading}
+                      loading={signingIn}
                       isSubmitting={isSubmitting}
                     />
                     <View

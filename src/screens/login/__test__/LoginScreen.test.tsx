@@ -53,4 +53,25 @@ describe("LoginScreen", () => {
       expect(signIn).toHaveBeenCalledWith("admin@navigate.test", "password123");
     });
   });
+
+  it("GIVEN invalid credentials WHEN submitted SHOULD keep the user on the form and show the login error", async () => {
+    signIn.mockRejectedValueOnce(new Error("Invalid credentials"));
+
+    render(<LoginScreen />);
+
+    fireEvent.changeText(
+      screen.getByPlaceholderText("your@email.test"),
+      "viewer@navigate.test",
+    );
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Enter your password"),
+      "wrong-password",
+    );
+    fireEvent.press(screen.getByText("Enter workspace"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Invalid credentials")).toBeOnTheScreen();
+    });
+    expect(screen.getByText("Enter workspace")).toBeOnTheScreen();
+  });
 });

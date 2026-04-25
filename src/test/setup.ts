@@ -23,6 +23,7 @@ jest.mock("@/src/context/SessionProvider", () => ({
   useSessionContext: jest.fn(() => ({
     session: { role: "ADMIN" },
     loading: false,
+    signingIn: false,
     status: "authenticated",
     signIn: jest.fn(),
     signOut: jest.fn(),
