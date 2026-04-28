@@ -138,7 +138,7 @@ export default function FuelByProjectScreen() {
           onChange={() => {}}
         />
 
-        <RegistrySummaryStrip items={summaryItems} />
+        <RegistrySummaryStrip items={summaryItems} loading={page.isLoading} />
       </View>
 
       <FuelTable

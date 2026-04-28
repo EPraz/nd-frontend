@@ -60,10 +60,12 @@ export function RegistrySummaryStrip({
   items,
   size = "default",
   columns,
+  loading = false,
 }: {
   items: RegistrySummaryItem[];
   size?: RegistrySummaryStripSize;
   columns?: RegistrySummaryStripColumns;
+  loading?: boolean;
 }) {
   const isCompact = size === "compact";
 
@@ -91,6 +93,7 @@ export function RegistrySummaryStrip({
             tone={item.tone}
             compact={isCompact}
             fixedColumns={Boolean(columns)}
+            loading={loading}
           />
         ))}
       </View>
@@ -105,7 +108,12 @@ function RegistrySummaryStat({
   tone,
   compact = false,
   fixedColumns = false,
-}: RegistrySummaryItem & { compact?: boolean; fixedColumns?: boolean }) {
+  loading = false,
+}: RegistrySummaryItem & {
+  compact?: boolean;
+  fixedColumns?: boolean;
+  loading?: boolean;
+}) {
   return (
     <View
       className={[
@@ -141,27 +149,49 @@ function RegistrySummaryStat({
               ? "h-2 w-2 rounded-full opacity-95"
               : "h-2 w-2 rounded-full opacity-95"
           }
-          style={toneStyle(tone)}
+          style={loading ? { backgroundColor: "#475569" } : toneStyle(tone)}
         />
-        <Text
-          className={[
-            "leading-none font-semibold tracking-tight text-textMain",
-            compact ? "text-[12px]" : "text-[26px]",
-          ].join(" ")}
-          style={compact ? toneTextStyle(tone) : undefined}
-        >
-          {value}
-        </Text>
+        {loading ? (
+          <View
+            className="rounded-full bg-shellLine"
+            style={{
+              width: compact ? 32 : 44,
+              height: compact ? 12 : 24,
+              opacity: 0.72,
+            }}
+          />
+        ) : (
+          <Text
+            className={[
+              "leading-none font-semibold tracking-tight text-textMain",
+              compact ? "text-[12px]" : "text-[26px]",
+            ].join(" ")}
+            style={compact ? toneTextStyle(tone) : undefined}
+          >
+            {value}
+          </Text>
+        )}
       </View>
 
-      <Text
-        className={[
-          "text-muted",
-          compact ? "text-[10px] leading-[14px]" : "text-[12px] leading-5",
-        ].join(" ")}
-      >
-        {helper}
-      </Text>
+      {loading ? (
+        <View
+          className="rounded-full bg-shellLine"
+          style={{
+            width: compact ? 92 : 150,
+            height: compact ? 8 : 10,
+            opacity: 0.46,
+          }}
+        />
+      ) : (
+        <Text
+          className={[
+            "text-muted",
+            compact ? "text-[10px] leading-[14px]" : "text-[12px] leading-5",
+          ].join(" ")}
+        >
+          {helper}
+        </Text>
+      )}
     </View>
   );
 }

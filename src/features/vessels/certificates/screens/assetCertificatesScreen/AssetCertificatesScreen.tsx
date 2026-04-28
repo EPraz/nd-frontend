@@ -323,7 +323,10 @@ export default function AssetCertificatesScreen() {
         ) : null}
 
         {!isExpanded ? (
-          <RegistrySummaryStrip items={workspace.summaryItems} />
+          <RegistrySummaryStrip
+            items={workspace.summaryItems}
+            loading={workspace.requirementsLoading || workspace.recordsLoading}
+          />
         ) : null}
       </View>
 

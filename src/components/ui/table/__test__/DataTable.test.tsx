@@ -64,6 +64,37 @@ function renderTable({
 }
 
 describe("DataTable pagination", () => {
+  it("GIVEN table data is loading WHEN the table renders SHOULD keep structure without showing stale rows or pagination", () => {
+    render(
+      <DataTable<TestRow>
+        title="Crew roster"
+        data={rows}
+        isLoading
+        error={null}
+        onRetry={jest.fn()}
+        columns={columns}
+        getRowId={(row) => row.id}
+        pagination={{
+          meta: {
+            page: 1,
+            pageSize: 10,
+            totalItems: 80,
+            totalPages: 8,
+            hasPreviousPage: false,
+            hasNextPage: true,
+          },
+          onPageChange: jest.fn(),
+          onPageSizeChange: jest.fn(),
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Crew roster")).toBeOnTheScreen();
+    expect(screen.getByText("Name")).toBeOnTheScreen();
+    expect(screen.queryByText("Ahmed Hassan")).toBeNull();
+    expect(screen.queryByText("Showing 1-10 of 80")).toBeNull();
+  });
+
   it("GIVEN a paginated table WHEN the user advances or changes page size SHOULD call pagination handlers", () => {
     const { onPageChange, onPageSizeChange } = renderTable();
 

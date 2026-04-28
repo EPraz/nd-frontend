@@ -81,7 +81,7 @@ export default function FuelByAssetScreen() {
           onChange={() => {}}
         />
 
-        <RegistrySummaryStrip items={summaryItems} />
+        <RegistrySummaryStrip items={summaryItems} loading={page.loading} />
       </View>
 
       <FuelByAssetWorkspaceSection

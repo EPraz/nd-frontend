@@ -324,7 +324,7 @@ export default function CrewCertificatesByCrewScreen() {
           }
         />
 
-        {!statsLoading ? <RegistrySummaryStrip items={summaryItems} /> : null}
+        <RegistrySummaryStrip items={summaryItems} loading={statsLoading} />
       </View>
 
       <RegistryWorkspaceSection

@@ -66,7 +66,10 @@ export function CrewCertificatesProjectWorkspaceContent({
 
   return (
     <View className="gap-2">
-      <RegistrySummaryStrip items={summaryItems} />
+      <RegistrySummaryStrip
+        items={summaryItems}
+        loading={workspace.statsLoading || workspace.loading}
+      />
       <View className="gap-2">
         {workspace.generationError ? (
           <Text className="text-[12px] text-destructive">

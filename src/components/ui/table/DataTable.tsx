@@ -50,8 +50,8 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
 
   return (
     <View className="flex gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
-      <View className="flex-row items-end justify-between gap-6">
-        <View className="flex-1 gap-1">
+      <View className="gap-3">
+        <View className="gap-1">
           <Text className="text-[18px] leading-[130%] font-semibold text-textMain">
             {props.title}
           </Text>
@@ -75,9 +75,15 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
       <View className="overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft/75">
         <View className="flex-1">
           {props.isLoading ? (
-            <View className="px-5 py-6">
-              <Text className="text-sm text-muted">Loading...</Text>
-            </View>
+            isMobile ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ minWidth: props.minWidth ?? 860 }}>
+                  <TableLoadingState columns={props.columns} />
+                </View>
+              </ScrollView>
+            ) : (
+              <TableLoadingState columns={props.columns} />
+            )
           ) : props.error ? (
             <View className="gap-3 px-5 py-5">
               <Text className="text-sm text-destructive">{props.error}</Text>
@@ -115,6 +121,37 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
           pageSizeOptions={props.pagination.pageSizeOptions}
         />
       ) : null}
+    </View>
+  );
+}
+
+function TableLoadingState<Row>(props: { columns: Column<Row>[] }) {
+  return (
+    <View>
+      <Header columns={props.columns} />
+      {Array.from({ length: 4 }).map((_, rowIndex) => (
+        <View
+          key={rowIndex}
+          className="flex-row items-center w-full min-h-[68px] border-b border-shellLine"
+        >
+          {props.columns.map((column, columnIndex) => (
+            <View
+              key={column.key}
+              className="px-4 py-3"
+              style={{ flex: column.flex }}
+            >
+              <View
+                className="rounded-full bg-shellLine"
+                style={{
+                  width: columnIndex === 0 ? "68%" : "46%",
+                  height: columnIndex === 0 ? 14 : 11,
+                  opacity: columnIndex === 0 ? 0.64 : 0.42,
+                }}
+              />
+            </View>
+          ))}
+        </View>
+      ))}
     </View>
   );
 }

@@ -128,7 +128,7 @@ export default function MaintenanceByProjectScreen() {
           onChange={() => {}}
         />
 
-        <RegistrySummaryStrip items={summaryItems} />
+        <RegistrySummaryStrip items={summaryItems} loading={page.isLoading} />
       </View>
 
       <MaintenanceTable

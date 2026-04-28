@@ -60,7 +60,7 @@ export default function VesselsByProjectScreen() {
           onChange={() => {}}
         />
 
-        <RegistrySummaryStrip items={summaryItems} />
+        <RegistrySummaryStrip items={summaryItems} loading={page.isLoading} />
       </View>
 
       <VesselsOverviewWorkspaceSection

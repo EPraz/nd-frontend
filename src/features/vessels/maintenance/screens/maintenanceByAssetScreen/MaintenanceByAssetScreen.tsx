@@ -78,7 +78,7 @@ export default function MaintenanceByAssetScreen() {
           onChange={() => {}}
         />
 
-        <RegistrySummaryStrip items={summaryItems} />
+        <RegistrySummaryStrip items={summaryItems} loading={page.loading} />
       </View>
 
       <MaintenanceByAssetWorkspaceSection

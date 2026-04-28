@@ -28,6 +28,7 @@ import { getCrewWorkspaceSummaryItems } from "./crewWorkspace.helpers";
 type CrewWorkspaceConfig = {
   actions: ReactNode;
   summaryItems?: RegistrySummaryItem[];
+  summaryLoading?: boolean;
   content: ReactNode;
 };
 
@@ -81,6 +82,7 @@ export default function CrewByProjectScreen() {
           <CrewOverviewHeaderActions projectId={pid} onRefresh={page.refetch} />
         ),
         summaryItems: getCrewWorkspaceSummaryItems(page.stats),
+        summaryLoading: page.isLoading,
         content: (
           <CrewOverviewWorkspaceSection
             projectId={pid}
@@ -201,7 +203,10 @@ export default function CrewByProjectScreen() {
         </View>
 
         {activeTabConfig.summaryItems ? (
-          <RegistrySummaryStrip items={activeTabConfig.summaryItems} />
+          <RegistrySummaryStrip
+            items={activeTabConfig.summaryItems}
+            loading={activeTabConfig.summaryLoading}
+          />
         ) : null}
       </View>
 

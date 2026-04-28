@@ -176,6 +176,7 @@ export function CrewMsmcComplianceSummary({
         <DataTableSupportCopy
           description="Shows vessel-by-vessel safe manning risk. When a vessel has MSMC configured, compliance is measured against that document; otherwise the module falls back to v1 rank rules."
           summaryItems={summaryItems}
+          loading={loading}
         />
       }
       data={rows}
@@ -193,8 +194,10 @@ export function CrewMsmcComplianceSummary({
 function DataTableSupportCopy({
   description,
   summaryItems,
+  loading,
 }: {
   description: string;
+  loading: boolean;
   summaryItems: {
     label: string;
     value: string;
@@ -207,7 +210,7 @@ function DataTableSupportCopy({
       <Text className="text-[13px] leading-[20px] text-muted">
         {description}
       </Text>
-      <RegistrySummaryStrip items={summaryItems} />
+      <RegistrySummaryStrip items={summaryItems} loading={loading} />
     </>
   );
 }

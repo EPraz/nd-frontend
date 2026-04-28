@@ -30,6 +30,7 @@ import { useCrewByAssetCertificatesWorkspace } from "./useCrewByAssetCertificate
 type VesselCrewWorkspaceConfig = {
   actions: ReactNode;
   summaryItems?: RegistrySummaryItem[];
+  summaryLoading?: boolean;
   content: ReactNode;
 };
 
@@ -116,6 +117,7 @@ export default function CrewByAssetScreen() {
           />
         ),
         summaryItems,
+        summaryLoading: page.loading,
         content: (
           <CrewByAssetWorkspaceSection
             projectId={pid}
@@ -188,6 +190,8 @@ export default function CrewByAssetScreen() {
           />
         ),
         summaryItems: certificatesWorkspace.summaryItems,
+        summaryLoading:
+          certificatesWorkspace.statsLoading || certificatesWorkspace.loading,
         content: (
           <CrewByAssetCertificatesWorkspaceSection
             projectId={pid}
@@ -263,7 +267,10 @@ export default function CrewByAssetScreen() {
         />
 
         {activeTabConfig.summaryItems ? (
-          <RegistrySummaryStrip items={activeTabConfig.summaryItems} />
+          <RegistrySummaryStrip
+            items={activeTabConfig.summaryItems}
+            loading={activeTabConfig.summaryLoading}
+          />
         ) : null}
       </View>
 

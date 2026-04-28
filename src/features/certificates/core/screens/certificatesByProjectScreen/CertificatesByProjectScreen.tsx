@@ -257,7 +257,12 @@ export default function CertificatesByProjectScreen() {
         </View>
       </View>
       {/* {true ? <View className="h-px bg-shellLine" /> : null} */}
-      {!isExpanded ? <RegistrySummaryStrip items={summaryItems} /> : null}
+      {!isExpanded ? (
+        <RegistrySummaryStrip
+          items={summaryItems}
+          loading={loading || recordsLoading}
+        />
+      ) : null}
 
       {activeTab === "requirements" ? (
         <CertificateRequirementsTable

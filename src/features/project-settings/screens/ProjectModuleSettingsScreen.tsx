@@ -385,7 +385,11 @@ export default function ProjectModuleSettingsScreen() {
           }
         />
 
-        <RegistrySummaryStrip items={summaryItems} columns={3} />
+        <RegistrySummaryStrip
+          items={summaryItems}
+          columns={3}
+          loading={loading && draft.length === 0}
+        />
       </View>
 
       {error ? (
