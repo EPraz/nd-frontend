@@ -1,3 +1,5 @@
+import type { PaginatedResponseDto } from "@/src/contracts/pagination.contract";
+
 export type CrewCertificateStatus =
   | "VALID"
   | "EXPIRED"
@@ -94,6 +96,37 @@ export type CrewCertificateRequirementDto = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CrewCertificateRequirementListStatsDto = {
+  total: number;
+  missing: number;
+  underReview: number;
+  provided: number;
+  expired: number;
+  exempt: number;
+  uploaded: number;
+};
+
+export type CrewCertificateRequirementPageDto =
+  PaginatedResponseDto<CrewCertificateRequirementDto> & {
+    stats: CrewCertificateRequirementListStatsDto;
+  };
+
+export type CrewCertificateListStatsDto = {
+  total: number;
+  valid: number;
+  expired: number;
+  expiringSoon: number;
+  pending: number;
+  submitted: number;
+  approved: number;
+  rejected: number;
+};
+
+export type CrewCertificatePageDto =
+  PaginatedResponseDto<CrewCertificateDto> & {
+    stats: CrewCertificateListStatsDto;
+  };
 
 export type CrewCertificateIngestionDto = {
   id: string;

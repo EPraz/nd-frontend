@@ -1,29 +1,45 @@
 import {
   getCrewCertificatesProjectSummaryItems,
   useCrewCertificateOverviewStatsByProject,
-  useCrewCertificateRequirementsByProject,
+  useCrewCertificateRequirementsByAsset,
   useCrewComplianceSummaryByAsset,
 } from "@/src/features/crew/certificates";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
 import { useCallback, useMemo } from "react";
+import type { CrewCertificateSortOption } from "@/src/features/crew/certificates/components/crewCertificatesProject.constants";
+
+type CrewByAssetCertificatesWorkspaceOptions = PaginationRequest & {
+  sort?: CrewCertificateSortOption;
+  search?: string;
+  status?: string;
+  crewState?: string;
+};
 
 export function useCrewByAssetCertificatesWorkspace(
   projectId: string,
   assetId: string,
+  options?: CrewByAssetCertificatesWorkspaceOptions,
 ) {
-  const requirementsQuery = useCrewCertificateRequirementsByProject(projectId);
-  const msmcQuery = useCrewComplianceSummaryByAsset(projectId, assetId);
-
-  const requirements = useMemo(
-    () =>
-      requirementsQuery.requirements.filter(
-        (requirement) => requirement.assetId === assetId,
-      ),
-    [assetId, requirementsQuery.requirements],
+  const requirementsQuery = useCrewCertificateRequirementsByAsset(
+    projectId,
+    assetId,
+    options?.page !== undefined && options?.pageSize !== undefined
+      ? {
+          page: options.page,
+          pageSize: options.pageSize,
+          sort: options.sort,
+          search: options.search,
+          status: options.status,
+          crewState: options.crewState,
+        }
+      : undefined,
   );
+  const msmcQuery = useCrewComplianceSummaryByAsset(projectId, assetId);
 
   const overviewQuery = useCrewCertificateOverviewStatsByProject(
     projectId,
-    requirements,
+    requirementsQuery.requirements,
+    requirementsQuery.stats,
   );
 
   const summaryItems = useMemo(
@@ -36,7 +52,8 @@ export function useCrewByAssetCertificatesWorkspace(
   }, [msmcQuery, requirementsQuery]);
 
   return {
-    requirements,
+    requirements: requirementsQuery.requirements,
+    pagination: requirementsQuery.pagination,
     loading: requirementsQuery.loading,
     error: requirementsQuery.error,
     stats: overviewQuery.stats,

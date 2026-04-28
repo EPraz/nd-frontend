@@ -12,12 +12,12 @@ import { PROJECT_MODULE_CATALOG } from "@/src/constants/projectModules";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AdminProjectDto, UserRole } from "@/src/contracts/admin.contract";
+import { DEFAULT_PAGE_SIZE } from "@/src/contracts/pagination.contract";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { canUser } from "@/src/security/rolePermissions";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { KIND_LABEL, ROLE_LABEL } from "../admin.constants";
 import {
   CreateProjectPanel,
   CreateUserPanel,
@@ -29,7 +29,11 @@ import {
   UserDirectoryTable,
 } from "../components/AdminDirectoryTables";
 import { ProjectAccessModal } from "../components/ProjectAccessModal";
-import { useAdminWorkspace } from "../hooks/useAdminWorkspace";
+import {
+  useAdminProjectPage,
+  useAdminUserPage,
+  useAdminWorkspace,
+} from "../hooks/useAdminWorkspace";
 import { SuperAdminHeaderActions } from "./superAdminWorkspaceScreen/SuperAdminHeaderActions";
 import {
   SuperAdminWorkspaceTabs,
@@ -60,6 +64,16 @@ export default function SuperAdminWorkspaceScreen() {
   const [projectSearch, setProjectSearch] = useState("");
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
+  const [projectPage, setProjectPage] = useState(1);
+  const [projectPageSize, setProjectPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [projectStatusFilter, setProjectStatusFilter] = useState("ALL");
+  const [projectKindFilter, setProjectKindFilter] = useState("ALL");
+  const [projectAssignedUserFilter, setProjectAssignedUserFilter] =
+    useState("ALL");
+  const [userPage, setUserPage] = useState(1);
+  const [userPageSize, setUserPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [userProjectFilter, setUserProjectFilter] = useState("ALL");
+  const [userAccessFilter, setUserAccessFilter] = useState("ALL");
   const [activeTab, setActiveTab] = useState<AdminWorkspaceTab>("projects");
   const [setupTab, setSetupTab] = useState<"project" | "user">("project");
   const [accessProject, setAccessProject] = useState<AdminProjectDto | null>(
@@ -70,6 +84,23 @@ export default function SuperAdminWorkspaceScreen() {
   );
   const debouncedProjectSearch = useDebouncedValue(projectSearch);
   const debouncedUserSearch = useDebouncedValue(userSearch);
+  const projectPageData = useAdminProjectPage(isAdmin, {
+    page: projectPage,
+    pageSize: projectPageSize,
+    search: debouncedProjectSearch,
+    status: projectStatusFilter === "ALL" ? undefined : projectStatusFilter,
+    kind: projectKindFilter === "ALL" ? undefined : projectKindFilter,
+    assignedUserId:
+      projectAssignedUserFilter === "ALL" ? undefined : projectAssignedUserFilter,
+  });
+  const userPageData = useAdminUserPage(isAdmin, {
+    page: userPage,
+    pageSize: userPageSize,
+    search: debouncedUserSearch,
+    role: roleFilter === "ALL" ? undefined : roleFilter,
+    projectId: userProjectFilter === "ALL" ? undefined : userProjectFilter,
+    accessState: userAccessFilter === "ALL" ? undefined : userAccessFilter,
+  });
 
   const projectsById = useMemo(
     () => new Map(projects.map((project) => [project.id, project])),
@@ -117,41 +148,13 @@ export default function SuperAdminWorkspaceScreen() {
     [summary.admins, summary.assignedUsers, summary.projects, summary.users],
   );
 
-  const filteredProjects = useMemo(() => {
-    const search = normalizeSearch(debouncedProjectSearch);
-    if (!search) return projects;
-
-    return projects.filter((project) =>
-      matchesSearch(search, [
-        project.name,
-        project.status,
-        KIND_LABEL[project.kind],
-        ...project.assignedUsers.flatMap((user) => [
-          user.name,
-          user.email,
-          ROLE_LABEL[user.role],
-        ]),
-      ]),
-    );
-  }, [debouncedProjectSearch, projects]);
-
-  const filteredUsers = useMemo(() => {
-    const search = normalizeSearch(debouncedUserSearch);
-
-    return users.filter((user) => {
-      if (roleFilter !== "ALL" && user.role !== roleFilter) return false;
-      if (!search) return true;
-
-      return matchesSearch(search, [
-        user.name,
-        user.email,
-        ROLE_LABEL[user.role],
-        ...user.assignedProjectIds.map(
-          (projectId) => projectsById.get(projectId)?.name ?? projectId,
-        ),
-      ]);
-    });
-  }, [debouncedUserSearch, projectsById, roleFilter, users]);
+  async function refreshAll() {
+    await Promise.all([
+      refresh(),
+      projectPageData.refresh(),
+      userPageData.refresh(),
+    ]);
+  }
 
   if (!isAdmin) {
     return (
@@ -217,6 +220,7 @@ export default function SuperAdminWorkspaceScreen() {
       }
 
       show(`Project created: ${created.name}`, "success");
+      await projectPageData.refresh();
       return true;
     } catch (error) {
       show(
@@ -245,6 +249,8 @@ export default function SuperAdminWorkspaceScreen() {
         role: values.role,
         projectIds: values.projectIds,
       });
+      await userPageData.refresh();
+      await projectPageData.refresh();
       show(`User created: ${created.email}`, "success");
       return true;
     } catch (error) {
@@ -270,6 +276,7 @@ export default function SuperAdminWorkspaceScreen() {
 
     try {
       await saveProjectUsers(accessProject.id, draftAssignedUserIds);
+      await Promise.all([projectPageData.refresh(), userPageData.refresh()]);
       show(`Access updated for ${accessProject.name}`, "success");
       setAccessProject(null);
       setDraftAssignedUserIds([]);
@@ -294,7 +301,7 @@ export default function SuperAdminWorkspaceScreen() {
             eyebrow="Company control"
             title="Admin workspace"
             subtitle="Manage workspaces, user identities, and project access from the same calm control surface."
-            actions={<SuperAdminHeaderActions onRefresh={refresh} />}
+            actions={<SuperAdminHeaderActions onRefresh={refreshAll} />}
           />
 
           <EntryPortalSummaryStrip items={summaryItems} />
@@ -317,11 +324,37 @@ export default function SuperAdminWorkspaceScreen() {
 
           {activeTab === "projects" ? (
             <ProjectDirectoryTable
-              projects={filteredProjects}
+              projects={projectPageData.projects}
               totalProjects={projects.length}
-              loading={loading}
+              loading={loading || projectPageData.loading}
+              error={projectPageData.error}
               search={projectSearch}
-              onSearchChange={setProjectSearch}
+              onSearchChange={(value) => {
+                setProjectSearch(value);
+                setProjectPage(1);
+              }}
+              statusFilter={projectStatusFilter}
+              onStatusFilterChange={(value) => {
+                setProjectStatusFilter(value);
+                setProjectPage(1);
+              }}
+              kindFilter={projectKindFilter}
+              onKindFilterChange={(value) => {
+                setProjectKindFilter(value);
+                setProjectPage(1);
+              }}
+              assignedUserFilter={projectAssignedUserFilter}
+              users={users}
+              onAssignedUserFilterChange={(value) => {
+                setProjectAssignedUserFilter(value);
+                setProjectPage(1);
+              }}
+              pagination={projectPageData.pagination}
+              onPageChange={setProjectPage}
+              onPageSizeChange={(nextPageSize) => {
+                setProjectPageSize(nextPageSize);
+                setProjectPage(1);
+              }}
               onOpenProject={(projectId) =>
                 router.push(`/projects/${projectId}/dashboard`)
               }
@@ -334,14 +367,38 @@ export default function SuperAdminWorkspaceScreen() {
 
           {activeTab === "users" ? (
             <UserDirectoryTable
-              users={filteredUsers}
+              users={userPageData.users}
               totalUsers={users.length}
               projectsById={projectsById}
-              loading={loading}
+              loading={loading || userPageData.loading}
+              error={userPageData.error}
               search={userSearch}
               roleFilter={roleFilter}
-              onSearchChange={setUserSearch}
-              onRoleFilterChange={setRoleFilter}
+              projectFilter={userProjectFilter}
+              accessFilter={userAccessFilter}
+              projects={projects}
+              onSearchChange={(value) => {
+                setUserSearch(value);
+                setUserPage(1);
+              }}
+              onRoleFilterChange={(value) => {
+                setRoleFilter(value);
+                setUserPage(1);
+              }}
+              onProjectFilterChange={(value) => {
+                setUserProjectFilter(value);
+                setUserPage(1);
+              }}
+              onAccessFilterChange={(value) => {
+                setUserAccessFilter(value);
+                setUserPage(1);
+              }}
+              pagination={userPageData.pagination}
+              onPageChange={setUserPage}
+              onPageSizeChange={(nextPageSize) => {
+                setUserPageSize(nextPageSize);
+                setUserPage(1);
+              }}
             />
           ) : null}
 
@@ -408,14 +465,6 @@ export default function SuperAdminWorkspaceScreen() {
       />
     </View>
   );
-}
-
-function normalizeSearch(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function matchesSearch(search: string, values: (string | undefined)[]) {
-  return values.some((value) => value?.toLowerCase().includes(search));
 }
 
 function toggleListValue(values: string[], value: string) {

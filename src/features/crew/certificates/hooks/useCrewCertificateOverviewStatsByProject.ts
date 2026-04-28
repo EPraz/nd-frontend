@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchCrewCertificateById } from "../api/crewCertificates.api";
 import type {
   CrewCertificateDto,
+  CrewCertificateRequirementListStatsDto,
   CrewCertificateRequirementDto,
 } from "../contracts";
 import {
@@ -54,6 +55,7 @@ function dedupeCertificates(certificates: CrewCertificateDto[]) {
 export function useCrewCertificateOverviewStatsByProject(
   projectId: string,
   requirements: CrewCertificateRequirementDto[],
+  requirementStats?: CrewCertificateRequirementListStatsDto | null,
 ) {
   const [certificates, setCertificates] = useState<CrewCertificateDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,11 +120,23 @@ export function useCrewCertificateOverviewStatsByProject(
   }, [refresh]);
 
   const stats = useMemo<CrewCertificateOverviewStats>(() => {
+    const summarizedRequirements = requirementStats
+      ? {
+          totalRequirements: requirementStats.total,
+          missingRequirements: requirementStats.missing,
+          underReviewRequirements: requirementStats.underReview,
+          providedRequirements: requirementStats.provided,
+          expiredRequirements: requirementStats.expired,
+          exemptRequirements: requirementStats.exempt,
+          uploadedRequirements: requirementStats.uploaded,
+        }
+      : summarizeCrewCertificateRequirements(requirements);
+
     return {
-      ...summarizeCrewCertificateRequirements(requirements),
+      ...summarizedRequirements,
       ...summarizeCrewCertificates(certificates),
     };
-  }, [certificates, requirements]);
+  }, [certificates, requirementStats, requirements]);
 
   return { stats, loading, error, refresh };
 }

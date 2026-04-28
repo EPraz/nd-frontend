@@ -1,4 +1,10 @@
-import { Column, DataTable, TableLink, Text } from "@/src/components";
+import {
+  Column,
+  DataTable,
+  type DataTableProps,
+  TableLink,
+  Text,
+} from "@/src/components";
 import { formatDate } from "@/src/helpers";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { type ReactNode, useMemo } from "react";
@@ -25,6 +31,7 @@ type Props = {
 
   // ✅ selection support
   selectedRowId?: string | null;
+  pagination?: DataTableProps<FuelDto>["pagination"];
 };
 
 export function FuelTable(props: Props) {
@@ -145,6 +152,7 @@ export function FuelTable(props: Props) {
       onRowPress={props.onRowPress}
       emptyText="No fuel events found."
       selectedRowId={props.selectedRowId ?? null}
+      pagination={props.pagination}
     />
   );
 }

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useToast } from "@/src/context/ToastProvider";
+import { useVessels } from "@/src/features/vessels/core";
 import CertificatesByProjectScreen from "../CertificatesByProjectScreen";
 import { useCertificateRequirementsByProject } from "@/src/features/certificates/requirements/hooks/useCertificateRequirementsByProject";
 import { useCertificatesByProject } from "@/src/features/certificates/core/hooks/useCertificatesByProject";
@@ -16,6 +17,10 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/src/context/ToastProvider", () => ({
   useToast: jest.fn(),
+}));
+
+jest.mock("@/src/features/vessels/core", () => ({
+  useVessels: jest.fn(),
 }));
 
 jest.mock("@/src/components/ui/button/Button", () => ({
@@ -150,6 +155,17 @@ describe("CertificatesByProjectScreen", () => {
       generateProject: jest.fn(),
       loading: false,
       error: null,
+    });
+    (useVessels as jest.Mock).mockReturnValue({
+      vessels: [
+        {
+          id: "asset-1",
+          name: "MV Navigate One",
+        },
+      ],
+      loading: false,
+      error: null,
+      refresh: jest.fn(),
     });
   });
 

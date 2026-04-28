@@ -1,4 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import type {
+  DateWindowFilter,
+  PaginationRequest,
+} from "@/src/contracts/pagination.contract";
 import { FuelDto, FuelEventType, FuelType, FuelUnit } from "../../shared/contracts";
 import { useFuelByProject } from "./useFuelByProject";
 
@@ -32,6 +36,7 @@ export type FuelPageData = {
 
   stats: FuelPageStats;
   list: FuelDto[];
+  pagination: ReturnType<typeof useFuelByProject>["pagination"];
 
   // ✅ upgrades
   balancesByVessel: Record<string, { unit: FuelUnit; net: string }>;
@@ -48,12 +53,6 @@ export type FuelPageData = {
   refetch: () => void;
 };
 
-function safeTime(iso: string | null | undefined) {
-  if (!iso) return -Infinity;
-  const t = new Date(iso).getTime();
-  return Number.isNaN(t) ? -Infinity : t;
-}
-
 // MVP: suma/resta decimal string sin floats
 function addDecimalString(a: string, b: string) {
   const toInt = (s: string) => Math.round(Number(s || "0") * 1000);
@@ -67,13 +66,26 @@ function subDecimalString(a: string, b: string) {
   return (diff / 1000).toFixed(3).replace(/\.?0+$/, "");
 }
 
-export function useFuelPageData(projectId: string): FuelPageData {
-  const { fuelLogs, loading, error, refresh } = useFuelByProject(projectId);
+type FuelPageDataOptions = PaginationRequest & {
+  sort?: FuelSortKey;
+  search?: string;
+  eventType?: FuelEventType;
+  fuelType?: FuelType;
+  assetId?: string;
+  dateWindow?: DateWindowFilter;
+  dateFrom?: string;
+  dateTo?: string;
+  hasCriticalGap?: string;
+};
 
-  const [filterEventType, setFilterEventType] = useState<FuelEventType | "ALL">(
-    "ALL",
-  );
-  const [sort, setSort] = useState<FuelSortKey>("DATE_DESC");
+export function useFuelPageData(
+  projectId: string,
+  options?: FuelPageDataOptions,
+): FuelPageData {
+  const { fuelLogs, pagination, stats, loading, error, refresh } =
+    useFuelByProject(projectId, options);
+  const filterEventType = options?.eventType ?? "ALL";
+  const sort = options?.sort ?? "DATE_DESC";
 
   const computed = useMemo(() => {
     const raw = fuelLogs ?? [];
@@ -197,41 +209,23 @@ export function useFuelPageData(projectId: string): FuelPageData {
       critical,
     };
 
-    // ---- filter
-    const filtered =
-      filterEventType === "ALL"
-        ? raw
-        : raw.filter((f) => f.eventType === filterEventType);
-
-    // ---- sort
-    const list = filtered.slice().sort((a, b) => {
-      if (sort === "QTY_DESC") {
-        const qa = Number(a.quantity || "0");
-        const qb = Number(b.quantity || "0");
-        return qb - qa;
-      }
-
-      const ta = safeTime(a.date);
-      const tb = safeTime(b.date);
-
-      if (sort === "DATE_ASC") return ta - tb;
-      return tb - ta;
-    });
+    const list = raw.slice();
 
     return { raw, stats, list, balancesByVessel, summaryByFuelType };
-  }, [fuelLogs, filterEventType, sort]);
+  }, [fuelLogs]);
 
   return {
     raw: computed.raw,
-    stats: computed.stats,
+    stats: stats ?? computed.stats,
     list: computed.list,
+    pagination,
     balancesByVessel: computed.balancesByVessel,
     summaryByFuelType: computed.summaryByFuelType,
 
     filterEventType,
     sort,
-    setFilterEventType,
-    setSort,
+    setFilterEventType: (_value: FuelEventType | "ALL") => undefined,
+    setSort: (_value: FuelSortKey) => undefined,
 
     isLoading: loading,
     error,

@@ -12,7 +12,7 @@ export function useCrewBulkUploadSession(projectId: string, sessionId: string) {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchCrewBulkUploadSessionById(projectId, sessionId);
+      const data = await fetchCrewBulkUploadSessionById(projectId, sessionId, false);
       setSession(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");

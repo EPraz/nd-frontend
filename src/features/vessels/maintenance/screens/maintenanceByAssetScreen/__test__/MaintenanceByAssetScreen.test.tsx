@@ -50,6 +50,26 @@ describe("MaintenanceByAssetScreen", () => {
     expect(screen.getByText("In progress")).toBeOnTheScreen();
   });
 
+  it("GIVEN a vessel maintenance lane WHEN bootstrapping SHOULD request the first backend page", () => {
+    render(<MaintenanceByAssetScreen />);
+
+    expect(useMaintenanceByAsset).toHaveBeenCalledWith(
+      "project-atlantic",
+      "vessel-one",
+      {
+        page: 1,
+        pageSize: 10,
+        sort: "DUE_ASC",
+        search: "",
+        status: undefined,
+        priority: undefined,
+        dateWindow: undefined,
+        dateFrom: "",
+        dateTo: "",
+      },
+    );
+  });
+
   it("GIVEN maintenance create is dormant WHEN rendered SHOULD not expose the create action", () => {
     render(<MaintenanceByAssetScreen />);
 

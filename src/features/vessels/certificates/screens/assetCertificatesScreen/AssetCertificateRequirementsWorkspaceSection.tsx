@@ -1,5 +1,6 @@
 import { CertificateRequirementsTable } from "@/src/features/certificates/requirements";
 import type { CertificateRequirementDto } from "@/src/features/certificates/shared";
+import type { DataTableProps } from "@/src/components/ui/table";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
   onUpload: (row: CertificateRequirementDto) => void;
   canUpload: boolean;
   headerActions?: ReactNode;
+  pagination?: DataTableProps<CertificateRequirementDto>["pagination"];
 };
 
 export function AssetCertificateRequirementsWorkspaceSection({
@@ -20,6 +22,7 @@ export function AssetCertificateRequirementsWorkspaceSection({
   onUpload,
   canUpload,
   headerActions,
+  pagination,
 }: Props) {
   return (
     <CertificateRequirementsTable
@@ -33,6 +36,7 @@ export function AssetCertificateRequirementsWorkspaceSection({
       onRetry={onRetry}
       onUpload={onUpload}
       canUpload={canUpload}
+      pagination={pagination}
     />
   );
 }

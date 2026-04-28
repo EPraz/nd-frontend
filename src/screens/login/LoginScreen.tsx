@@ -20,8 +20,7 @@ type LoginFormValues = {
 export default function LoginScreen() {
   const { signIn, signingIn = false } = useSessionContext();
   const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
-  const isDesktop = width >= 1180;
+  const isDesktop = width >= 1024;
   const {
     control,
     handleSubmit,
@@ -48,7 +47,7 @@ export default function LoginScreen() {
     }
   });
 
-  const shellMaxWidth = isDesktop ? 1160 : isTablet ? 860 : 620;
+  const shellMaxWidth = isDesktop ? 1500 : 620;
 
   return (
     <View className="relative flex-1 bg-authCanvas">
@@ -64,29 +63,32 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 px-4 py-4 web:px-6 web:py-4">
+          <View className="flex-1 px-4 py-6 web:px-10 web:py-10">
             <View
               className="mx-auto flex-1 justify-center"
               style={{ width: "100%", maxWidth: shellMaxWidth }}
             >
               <View
-                className="overflow-hidden rounded-[34px] border web:backdrop-blur-xl"
+                className="overflow-hidden border web:backdrop-blur-xl"
                 style={{
                   borderColor: LOGIN_PALETTE.shellLine,
                   backgroundColor: LOGIN_PALETTE.shell,
                   flexDirection: isDesktop ? "row" : "column",
-                  minHeight: isDesktop ? 620 : undefined,
+                  minHeight: isDesktop ? 800 : undefined,
+                  borderRadius: isDesktop ? 0 : 30,
                 }}
               >
                 {isDesktop ? (
                   <>
-                    <View className="flex-1">
+                    <View style={{ flex: 1 }}>
                       <LoginVisualScene />
                     </View>
                     <View
                       className="border-l"
                       style={{
-                        width: 396,
+                        flexBasis: 560,
+                        flexGrow: 0,
+                        flexShrink: 0,
                         borderColor: LOGIN_PALETTE.shellLine,
                       }}
                     >
@@ -101,6 +103,12 @@ export default function LoginScreen() {
                   </>
                 ) : (
                   <>
+                    <View
+                      className="border-b"
+                      style={{ borderColor: LOGIN_PALETTE.shellLine }}
+                    >
+                      <LoginVisualScene compact />
+                    </View>
                     <LoginAccessCard
                       control={control}
                       errors={errors}
@@ -108,12 +116,6 @@ export default function LoginScreen() {
                       loading={signingIn}
                       isSubmitting={isSubmitting}
                     />
-                    <View
-                      className="border-t"
-                      style={{ borderColor: LOGIN_PALETTE.shellLine }}
-                    >
-                      <LoginVisualScene compact />
-                    </View>
                   </>
                 )}
               </View>

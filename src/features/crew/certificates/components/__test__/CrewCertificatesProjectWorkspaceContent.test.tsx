@@ -33,6 +33,7 @@ function makeWorkspace(): CrewCertificatesProjectWorkspaceState {
         status: "MISSING",
       }),
     ],
+    pagination: null,
     loading: false,
     error: null,
     stats: {
@@ -74,6 +75,15 @@ describe("CrewCertificatesProjectWorkspaceContent", () => {
       <CrewCertificatesProjectWorkspaceContent
         projectId="project-atlantic"
         workspace={makeWorkspace()}
+        search=""
+        statusFilter="ALL"
+        assetFilter="ALL"
+        vessels={[]}
+        crewStateFilter="ALL"
+        onSearchChange={jest.fn()}
+        onStatusFilterChange={jest.fn()}
+        onAssetFilterChange={jest.fn()}
+        onCrewStateFilterChange={jest.fn()}
       />,
     );
 

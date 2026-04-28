@@ -1,4 +1,10 @@
-import { Column, DataTable, TableLink, Text } from "@/src/components";
+import {
+  Column,
+  DataTable,
+  type DataTableProps,
+  TableLink,
+  Text,
+} from "@/src/components";
 import { formatDate } from "@/src/helpers";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { type ReactNode, useMemo } from "react";
@@ -25,6 +31,7 @@ type Props = {
   showVesselColumn?: boolean;
   sortByDueDate?: boolean;
   selectedRowId?: string | null;
+  pagination?: DataTableProps<MaintenanceDto>["pagination"];
 };
 
 function isOverdue(dueDate: string | null, status: MaintenanceDto["status"]) {
@@ -141,6 +148,7 @@ export function MaintenanceTable(props: Props) {
       onRowPress={props.onRowPress}
       emptyText="No maintenance tasks found."
       selectedRowId={props.selectedRowId ?? null}
+      pagination={props.pagination}
     />
   );
 }

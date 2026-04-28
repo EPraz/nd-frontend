@@ -3,12 +3,40 @@ import { useCrewCertificateOverviewStatsByProject } from "./useCrewCertificateOv
 import { useCrewCertificateRequirementsByProject } from "./useCrewCertificateRequirementsByProject";
 import { useCrewComplianceSummaryByProject } from "./useCrewComplianceSummary";
 import { useGenerateCrewCertificateRequirements } from "./useGenerateCrewCertificateRequirements";
+import type { CrewCertificateSortOption } from "../components/crewCertificatesProject.constants";
 
-export function useCrewCertificatesProjectWorkspace(projectId: string) {
-  const requirementsQuery = useCrewCertificateRequirementsByProject(projectId);
+type CrewCertificatesProjectWorkspaceOptions = {
+  page?: number;
+  pageSize?: number;
+  sort?: CrewCertificateSortOption;
+  search?: string;
+  status?: string;
+  assetId?: string;
+  crewState?: string;
+};
+
+export function useCrewCertificatesProjectWorkspace(
+  projectId: string,
+  options?: CrewCertificatesProjectWorkspaceOptions,
+) {
+  const requirementsQuery = useCrewCertificateRequirementsByProject(
+    projectId,
+    options?.page !== undefined && options?.pageSize !== undefined
+      ? {
+          page: options.page,
+          pageSize: options.pageSize,
+          sort: options.sort,
+          search: options.search,
+          status: options.status,
+          assetId: options.assetId,
+          crewState: options.crewState,
+        }
+      : undefined,
+  );
   const overviewQuery = useCrewCertificateOverviewStatsByProject(
     projectId,
     requirementsQuery.requirements,
+    requirementsQuery.stats,
   );
   const msmcQuery = useCrewComplianceSummaryByProject(projectId);
   const generationQuery = useGenerateCrewCertificateRequirements(projectId);
@@ -19,6 +47,7 @@ export function useCrewCertificatesProjectWorkspace(projectId: string) {
 
   return {
     requirements: requirementsQuery.requirements,
+    pagination: requirementsQuery.pagination,
     loading: requirementsQuery.loading,
     error: requirementsQuery.error,
     stats: overviewQuery.stats,

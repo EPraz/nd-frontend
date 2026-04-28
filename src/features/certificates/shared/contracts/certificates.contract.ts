@@ -1,3 +1,5 @@
+import type { PaginatedResponseDto } from "@/src/contracts/pagination.contract";
+
 export type CertificateStatus =
   | "VALID"
   | "EXPIRED"
@@ -54,6 +56,21 @@ export type CertificateDto = {
   updatedAt: string;
 };
 
+export type CertificateListStatsDto = {
+  total: number;
+  valid: number;
+  expiringSoon: number;
+  expired: number;
+  pending: number;
+  draft: number;
+  submitted: number;
+  approved: number;
+};
+
+export type CertificatePageDto = PaginatedResponseDto<CertificateDto> & {
+  stats: CertificateListStatsDto;
+};
+
 export type CertificateTypeDto = {
   id: string;
   code: string;
@@ -86,6 +103,20 @@ export type CertificateRequirementDto = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CertificateRequirementListStatsDto = {
+  total: number;
+  missing: number;
+  underReview: number;
+  provided: number;
+  expired: number;
+  exempt: number;
+};
+
+export type CertificateRequirementPageDto =
+  PaginatedResponseDto<CertificateRequirementDto> & {
+    stats: CertificateRequirementListStatsDto;
+  };
 
 export type CertificateAttachmentDto = {
   id: string;

@@ -1,13 +1,35 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchCrewCertificateRequirementsByCrew } from "../api/crewCertificates.api";
-import type { CrewCertificateRequirementDto } from "../contracts";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
+import {
+  fetchCrewCertificateRequirementPageByCrew,
+  fetchCrewCertificateRequirementsByCrew,
+} from "../api/crewCertificates.api";
+import type {
+  CrewCertificateRequirementDto,
+  CrewCertificateRequirementListStatsDto,
+  CrewCertificateRequirementPageDto,
+} from "../contracts";
+
+type CrewCertificateRequirementPageOptions = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  status?: string;
+};
 
 export function useCrewCertificateRequirementsByCrew(
   projectId: string,
   assetId: string,
   crewId: string,
+  options?: CrewCertificateRequirementPageOptions,
 ) {
+  const page = options?.page;
+  const pageSize = options?.pageSize;
   const [requirements, setRequirements] = useState<CrewCertificateRequirementDto[]>([]);
+  const [pagination, setPagination] = useState<
+    CrewCertificateRequirementPageDto["meta"] | null
+  >(null);
+  const [stats, setStats] =
+    useState<CrewCertificateRequirementListStatsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,19 +39,41 @@ export function useCrewCertificateRequirementsByCrew(
     setError(null);
 
     try {
-      const data = await fetchCrewCertificateRequirementsByCrew(projectId, assetId, crewId);
-      setRequirements(data);
+      if (page !== undefined && pageSize !== undefined) {
+        const data = await fetchCrewCertificateRequirementPageByCrew(
+          projectId,
+          assetId,
+          crewId,
+          {
+            page,
+            pageSize,
+            sort: options?.sort,
+            search: options?.search,
+            status: options?.status,
+          },
+        );
+        setRequirements(data.items);
+        setPagination(data.meta);
+        setStats(data.stats);
+      } else {
+        const data = await fetchCrewCertificateRequirementsByCrew(projectId, assetId, crewId);
+        setRequirements(data);
+        setPagination(null);
+        setStats(null);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       setRequirements([]);
+      setPagination(null);
+      setStats(null);
     } finally {
       setLoading(false);
     }
-  }, [projectId, assetId, crewId]);
+  }, [projectId, assetId, crewId, page, pageSize, options?.sort, options?.search, options?.status]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  return { requirements, loading, error, refresh };
+  return { requirements, pagination, stats, loading, error, refresh };
 }

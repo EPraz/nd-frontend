@@ -1,8 +1,8 @@
-import type { AssetDto } from "@/src/contracts/assets.contract";
-import { useMemo, useState } from "react";
+import type { AssetDto, AssetListStatsDto } from "@/src/contracts/assets.contract";
+import { useMemo } from "react";
 import { useVessels } from "./useVessels";
 
-export type VesselsSortKey = "NAME_ASC";
+export type VesselsSortKey = "NAME_ASC" | "NAME_DESC";
 
 export type VesselsPageStats = {
   total: number;
@@ -17,8 +17,9 @@ export type VesselsPageStats = {
 
 export type VesselsPageData = {
   raw: AssetDto[];
-  stats: VesselsPageStats;
+  stats: AssetListStatsDto;
   list: AssetDto[];
+  pagination: ReturnType<typeof useVessels>["pagination"];
 
   sort: VesselsSortKey;
   setSort: (v: VesselsSortKey) => void;
@@ -28,10 +29,26 @@ export type VesselsPageData = {
   refetch: () => void;
 };
 
-export function useVesselsPageData(projectId: string): VesselsPageData {
-  const { vessels, loading, error, refresh } = useVessels(projectId);
+type VesselsPageDataOptions = {
+  page: number;
+  pageSize: number;
+  sort?: VesselsSortKey;
+  search?: string;
+  status?: string;
+  profileState?: string;
+  flag?: string;
+};
 
-  const [sort, setSort] = useState<VesselsSortKey>("NAME_ASC");
+export function useVesselsPageData(
+  projectId: string,
+  options?: VesselsPageDataOptions,
+): VesselsPageData {
+  const { vessels, pagination, stats, loading, error, refresh } = useVessels(
+    projectId,
+    options,
+  );
+
+  const sort = options?.sort ?? "NAME_ASC";
 
   const computed = useMemo(() => {
     const rawAll = vessels ?? [];
@@ -71,6 +88,7 @@ export function useVesselsPageData(projectId: string): VesselsPageData {
 
     const list = raw.slice().sort((a, b) => {
       if (sort === "NAME_ASC") return a.name.localeCompare(b.name);
+      if (sort === "NAME_DESC") return b.name.localeCompare(a.name);
       return 0;
     });
 
@@ -79,11 +97,12 @@ export function useVesselsPageData(projectId: string): VesselsPageData {
 
   return {
     raw: computed.raw,
-    stats: computed.stats,
+    stats: stats ?? computed.stats,
     list: computed.list,
+    pagination,
 
     sort,
-    setSort,
+    setSort: (_value: VesselsSortKey) => undefined,
 
     isLoading: loading,
     error,

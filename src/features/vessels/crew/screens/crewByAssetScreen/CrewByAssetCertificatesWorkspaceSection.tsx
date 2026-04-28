@@ -9,31 +9,43 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import type { CrewByAssetCertificatesWorkspaceState } from "./useCrewByAssetCertificatesWorkspace";
-import type {
-  CrewCertificateRequirementFilter,
-  CrewCertificateSortOption,
-} from "@/src/features/crew/certificates/components/crewCertificatesProject.constants";
+import type { CrewCertificateSortOption } from "@/src/features/crew/certificates/components/crewCertificatesProject.constants";
 import { canUser } from "@/src/security/rolePermissions";
 
 export function CrewByAssetCertificatesWorkspaceSection({
   projectId,
   workspace,
+  sortBy,
+  search,
+  statusFilter,
+  crewStateFilter,
+  onSearchChange,
+  onStatusFilterChange,
+  onCrewStateFilterChange,
+  onSortChange,
+  onPageChange,
+  onPageSizeChange,
 }: {
   projectId: string;
   workspace: CrewByAssetCertificatesWorkspaceState;
+  sortBy: CrewCertificateSortOption;
+  search: string;
+  statusFilter: string;
+  crewStateFilter: string;
+  onSearchChange: (value: string) => void;
+  onStatusFilterChange: (value: string) => void;
+  onCrewStateFilterChange: (value: string) => void;
+  onSortChange: (value: CrewCertificateSortOption) => void;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }) {
   const router = useRouter();
   const { session } = useSessionContext();
   const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
-  const [statusFilter, setStatusFilter] =
-    useState<CrewCertificateRequirementFilter>("ALL");
-  const [sortBy, setSortBy] = useState<CrewCertificateSortOption>("PRIORITY");
+  const [showSearch, setShowSearch] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [showCrewStateMenu, setShowCrewStateMenu] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
-
-  const filteredRequirements = workspace.requirements.filter((row) => {
-    return statusFilter === "ALL" || row.status === statusFilter;
-  });
 
   return (
     <View className="gap-2">
@@ -54,30 +66,56 @@ export function CrewByAssetCertificatesWorkspaceSection({
       <CrewCertificateRequirementsTable
         projectId={projectId}
         title="Crew certificate requirements"
-        subtitleRight={`${filteredRequirements.length} rows after filtering`}
+        subtitleRight={
+          workspace.pagination
+            ? `${workspace.pagination.totalItems} rows in scope`
+            : `${workspace.requirements.length} rows currently visible`
+        }
         headerActions={
           <CrewCertificatesProjectTableActions
+            search={search}
+            onSearchChange={onSearchChange}
+            showSearch={showSearch}
+            onSearchOpenChange={setShowSearch}
             statusFilter={statusFilter}
             onStatusFilterChange={(value) => {
-              setStatusFilter(value);
+              onStatusFilterChange(value);
+              onPageChange(1);
               setShowStatusMenu(false);
             }}
             showStatusMenu={showStatusMenu}
             onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
+            crewStateFilter={crewStateFilter}
+            onCrewStateFilterChange={(value) => {
+              onCrewStateFilterChange(value);
+              onPageChange(1);
+              setShowCrewStateMenu(false);
+            }}
+            showCrewStateMenu={showCrewStateMenu}
+            onToggleCrewStateMenu={() => setShowCrewStateMenu((prev) => !prev)}
             sortBy={sortBy}
             onSortChange={(value) => {
-              setSortBy(value);
+              onSortChange(value);
               setShowSortMenu(false);
             }}
             showSortMenu={showSortMenu}
             onToggleSortMenu={() => setShowSortMenu((prev) => !prev)}
           />
         }
-        data={filteredRequirements}
+        data={workspace.requirements}
         isLoading={workspace.loading}
         error={workspace.error}
         onRetry={workspace.refreshAll}
         sortBy={sortBy}
+        pagination={
+          workspace.pagination
+            ? {
+                meta: workspace.pagination,
+                onPageChange,
+                onPageSizeChange,
+              }
+            : undefined
+        }
         canUpload={canUploadDocuments}
         onUpload={(row) =>
           router.push({

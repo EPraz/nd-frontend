@@ -8,6 +8,8 @@ jest.mock("@/src/context/SessionProvider", () => ({
 
 jest.mock("lucide-react-native", () => ({
   ArrowRight: () => null,
+  Eye: () => null,
+  EyeOff: () => null,
   LockKeyhole: () => null,
   Mail: () => null,
 }));
@@ -33,21 +35,21 @@ describe("LoginScreen", () => {
 
     expect(screen.getByText("Email")).toBeOnTheScreen();
     expect(screen.getByText("Password")).toBeOnTheScreen();
-    expect(screen.getByText("Enter workspace")).toBeOnTheScreen();
+    expect(screen.getByText("Sign In")).toBeOnTheScreen();
   });
 
   it("GIVEN valid credentials WHEN submitted SHOULD sign in with trimmed email", async () => {
     render(<LoginScreen />);
 
     fireEvent.changeText(
-      screen.getByPlaceholderText("your@email.test"),
+      screen.getByPlaceholderText("Enter your email"),
       "  admin@navigate.test  ",
     );
     fireEvent.changeText(
       screen.getByPlaceholderText("Enter your password"),
       "password123",
     );
-    fireEvent.press(screen.getByText("Enter workspace"));
+    fireEvent.press(screen.getByText("Sign In"));
 
     await waitFor(() => {
       expect(signIn).toHaveBeenCalledWith("admin@navigate.test", "password123");
@@ -60,18 +62,18 @@ describe("LoginScreen", () => {
     render(<LoginScreen />);
 
     fireEvent.changeText(
-      screen.getByPlaceholderText("your@email.test"),
+      screen.getByPlaceholderText("Enter your email"),
       "viewer@navigate.test",
     );
     fireEvent.changeText(
       screen.getByPlaceholderText("Enter your password"),
       "wrong-password",
     );
-    fireEvent.press(screen.getByText("Enter workspace"));
+    fireEvent.press(screen.getByText("Sign In"));
 
     await waitFor(() => {
       expect(screen.getByText("Invalid credentials")).toBeOnTheScreen();
     });
-    expect(screen.getByText("Enter workspace")).toBeOnTheScreen();
+    expect(screen.getByText("Sign In")).toBeOnTheScreen();
   });
 });

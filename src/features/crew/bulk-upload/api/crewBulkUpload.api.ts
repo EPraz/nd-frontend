@@ -1,12 +1,33 @@
 import { getBaseUrl } from "@/src/api/baseUrl";
 import { apiClient } from "@/src/api/client";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
+import { buildPaginationQuery } from "@/src/contracts/pagination.contract";
 import { getToken } from "@/src/helpers/tokenStore";
 import { Platform } from "react-native";
 import type {
   CreateCrewBulkUploadSessionInput,
+  CrewBulkUploadRowPageDto,
   CrewBulkUploadSessionDto,
+  CrewBulkUploadSessionPageDto,
   CrewBulkUploadSessionSummaryDto,
 } from "../contracts/crewBulkUpload.contract";
+
+type CrewBulkUploadSessionPageQuery = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  status?: string;
+  defaultAssetId?: string;
+  hasCriticalIssues?: string;
+};
+
+type CrewBulkUploadRowPageQuery = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  rowKind?: string;
+  proposedAction?: string;
+  commitStatus?: string;
+  issueSeverity?: string;
+};
 
 function appendUploadFile(
   formData: FormData,
@@ -37,12 +58,32 @@ export async function fetchCrewBulkUploadSessions(
   );
 }
 
+export async function fetchCrewBulkUploadSessionsPage(
+  projectId: string,
+  params: CrewBulkUploadSessionPageQuery,
+): Promise<CrewBulkUploadSessionPageDto> {
+  return apiClient.get<CrewBulkUploadSessionPageDto>(
+    `/projects/${projectId}/crew-bulk-upload-sessions${buildPaginationQuery(params)}`,
+  );
+}
+
 export async function fetchCrewBulkUploadSessionById(
   projectId: string,
   sessionId: string,
+  includeRows = true,
 ): Promise<CrewBulkUploadSessionDto> {
   return apiClient.get<CrewBulkUploadSessionDto>(
-    `/projects/${projectId}/crew-bulk-upload-sessions/${sessionId}`,
+    `/projects/${projectId}/crew-bulk-upload-sessions/${sessionId}${buildPaginationQuery({ includeRows })}`,
+  );
+}
+
+export async function fetchCrewBulkUploadSessionRowsPage(
+  projectId: string,
+  sessionId: string,
+  params: CrewBulkUploadRowPageQuery,
+): Promise<CrewBulkUploadRowPageDto> {
+  return apiClient.get<CrewBulkUploadRowPageDto>(
+    `/projects/${projectId}/crew-bulk-upload-sessions/${sessionId}/rows${buildPaginationQuery(params)}`,
   );
 }
 

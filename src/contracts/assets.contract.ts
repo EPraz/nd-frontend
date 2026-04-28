@@ -1,4 +1,5 @@
 import { VesselProfileDto } from "../features/vessels/core";
+import type { PaginatedResponseDto } from "./pagination.contract";
 
 export type AssetType = "VESSEL" | "STORE" | "BARBERSHOP" | "VEHICLE" | "OTHER";
 
@@ -16,6 +17,19 @@ export type AssetDto = {
   deletedByUserName: string | null;
   createdAt: string;
   vessel?: VesselProfileDto;
+};
+
+export type AssetListStatsDto = {
+  total: number;
+  withProfile: number;
+  withIMO: number;
+  withLicense: number;
+  withFlag: number;
+  missingFlag: number;
+};
+
+export type AssetPageDto = PaginatedResponseDto<AssetDto> & {
+  stats: AssetListStatsDto;
 };
 
 type VesselCreateSharedInput = {

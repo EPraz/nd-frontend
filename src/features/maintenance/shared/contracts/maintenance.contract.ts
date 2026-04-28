@@ -1,4 +1,5 @@
 import { AssetDto } from "@/src/contracts/assets.contract";
+import type { PaginatedResponseDto } from "@/src/contracts/pagination.contract";
 
 export type MaintenanceStatus = "OPEN" | "IN_PROGRESS" | "DONE" | "OVERDUE";
 export type MaintenancePriority = "LOW" | "MEDIUM" | "HIGH";
@@ -13,6 +14,18 @@ export type MaintenanceDto = {
   priority: MaintenancePriority;
   createdAt: string;
   asset: AssetDto;
+};
+
+export type MaintenanceListStatsDto = {
+  total: number;
+  open: number;
+  inProgress: number;
+  done: number;
+  highPriorityOpen: number;
+};
+
+export type MaintenancePageDto = PaginatedResponseDto<MaintenanceDto> & {
+  stats: MaintenanceListStatsDto;
 };
 
 export type CreateMaintenanceInput = {

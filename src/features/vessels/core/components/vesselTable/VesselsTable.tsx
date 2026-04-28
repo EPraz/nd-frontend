@@ -1,4 +1,8 @@
-import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
+import {
+  DataTable,
+  type Column,
+  type DataTableProps,
+} from "@/src/components/ui/table/DataTable";
 import { RegistryTablePill } from "@/src/components/ui/table/RegistryTablePill";
 import { TableActionIcon } from "@/src/components/ui/table/TableActionIcon";
 import { TableLink } from "@/src/components/ui/table/TableLink";
@@ -24,6 +28,7 @@ type Props = {
   sortBy?: "NAME_ASC" | "NAME_DESC";
   projectId: string;
   selectedRowId?: string | null;
+  pagination?: DataTableProps<VesselRow>["pagination"];
 };
 
 function vesselIdentifier(asset: AssetDto) {
@@ -172,6 +177,7 @@ export function VesselsTable(props: Props) {
       onRowPress={props.onRowPress}
       emptyText="No vessels found."
       selectedRowId={props.selectedRowId ?? null}
+      pagination={props.pagination}
     />
   );
 }

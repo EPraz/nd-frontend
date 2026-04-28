@@ -1,6 +1,7 @@
 import type { RegistrySummaryItem } from "@/src/components/ui/registryWorkspace";
 import type {
   MaintenanceDto,
+  MaintenanceListStatsDto,
   MaintenanceStatus,
 } from "@/src/features/maintenance/shared/contracts";
 
@@ -39,20 +40,23 @@ function isOverdue(
 
 export function getMaintenanceByAssetSummaryItems(
   maintenance: MaintenanceDto[],
+  stats?: MaintenanceListStatsDto | null,
 ): RegistrySummaryItem[] {
-  const open = maintenance.filter((task) => task.status === "OPEN").length;
-  const inProgress = maintenance.filter(
+  const open =
+    stats?.open ?? maintenance.filter((task) => task.status === "OPEN").length;
+  const inProgress = stats?.inProgress ?? maintenance.filter(
     (task) => task.status === "IN_PROGRESS",
   ).length;
-  const done = maintenance.filter((task) => task.status === "DONE").length;
-  const highPriorityOpen = maintenance.filter(
+  const done =
+    stats?.done ?? maintenance.filter((task) => task.status === "DONE").length;
+  const highPriorityOpen = stats?.highPriorityOpen ?? maintenance.filter(
     (task) => task.status === "OPEN" && task.priority === "HIGH",
   ).length;
 
   return [
     {
       label: "Tasks in scope",
-      value: String(maintenance.length),
+      value: String(stats?.total ?? maintenance.length),
       helper: "tracked on this vessel",
       tone: "accent",
     },

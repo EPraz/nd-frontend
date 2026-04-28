@@ -1,22 +1,34 @@
 import { ErrorState, Loading, Text } from "@/src/components";
+import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import { RegistryWorkspaceSection } from "@/src/components/ui/registryWorkspace";
-import { DataTable, RegistryTablePill } from "@/src/components/ui/table";
+import {
+  DataTable,
+  RegistryTablePill,
+  TableFilterSearch,
+} from "@/src/components/ui/table";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
+import { DEFAULT_PAGE_SIZE } from "@/src/contracts/pagination.contract";
 import { humanizeTechnicalLabel } from "@/src/helpers/humanizeTechnicalLabel";
+import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { canUser } from "@/src/security/rolePermissions";
 import * as DocumentPicker from "expo-document-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useCrewBulkUploadSession } from "../hooks/useCrewBulkUploadSession";
 import { useCrewBulkUploadSessionActions } from "../hooks/useCrewBulkUploadSessionActions";
+import { useCrewBulkUploadSessionRows } from "../hooks/useCrewBulkUploadSessionRows";
 import { CrewBulkUploadSessionHeader } from "./CrewBulkUploadSessionHeader";
 import { CrewBulkUploadSessionSidebar } from "./CrewBulkUploadSessionSidebar";
 import {
   buildCertificateColumns,
   buildCrewColumns,
 } from "./crewBulkUploadSession.tables";
+
+const ROW_ACTION_OPTIONS = ["ALL", "CREATE", "UPDATE", "SKIP", "REVIEW"] as const;
+const COMMIT_STATUS_OPTIONS = ["ALL", "PENDING", "COMMITTED", "SKIPPED"] as const;
+const ISSUE_SEVERITY_OPTIONS = ["ALL", "CRITICAL", "WARNING", "INFO"] as const;
 
 function formatSnapshotDateTime(value: string) {
   return new Date(value).toLocaleString(undefined, {
@@ -230,6 +242,83 @@ function SheetCard({
   );
 }
 
+function SessionRowsTableActions({
+  prefix,
+  search,
+  onSearchChange,
+  actionFilter,
+  onActionFilterChange,
+  commitFilter,
+  onCommitFilterChange,
+  issueFilter,
+  onIssueFilterChange,
+  openControl,
+  setOpenControl,
+  toggleControl,
+}: {
+  prefix: string;
+  search: string;
+  onSearchChange: (value: string) => void;
+  actionFilter: string;
+  onActionFilterChange: (value: string) => void;
+  commitFilter: string;
+  onCommitFilterChange: (value: string) => void;
+  issueFilter: string;
+  onIssueFilterChange: (value: string) => void;
+  openControl: string | null;
+  setOpenControl: (value: string | null) => void;
+  toggleControl: (controlId: string) => void;
+}) {
+  return (
+    <>
+      <TableFilterSearch
+        value={search}
+        onChangeText={onSearchChange}
+        placeholder="Search rows..."
+        open={openControl === `${prefix}-search`}
+        onOpenChange={(open) => setOpenControl(open ? `${prefix}-search` : null)}
+        minWidth={280}
+      />
+      <ToolbarSelect
+        value={actionFilter}
+        options={[...ROW_ACTION_OPTIONS]}
+        open={openControl === `${prefix}-action`}
+        onToggle={() => toggleControl(`${prefix}-action`)}
+        onChange={onActionFilterChange}
+        renderLabel={(value) =>
+          value === "ALL" ? "All actions" : humanizeTechnicalLabel(value)
+        }
+        triggerIconName="flash-outline"
+        minWidth={160}
+      />
+      <ToolbarSelect
+        value={commitFilter}
+        options={[...COMMIT_STATUS_OPTIONS]}
+        open={openControl === `${prefix}-commit`}
+        onToggle={() => toggleControl(`${prefix}-commit`)}
+        onChange={onCommitFilterChange}
+        renderLabel={(value) =>
+          value === "ALL" ? "All commit" : humanizeTechnicalLabel(value)
+        }
+        triggerIconName="checkmark-done-outline"
+        minWidth={160}
+      />
+      <ToolbarSelect
+        value={issueFilter}
+        options={[...ISSUE_SEVERITY_OPTIONS]}
+        open={openControl === `${prefix}-issues`}
+        onToggle={() => toggleControl(`${prefix}-issues`)}
+        onChange={onIssueFilterChange}
+        renderLabel={(value) =>
+          value === "ALL" ? "All issues" : humanizeTechnicalLabel(value)
+        }
+        triggerIconName="warning-outline"
+        minWidth={150}
+      />
+    </>
+  );
+}
+
 export default function CrewBulkUploadSessionScreen() {
   const router = useRouter();
   const { show } = useToast();
@@ -241,9 +330,61 @@ export default function CrewBulkUploadSessionScreen() {
 
   const pid = String(projectId);
   const sid = String(sessionId);
+  const [crewRowsPage, setCrewRowsPage] = useState(1);
+  const [crewRowsPageSize, setCrewRowsPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [crewRowsSearch, setCrewRowsSearch] = useState("");
+  const [crewRowsActionFilter, setCrewRowsActionFilter] = useState("ALL");
+  const [crewRowsCommitFilter, setCrewRowsCommitFilter] = useState("ALL");
+  const [crewRowsIssueFilter, setCrewRowsIssueFilter] = useState("ALL");
+  const [certificateRowsPage, setCertificateRowsPage] = useState(1);
+  const [certificateRowsPageSize, setCertificateRowsPageSize] =
+    useState(DEFAULT_PAGE_SIZE);
+  const [certificateRowsSearch, setCertificateRowsSearch] = useState("");
+  const [certificateRowsActionFilter, setCertificateRowsActionFilter] =
+    useState("ALL");
+  const [certificateRowsCommitFilter, setCertificateRowsCommitFilter] =
+    useState("ALL");
+  const [certificateRowsIssueFilter, setCertificateRowsIssueFilter] =
+    useState("ALL");
+  const [openControl, setOpenControl] = useState<string | null>(null);
+  const debouncedCrewRowsSearch = useDebouncedValue(crewRowsSearch, 180);
+  const debouncedCertificateRowsSearch = useDebouncedValue(
+    certificateRowsSearch,
+    180,
+  );
 
   const { session, loading, error, refresh, setSession } =
     useCrewBulkUploadSession(pid, sid);
+  const crewRowsPageResult = useCrewBulkUploadSessionRows(pid, sid, {
+    page: crewRowsPage,
+    pageSize: crewRowsPageSize,
+    rowKind: "CREW",
+    search: debouncedCrewRowsSearch,
+    proposedAction:
+      crewRowsActionFilter === "ALL" ? undefined : crewRowsActionFilter,
+    commitStatus:
+      crewRowsCommitFilter === "ALL" ? undefined : crewRowsCommitFilter,
+    issueSeverity:
+      crewRowsIssueFilter === "ALL" ? undefined : crewRowsIssueFilter,
+  });
+  const certificateRowsPageResult = useCrewBulkUploadSessionRows(pid, sid, {
+    page: certificateRowsPage,
+    pageSize: certificateRowsPageSize,
+    rowKind: "CERTIFICATE",
+    search: debouncedCertificateRowsSearch,
+    proposedAction:
+      certificateRowsActionFilter === "ALL"
+        ? undefined
+        : certificateRowsActionFilter,
+    commitStatus:
+      certificateRowsCommitFilter === "ALL"
+        ? undefined
+        : certificateRowsCommitFilter,
+    issueSeverity:
+      certificateRowsIssueFilter === "ALL"
+        ? undefined
+        : certificateRowsIssueFilter,
+  });
   const {
     commit,
     discard,
@@ -262,10 +403,8 @@ export default function CrewBulkUploadSessionScreen() {
   }
 
   const currentSession = session;
-  const crewRows = currentSession.rows.filter((row) => row.rowKind === "CREW");
-  const certificateRows = currentSession.rows.filter(
-    (row) => row.rowKind === "CERTIFICATE",
-  );
+  const crewRows = crewRowsPageResult.rows;
+  const certificateRows = certificateRowsPageResult.rows;
   const sheetSummary = currentSession.summary?.sheets ?? [];
   const previewOnlyKinds = currentSession.summary?.previewOnlyKinds ?? [];
   const duplicatePolicy = currentSession.summary?.duplicatePolicy ?? null;
@@ -279,13 +418,23 @@ export default function CrewBulkUploadSessionScreen() {
   const commitSummary = currentSession.summary?.commit ?? null;
   const canUploadDocuments = canUser(userSession, "DOCUMENT_UPLOAD");
   const canConfirmIngestion = canUser(userSession, "INGESTION_CONFIRM");
-  const blockingCrewRows = crewRows.filter((row) =>
-    row.issues.some((issue) => issue.severity === "CRITICAL"),
-  );
+  const blockingCrewRowsCount = crewRowsPageResult.stats?.critical ?? 0;
   const canCommit =
     canConfirmIngestion &&
     currentSession.status === "READY_FOR_REVIEW" &&
-    blockingCrewRows.length === 0;
+    blockingCrewRowsCount === 0;
+
+  function toggleControl(controlId: string) {
+    setOpenControl((current) => (current === controlId ? null : controlId));
+  }
+
+  async function refreshAll() {
+    await Promise.all([
+      refresh(),
+      crewRowsPageResult.refresh(),
+      certificateRowsPageResult.refresh(),
+    ]);
+  }
 
   async function onCommit() {
     if (!canConfirmIngestion) {
@@ -296,6 +445,10 @@ export default function CrewBulkUploadSessionScreen() {
     try {
       const next = await commit();
       setSession(next);
+      await Promise.all([
+        crewRowsPageResult.refresh(),
+        certificateRowsPageResult.refresh(),
+      ]);
       show("Bulk upload committed", "success");
     } catch {
       show("Failed to commit session", "error");
@@ -311,6 +464,10 @@ export default function CrewBulkUploadSessionScreen() {
     try {
       const next = await discard();
       setSession(next);
+      await Promise.all([
+        crewRowsPageResult.refresh(),
+        certificateRowsPageResult.refresh(),
+      ]);
       show("Bulk upload session discarded", "success");
     } catch {
       show("Failed to discard session", "error");
@@ -350,6 +507,10 @@ export default function CrewBulkUploadSessionScreen() {
         },
       });
       setSession(next);
+      await Promise.all([
+        crewRowsPageResult.refresh(),
+        certificateRowsPageResult.refresh(),
+      ]);
       show("Session updated with the corrected workbook", "success");
     } catch {
       show("Failed to replace workbook in this session", "error");
@@ -363,12 +524,12 @@ export default function CrewBulkUploadSessionScreen() {
     >
       <CrewBulkUploadSessionHeader
         currentSession={currentSession}
-        blockingCrewRowsCount={blockingCrewRows.length}
+        blockingCrewRowsCount={blockingCrewRowsCount}
         canCommitSession={canConfirmIngestion}
         canCommit={canCommit}
         canDiscardSession={canUploadDocuments}
         actionLoading={actionLoading}
-        onRefresh={refresh}
+        onRefresh={refreshAll}
         onBackToWorkspace={() => router.push(`/projects/${pid}/crew?tab=bulk-upload`)}
         onCommit={onCommit}
         onDiscard={onDiscard}
@@ -485,28 +646,108 @@ export default function CrewBulkUploadSessionScreen() {
 
           <DataTable
             title="Crew decision queue"
-            subtitleRight={`${crewRows.length} row${crewRows.length === 1 ? "" : "s"} visible in this review session`}
+            subtitleRight={`${crewRowsPageResult.pagination?.totalItems ?? crewRows.length} row${(crewRowsPageResult.pagination?.totalItems ?? crewRows.length) === 1 ? "" : "s"} visible in this review session`}
+            headerActions={
+              <SessionRowsTableActions
+                prefix="crew"
+                search={crewRowsSearch}
+                onSearchChange={(value) => {
+                  setCrewRowsSearch(value);
+                  setCrewRowsPage(1);
+                }}
+                actionFilter={crewRowsActionFilter}
+                onActionFilterChange={(value) => {
+                  setCrewRowsActionFilter(value);
+                  setCrewRowsPage(1);
+                }}
+                commitFilter={crewRowsCommitFilter}
+                onCommitFilterChange={(value) => {
+                  setCrewRowsCommitFilter(value);
+                  setCrewRowsPage(1);
+                }}
+                issueFilter={crewRowsIssueFilter}
+                onIssueFilterChange={(value) => {
+                  setCrewRowsIssueFilter(value);
+                  setCrewRowsPage(1);
+                }}
+                openControl={openControl}
+                setOpenControl={setOpenControl}
+                toggleControl={toggleControl}
+              />
+            }
             data={crewRows}
-            isLoading={false}
-            error={null}
-            onRetry={refresh}
+            isLoading={crewRowsPageResult.loading}
+            error={crewRowsPageResult.error}
+            onRetry={crewRowsPageResult.refresh}
             columns={crewColumns}
             minWidth={980}
             getRowId={(row) => row.id}
             emptyText="No crew rows in this session."
+            pagination={
+              crewRowsPageResult.pagination
+                ? {
+                    meta: crewRowsPageResult.pagination,
+                    onPageChange: setCrewRowsPage,
+                    onPageSizeChange: (nextPageSize) => {
+                      setCrewRowsPageSize(nextPageSize);
+                      setCrewRowsPage(1);
+                    },
+                  }
+                : undefined
+            }
           />
 
           <DataTable
             title="Certificate preview queue"
-            subtitleRight={`${certificateRows.length} row${certificateRows.length === 1 ? "" : "s"} kept visible in preview-only mode`}
+            subtitleRight={`${certificateRowsPageResult.pagination?.totalItems ?? certificateRows.length} row${(certificateRowsPageResult.pagination?.totalItems ?? certificateRows.length) === 1 ? "" : "s"} kept visible in preview-only mode`}
+            headerActions={
+              <SessionRowsTableActions
+                prefix="certificate"
+                search={certificateRowsSearch}
+                onSearchChange={(value) => {
+                  setCertificateRowsSearch(value);
+                  setCertificateRowsPage(1);
+                }}
+                actionFilter={certificateRowsActionFilter}
+                onActionFilterChange={(value) => {
+                  setCertificateRowsActionFilter(value);
+                  setCertificateRowsPage(1);
+                }}
+                commitFilter={certificateRowsCommitFilter}
+                onCommitFilterChange={(value) => {
+                  setCertificateRowsCommitFilter(value);
+                  setCertificateRowsPage(1);
+                }}
+                issueFilter={certificateRowsIssueFilter}
+                onIssueFilterChange={(value) => {
+                  setCertificateRowsIssueFilter(value);
+                  setCertificateRowsPage(1);
+                }}
+                openControl={openControl}
+                setOpenControl={setOpenControl}
+                toggleControl={toggleControl}
+              />
+            }
             data={certificateRows}
-            isLoading={false}
-            error={null}
-            onRetry={refresh}
+            isLoading={certificateRowsPageResult.loading}
+            error={certificateRowsPageResult.error}
+            onRetry={certificateRowsPageResult.refresh}
             columns={certificateColumns}
             minWidth={980}
             getRowId={(row) => row.id}
             emptyText="No certificate rows in this session."
+            pagination={
+              certificateRowsPageResult.pagination
+                ? {
+                    meta: certificateRowsPageResult.pagination,
+                    onPageChange: setCertificateRowsPage,
+                    onPageSizeChange: (nextPageSize) => {
+                      setCertificateRowsPageSize(nextPageSize);
+                      setCertificateRowsPage(1);
+                    },
+                  }
+                : undefined
+            }
           />
         </View>
 

@@ -1,8 +1,11 @@
 import type {
   AssetDto,
+  AssetPageDto,
   AssetType,
   CreateAssetInput,
 } from "@/src/contracts/assets.contract";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
+import { buildPaginationQuery } from "@/src/contracts/pagination.contract";
 import type { UploadFileInput } from "@/src/contracts/uploads.contract";
 import { getBaseUrl } from "./baseUrl";
 import { apiClient } from "./client";
@@ -46,6 +49,36 @@ export async function fetchAssets(
   const q = type ? `?type=${encodeURIComponent(type)}` : "";
   const assets = await apiClient.get<AssetDto[]>(`/projects/${projectId}/assets${q}`);
   return assets.map(normalizeAsset);
+}
+
+export async function fetchAssetsPage(
+  projectId: string,
+  type: AssetType | undefined,
+  params: PaginationRequest & {
+    sort?: string;
+    search?: string;
+    status?: string;
+    profileState?: string;
+    flag?: string;
+  },
+): Promise<AssetPageDto> {
+  const page = await apiClient.get<AssetPageDto>(
+    `/projects/${projectId}/assets${buildPaginationQuery({
+      type,
+      page: params.page,
+      pageSize: params.pageSize,
+      sort: params.sort,
+      search: params.search,
+      status: params.status,
+      profileState: params.profileState,
+      flag: params.flag,
+    })}`,
+  );
+
+  return {
+    ...page,
+    items: page.items.map(normalizeAsset),
+  };
 }
 
 export async function fetchAssetById(

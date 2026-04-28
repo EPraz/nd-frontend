@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
 import { MaintenanceDto, MaintenanceStatus } from "../../shared/contracts";
 import { useMaintenanceByProject } from "./useMaintenanceByProject";
 
@@ -16,6 +17,7 @@ export type MaintenancePageData = {
   raw: MaintenanceDto[];
   stats: MaintenancePageStats;
   list: MaintenanceDto[];
+  pagination: ReturnType<typeof useMaintenanceByProject>["pagination"];
 
   filterStatus: MaintenanceStatus | "ALL";
   sort: MaintenanceSortKey;
@@ -28,21 +30,25 @@ export type MaintenancePageData = {
   refetch: () => void;
 };
 
-function safeTime(iso: string | null) {
-  if (!iso) return Infinity;
-  const t = new Date(iso).getTime();
-  return Number.isNaN(t) ? Infinity : t;
-}
+type MaintenancePageDataOptions = PaginationRequest & {
+  sort?: MaintenanceSortKey;
+  search?: string;
+  status?: string;
+  priority?: string;
+  assetId?: string;
+  dateWindow?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
 
-export function useMaintenancePageData(projectId: string): MaintenancePageData {
-  const { maintenance, loading, error, refresh } =
-    useMaintenanceByProject(projectId);
-
-  const [filterStatus, setFilterStatus] = useState<MaintenanceStatus | "ALL">(
-    "ALL",
-  );
-
-  const [sort, setSort] = useState<MaintenanceSortKey>("DUE_ASC");
+export function useMaintenancePageData(
+  projectId: string,
+  options?: MaintenancePageDataOptions,
+): MaintenancePageData {
+  const { maintenance, pagination, stats, loading, error, refresh } =
+    useMaintenanceByProject(projectId, options);
+  const filterStatus = (options?.status as MaintenanceStatus | undefined) ?? "ALL";
+  const sort = options?.sort ?? "DUE_ASC";
 
   const computed = useMemo(() => {
     const raw = maintenance ?? [];
@@ -78,37 +84,21 @@ export function useMaintenancePageData(projectId: string): MaintenancePageData {
       highPriorityOpen,
     };
 
-    // ---- filter
-    const filtered =
-      filterStatus === "ALL"
-        ? raw
-        : raw.filter((m) => m.status === filterStatus);
-
-    // ---- sort
-    const list = filtered.slice().sort((a, b) => {
-      if (sort === "TITLE_ASC") {
-        return a.title.localeCompare(b.title);
-      }
-
-      const ta = safeTime(a.dueDate);
-      const tb = safeTime(b.dueDate);
-
-      if (sort === "DUE_DESC") return tb - ta;
-      return ta - tb; // DUE_ASC default
-    });
+    const list = raw.slice();
 
     return { raw, stats, list };
-  }, [maintenance, filterStatus, sort]);
+  }, [maintenance]);
 
   return {
     raw: computed.raw,
-    stats: computed.stats,
+    stats: stats ?? computed.stats,
     list: computed.list,
+    pagination,
 
     filterStatus,
     sort,
-    setFilterStatus,
-    setSort,
+    setFilterStatus: (_value: MaintenanceStatus | "ALL") => undefined,
+    setSort: (_value: MaintenanceSortKey) => undefined,
 
     isLoading: loading,
     error,

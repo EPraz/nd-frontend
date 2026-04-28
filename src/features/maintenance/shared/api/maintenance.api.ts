@@ -1,9 +1,23 @@
 import { apiClient } from "@/src/api/client";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
+import { buildPaginationQuery } from "@/src/contracts/pagination.contract";
 import {
   CreateMaintenanceInput,
   MaintenanceDto,
+  MaintenancePageDto,
   UpdateMaintenanceInput,
 } from "../contracts";
+
+type MaintenanceTableQuery = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  status?: string;
+  priority?: string;
+  assetId?: string;
+  dateWindow?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
 
 export async function fetchMaintenance(
   projectId: string,
@@ -11,6 +25,16 @@ export async function fetchMaintenance(
 ): Promise<MaintenanceDto[]> {
   return apiClient.get<MaintenanceDto[]>(
     `/projects/${projectId}/assets/${assetId}/maintenance`,
+  );
+}
+
+export async function fetchMaintenancePage(
+  projectId: string,
+  assetId: string,
+  params: MaintenanceTableQuery,
+): Promise<MaintenancePageDto> {
+  return apiClient.get<MaintenancePageDto>(
+    `/projects/${projectId}/assets/${assetId}/maintenance${buildPaginationQuery(params)}`,
   );
 }
 
@@ -29,6 +53,15 @@ export async function fetchMaintenanceByProject(
   projectId: string,
 ): Promise<MaintenanceDto[]> {
   return apiClient.get<MaintenanceDto[]>(`/projects/${projectId}/maintenance`);
+}
+
+export async function fetchMaintenancePageByProject(
+  projectId: string,
+  params: MaintenanceTableQuery,
+): Promise<MaintenancePageDto> {
+  return apiClient.get<MaintenancePageDto>(
+    `/projects/${projectId}/maintenance${buildPaginationQuery(params)}`,
+  );
 }
 
 export async function fetchMaintenanceById(

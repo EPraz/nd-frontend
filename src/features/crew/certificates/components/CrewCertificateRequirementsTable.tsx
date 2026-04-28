@@ -1,6 +1,7 @@
 import {
   Column,
   DataTable,
+  type DataTableProps,
   RegistryTableTextStack,
   TableActionIcon,
 } from "@/src/components/ui/table";
@@ -27,6 +28,7 @@ type Props = {
   onUpload: (row: CrewCertificateRequirementDto) => void;
   canUpload?: boolean;
   sortBy?: CrewCertificateSortOption;
+  pagination?: DataTableProps<CrewCertificateRequirementDto>["pagination"];
 };
 
 export function CrewCertificateRequirementsTable({
@@ -41,6 +43,7 @@ export function CrewCertificateRequirementsTable({
   onUpload,
   canUpload = true,
   sortBy = "PRIORITY",
+  pagination,
 }: Props) {
   const router = useRouter();
 
@@ -216,6 +219,7 @@ export function CrewCertificateRequirementsTable({
       minWidth={1080}
       getRowId={(row) => row.id}
       emptyText="No crew certificate requirements found."
+      pagination={pagination}
     />
   );
 }

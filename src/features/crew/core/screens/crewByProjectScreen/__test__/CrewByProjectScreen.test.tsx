@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactNode } from "react";
+import { useVessels } from "@/src/features/vessels/core";
 import CrewByProjectScreen from "../CrewByProjectScreen";
 import { useCrewPageData } from "../../../hooks/useCrewPageData";
 
@@ -52,6 +53,10 @@ jest.mock("../../../hooks/useCrewPageData", () => ({
   useCrewPageData: jest.fn(),
 }));
 
+jest.mock("@/src/features/vessels/core", () => ({
+  useVessels: jest.fn(),
+}));
+
 jest.mock("../../../components/crewTable/CrewTable", () => ({
   CrewTable: ({
     title,
@@ -74,24 +79,36 @@ jest.mock("../../../components/crewTable/CrewTable", () => ({
 }));
 
 jest.mock("../../crewQuickViewModal/CrewQuickViewModal", () => () => null);
-jest.mock("../../../../certificates/components/CrewCertificatesProjectWorkspaceSection", () => ({
-  CrewCertificatesProjectWorkspaceSection: () => {
-    const { Text } = mockReactNative;
-    return <Text>Crew certificate compliance</Text>;
-  },
-}));
-jest.mock("../../../../certificates/components/CrewCertificatesProjectTabHeaderActions", () => ({
-  CrewCertificatesProjectTabHeaderActions: () => null,
-}));
-jest.mock("../../../../bulk-upload/components/CrewBulkUploadWorkspaceSection", () => ({
-  CrewBulkUploadWorkspaceSection: () => {
-    const { Text } = mockReactNative;
-    return <Text>Crew bulk upload</Text>;
-  },
-}));
-jest.mock("../../../../bulk-upload/components/CrewBulkUploadTabHeaderActions", () => ({
-  CrewBulkUploadTabHeaderActions: () => null,
-}));
+jest.mock(
+  "../../../../certificates/components/CrewCertificatesProjectWorkspaceSection",
+  () => ({
+    CrewCertificatesProjectWorkspaceSection: () => {
+      const { Text } = mockReactNative;
+      return <Text>Crew certificate compliance</Text>;
+    },
+  }),
+);
+jest.mock(
+  "../../../../certificates/components/CrewCertificatesProjectTabHeaderActions",
+  () => ({
+    CrewCertificatesProjectTabHeaderActions: () => null,
+  }),
+);
+jest.mock(
+  "../../../../bulk-upload/components/CrewBulkUploadWorkspaceSection",
+  () => ({
+    CrewBulkUploadWorkspaceSection: () => {
+      const { Text } = mockReactNative;
+      return <Text>Crew bulk upload</Text>;
+    },
+  }),
+);
+jest.mock(
+  "../../../../bulk-upload/components/CrewBulkUploadTabHeaderActions",
+  () => ({
+    CrewBulkUploadTabHeaderActions: () => null,
+  }),
+);
 
 describe("CrewByProjectScreen", () => {
   const push = jest.fn();
@@ -118,6 +135,17 @@ describe("CrewByProjectScreen", () => {
       error: null,
       refetch: jest.fn(),
     });
+    (useVessels as jest.Mock).mockReturnValue({
+      vessels: [
+        {
+          id: "asset-1",
+          name: "MV Navigate One",
+        },
+      ],
+      loading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
   });
 
   it("GIVEN the crew workspace opens WHEN rendered SHOULD expose the roster and crew workflow tabs", () => {
@@ -131,6 +159,18 @@ describe("CrewByProjectScreen", () => {
     expect(screen.getByText("Crew roster")).toBeOnTheScreen();
     expect(screen.getByText("24")).toBeOnTheScreen();
     expect(screen.getByText("Active first")).toBeOnTheScreen();
+    expect(useCrewPageData).toHaveBeenCalledWith("project-atlantic", {
+      page: 1,
+      pageSize: 10,
+      sort: "ACTIVE_FIRST",
+      search: "",
+      status: undefined,
+      department: undefined,
+      medicalState: undefined,
+      dateWindow: undefined,
+      dateFrom: "",
+      dateTo: "",
+    });
   });
 
   it("GIVEN the action buttons are shown WHEN the user opens a next-step route SHOULD navigate correctly", () => {

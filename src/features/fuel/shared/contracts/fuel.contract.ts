@@ -1,4 +1,5 @@
 import { AssetDto } from "@/src/contracts/assets.contract";
+import type { PaginatedResponseDto } from "@/src/contracts/pagination.contract";
 
 export type FuelEventType =
   | "BUNKERED"
@@ -22,6 +23,22 @@ export type FuelDto = {
   note: string | null;
   createdAt: string;
   asset: AssetDto;
+};
+
+export type FuelListStatsDto = {
+  total: number;
+  bunkered: number;
+  consumed: number;
+  transferred: number;
+  adjustments: number;
+  critical: number;
+  unit: FuelUnit;
+  bunkeredQty: string;
+  consumedQty: string;
+};
+
+export type FuelPageDto = PaginatedResponseDto<FuelDto> & {
+  stats: FuelListStatsDto;
 };
 
 export type CreateFuelInput = {

@@ -3,7 +3,11 @@ import { useRouter } from "expo-router";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { fakeAdminProject, fakeAdminUser } from "@/src/test/fakes/admin";
-import { useAdminWorkspace } from "../../hooks/useAdminWorkspace";
+import {
+  useAdminProjectPage,
+  useAdminUserPage,
+  useAdminWorkspace,
+} from "../../hooks/useAdminWorkspace";
 import SuperAdminWorkspaceScreen from "../SuperAdminWorkspaceScreen";
 
 jest.mock("expo-router", () => ({
@@ -20,6 +24,8 @@ jest.mock("@/src/context/ToastProvider", () => ({
 
 jest.mock("../../hooks/useAdminWorkspace", () => ({
   useAdminWorkspace: jest.fn(),
+  useAdminProjectPage: jest.fn(),
+  useAdminUserPage: jest.fn(),
 }));
 
 const routerReplace = jest.fn();
@@ -40,6 +46,15 @@ const viewer = fakeAdminUser({
   role: "VIEWER",
   assignedProjectIds: [],
 });
+
+const pageMeta = {
+  page: 1,
+  pageSize: 10,
+  totalItems: 1,
+  totalPages: 1,
+  hasPreviousPage: false,
+  hasNextPage: false,
+};
 
 function mockAdminSession(role: "ADMIN" | "OPS" | "VIEWER" = "ADMIN") {
   (useSessionContext as jest.Mock).mockReturnValue({
@@ -73,6 +88,45 @@ function mockAdminWorkspace(
   });
 }
 
+function mockAdminPages() {
+  (useAdminProjectPage as jest.Mock).mockImplementation((_enabled, options) => ({
+    projects: options.search === "Pacific" ? [] : [project],
+    pagination: {
+      ...pageMeta,
+      totalItems: options.search === "Pacific" ? 0 : 1,
+    },
+    stats: {
+      total: 1,
+      active: 1,
+      archived: 0,
+      assigned: 1,
+      unassigned: 0,
+    },
+    loading: false,
+    error: null,
+    refresh,
+  }));
+
+  (useAdminUserPage as jest.Mock).mockImplementation((_enabled, options) => ({
+    users: options.role === "VIEWER" ? [viewer] : [user, viewer],
+    pagination: {
+      ...pageMeta,
+      totalItems: options.role === "VIEWER" ? 1 : 2,
+    },
+    stats: {
+      total: 2,
+      admins: 0,
+      ops: 1,
+      viewers: 1,
+      assigned: 1,
+      unassigned: 1,
+    },
+    loading: false,
+    error: null,
+    refresh,
+  }));
+}
+
 describe("SuperAdminWorkspaceScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -87,6 +141,7 @@ describe("SuperAdminWorkspaceScreen", () => {
     saveProjectUsers.mockResolvedValue(project);
     mockAdminSession();
     mockAdminWorkspace();
+    mockAdminPages();
   });
 
   it("GIVEN a non-admin user WHEN the admin screen renders SHOULD show restricted access", () => {
@@ -115,7 +170,7 @@ describe("SuperAdminWorkspaceScreen", () => {
     expect(screen.getByText("Access")).toBeOnTheScreen();
   });
 
-  it("GIVEN project search text WHEN no project matches SHOULD show the project empty state", async () => {
+  it("GIVEN project search text WHEN the user searches SHOULD send the backend filter and show empty state", async () => {
     render(<SuperAdminWorkspaceScreen />);
 
     fireEvent.changeText(
@@ -124,6 +179,10 @@ describe("SuperAdminWorkspaceScreen", () => {
     );
 
     await waitFor(() => {
+      expect(useAdminProjectPage).toHaveBeenCalledWith(
+        true,
+        expect.objectContaining({ search: "Pacific" }),
+      );
       expect(
         screen.getByText(
           "No projects matched this filter. Create a workspace or adjust the search.",
@@ -132,14 +191,21 @@ describe("SuperAdminWorkspaceScreen", () => {
     });
   });
 
-  it("GIVEN a role filter WHEN selecting viewer SHOULD show only viewer users in the user table", () => {
+  it("GIVEN a role filter WHEN selecting viewer SHOULD show only viewer users in the user table", async () => {
     render(<SuperAdminWorkspaceScreen />);
 
     fireEvent.press(screen.getAllByText("Users").at(-1)!);
+    fireEvent.press(screen.getByText("All roles"));
     fireEvent.press(screen.getAllByText("Viewer")[0]);
 
-    expect(screen.getByText("viewer@navigate.test")).toBeOnTheScreen();
-    expect(screen.queryByText("ops@navigate.test")).toBeNull();
+    await waitFor(() => {
+      expect(useAdminUserPage).toHaveBeenCalledWith(
+        true,
+        expect.objectContaining({ role: "VIEWER" }),
+      );
+      expect(screen.getByText("viewer@navigate.test")).toBeOnTheScreen();
+      expect(screen.queryByText("ops@navigate.test")).toBeNull();
+    });
   });
 
   it("GIVEN an empty project name WHEN creating a project SHOULD warn and skip the API call", async () => {

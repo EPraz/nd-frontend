@@ -1,14 +1,30 @@
 import { apiClient } from "@/src/api/client";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
+import { buildPaginationQuery } from "@/src/contracts/pagination.contract";
 import {
   CertificateDto,
   CertificateIngestionDto,
+  CertificatePageDto,
   CertificateRequirementDto,
+  CertificateRequirementPageDto,
   CertificateTypeDto,
   ConfirmCertificateIngestionInput,
   ConfirmCertificateIngestionResultDto,
   CreateCertificateIngestionInput,
   GenerateRequirementsResult,
 } from "@/src/features/certificates/shared";
+
+type CertificateTableQuery = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  status?: string;
+  workflowStatus?: string;
+  assetId?: string;
+  category?: string;
+  dateWindow?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
 
 export async function fetchCertificateTypes(
   projectId: string,
@@ -24,12 +40,31 @@ export async function fetchCertificatesByProject(
   return apiClient.get<CertificateDto[]>(`/projects/${projectId}/certificates`);
 }
 
+export async function fetchCertificatePageByProject(
+  projectId: string,
+  params: CertificateTableQuery,
+): Promise<CertificatePageDto> {
+  return apiClient.get<CertificatePageDto>(
+    `/projects/${projectId}/certificates${buildPaginationQuery(params)}`,
+  );
+}
+
 export async function fetchCertificatesByAsset(
   projectId: string,
   assetId: string,
 ): Promise<CertificateDto[]> {
   return apiClient.get<CertificateDto[]>(
     `/projects/${projectId}/assets/${assetId}/certificates`,
+  );
+}
+
+export async function fetchCertificatePageByAsset(
+  projectId: string,
+  assetId: string,
+  params: CertificateTableQuery,
+): Promise<CertificatePageDto> {
+  return apiClient.get<CertificatePageDto>(
+    `/projects/${projectId}/assets/${assetId}/certificates${buildPaginationQuery(params)}`,
   );
 }
 
@@ -51,12 +86,31 @@ export async function fetchCertificateRequirementsByProject(
   );
 }
 
+export async function fetchCertificateRequirementPageByProject(
+  projectId: string,
+  params: CertificateTableQuery,
+): Promise<CertificateRequirementPageDto> {
+  return apiClient.get<CertificateRequirementPageDto>(
+    `/projects/${projectId}/certificate-requirements${buildPaginationQuery(params)}`,
+  );
+}
+
 export async function fetchCertificateRequirementsByAsset(
   projectId: string,
   assetId: string,
 ): Promise<CertificateRequirementDto[]> {
   return apiClient.get<CertificateRequirementDto[]>(
     `/projects/${projectId}/assets/${assetId}/certificate-requirements`,
+  );
+}
+
+export async function fetchCertificateRequirementPageByAsset(
+  projectId: string,
+  assetId: string,
+  params: CertificateTableQuery,
+): Promise<CertificateRequirementPageDto> {
+  return apiClient.get<CertificateRequirementPageDto>(
+    `/projects/${projectId}/assets/${assetId}/certificate-requirements${buildPaginationQuery(params)}`,
   );
 }
 

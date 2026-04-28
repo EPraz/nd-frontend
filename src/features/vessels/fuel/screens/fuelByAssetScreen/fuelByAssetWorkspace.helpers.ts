@@ -2,6 +2,7 @@ import type { RegistrySummaryItem } from "@/src/components/ui/registryWorkspace"
 import type {
   FuelDto,
   FuelEventType,
+  FuelListStatsDto,
 } from "@/src/features/fuel/shared/contracts";
 
 export const FUEL_EVENT_OPTIONS = [
@@ -27,6 +28,7 @@ export type FuelSortOption =
 
 export function getFuelByAssetSummaryItems(
   fuelLogs: FuelDto[],
+  stats?: FuelListStatsDto | null,
 ): RegistrySummaryItem[] {
   let bunkered = 0;
   let consumed = 0;
@@ -62,27 +64,27 @@ export function getFuelByAssetSummaryItems(
   return [
     {
       label: "Events in scope",
-      value: String(fuelLogs.length),
+      value: String(stats?.total ?? fuelLogs.length),
       helper: "tracked on this vessel",
       tone: "accent",
     },
     {
       label: "Bunkered",
-      value: String(bunkered),
-      helper: `${toStr(bunkeredQty)} ${unit} total`,
+      value: String(stats?.bunkered ?? bunkered),
+      helper: `${stats?.bunkeredQty ?? toStr(bunkeredQty)} ${stats?.unit ?? unit} total`,
       tone: "ok",
     },
     {
       label: "Consumed",
-      value: String(consumed),
-      helper: `${toStr(consumedQty)} ${unit} total`,
-      tone: consumed > 0 ? "warn" : "ok",
+      value: String(stats?.consumed ?? consumed),
+      helper: `${stats?.consumedQty ?? toStr(consumedQty)} ${stats?.unit ?? unit} total`,
+      tone: (stats?.consumed ?? consumed) > 0 ? "warn" : "ok",
     },
     {
       label: "Critical gaps",
-      value: String(critical),
+      value: String(stats?.critical ?? critical),
       helper: "missing price or location",
-      tone: critical > 0 ? "danger" : "ok",
+      tone: (stats?.critical ?? critical) > 0 ? "danger" : "ok",
     },
   ];
 }

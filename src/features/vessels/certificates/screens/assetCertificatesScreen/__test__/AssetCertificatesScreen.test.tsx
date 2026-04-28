@@ -147,6 +147,36 @@ describe("AssetCertificatesScreen", () => {
     expect(screen.getByText("Vessel Records")).toBeOnTheScreen();
   });
 
+  it("GIVEN the vessel certificates lane opens WHEN bootstrapping SHOULD request backend pagination for both tabs", () => {
+    render(<AssetCertificatesScreen />);
+
+    expect(useAssetCertificatesWorkspace).toHaveBeenCalledWith(
+      "project-atlantic",
+      "asset-1",
+      {
+        requirements: {
+          page: 1,
+          pageSize: 10,
+          search: "",
+          status: undefined,
+          category: undefined,
+        },
+        records: {
+          page: 1,
+          pageSize: 10,
+          sort: "EXPIRY_ASC",
+          search: "",
+          status: undefined,
+          workflowStatus: undefined,
+          category: undefined,
+          dateWindow: undefined,
+          dateFrom: "",
+          dateTo: "",
+        },
+      },
+    );
+  });
+
   it("GIVEN the requirements tab is pressed WHEN rendered SHOULD switch to the requirements workspace", () => {
     render(<AssetCertificatesScreen />);
 

@@ -2,6 +2,7 @@ export * from "./useConfirmCrewCertificateIngestion";
 export * from "./useCreateCrewRequirementIngestion";
 export * from "./useCreateExtraCrewCertificateIngestion";
 export * from "./useCrewCertificateIngestionById";
+export * from "./useCrewCertificateRequirementsByAsset";
 export * from "./useCrewCertificateRequirementsByCrew";
 export * from "./useCrewCertificateRequirementsByProject";
 export * from "./useCrewCertificatesByCrew";

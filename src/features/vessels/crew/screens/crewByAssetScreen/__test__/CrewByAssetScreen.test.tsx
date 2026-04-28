@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import CrewByAssetScreen from "../CrewByAssetScreen";
 import { useCrewByAsset } from "@/src/features/crew/core";
+import { useCrewByAssetCertificatesWorkspace } from "../useCrewByAssetCertificatesWorkspace";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: jest.fn(),
@@ -28,7 +29,11 @@ jest.mock("../CrewByAssetCertificatesHeaderActions", () => ({
 }));
 
 jest.mock("../useCrewByAssetCertificatesWorkspace", () => ({
-  useCrewByAssetCertificatesWorkspace: () => ({
+  useCrewByAssetCertificatesWorkspace: jest.fn(),
+}));
+
+function createCrewCertificatesWorkspaceState() {
+  return {
     requirements: [],
     loading: false,
     error: null,
@@ -58,8 +63,8 @@ jest.mock("../useCrewByAssetCertificatesWorkspace", () => ({
     msmcError: null,
     refreshMsmc: jest.fn(),
     refreshAll: jest.fn(),
-  }),
-}));
+  };
+}
 
 describe("CrewByAssetScreen", () => {
   const push = jest.fn();
@@ -88,6 +93,9 @@ describe("CrewByAssetScreen", () => {
       error: null,
       refresh: jest.fn(),
     });
+    (useCrewByAssetCertificatesWorkspace as jest.Mock).mockReturnValue(
+      createCrewCertificatesWorkspaceState(),
+    );
   });
 
   it("GIVEN the vessel crew lane opens WHEN rendered SHOULD expose overview and certificate entry points", () => {
@@ -99,6 +107,34 @@ describe("CrewByAssetScreen", () => {
     expect(screen.getByText("Certificates")).toBeOnTheScreen();
     expect(screen.getByText("Crew in scope")).toBeOnTheScreen();
     expect(screen.getByText("Medical attention")).toBeOnTheScreen();
+    expect(useCrewByAsset).toHaveBeenCalledWith(
+      "project-atlantic",
+      "vessel-one",
+      {
+        page: 1,
+        pageSize: 10,
+        sort: "ACTIVE_FIRST",
+        search: "",
+        status: undefined,
+        department: undefined,
+        medicalState: undefined,
+        dateWindow: undefined,
+        dateFrom: "",
+        dateTo: "",
+      },
+    );
+    expect(useCrewByAssetCertificatesWorkspace).toHaveBeenCalledWith(
+      "project-atlantic",
+      "vessel-one",
+      {
+        page: 1,
+        pageSize: 10,
+        sort: "PRIORITY",
+        search: "",
+        status: undefined,
+        crewState: undefined,
+      },
+    );
   });
 
   it("GIVEN the crew create action is pressed WHEN rendered SHOULD navigate to the vessel-scoped create route", () => {

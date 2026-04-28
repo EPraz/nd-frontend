@@ -1,4 +1,5 @@
 import { AssetDto } from "@/src/contracts/assets.contract";
+import type { PaginatedResponseDto } from "@/src/contracts/pagination.contract";
 
 export type CrewStatus = "ACTIVE" | "INACTIVE";
 export type CrewInactiveReason = "VACATION" | "INJURED" | "OTHER";
@@ -87,3 +88,18 @@ export type CreateCrewInput = {
   medicalRestrictions?: string;
   notes?: string;
 };
+
+export type CrewListStatsDto = {
+  total: number;
+  active: number;
+  inactive: number;
+  vesselsWithCrew: number;
+  vacationDueNext30Days: number;
+  medicalAttention: number;
+};
+
+export type CrewPageDto = PaginatedResponseDto<CrewDto> & {
+  stats: CrewListStatsDto;
+};
+
+export type CrewSortOption = "ACTIVE_FIRST" | "NAME_ASC" | "NAME_DESC";

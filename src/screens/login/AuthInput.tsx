@@ -1,6 +1,6 @@
 import { Text } from "@/src/components";
 import React, { ReactNode } from "react";
-import { TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { LOGIN_PALETTE } from "./login.constants";
 
 const AuthInput = (props: {
@@ -13,6 +13,9 @@ const AuthInput = (props: {
   keyboardType?: "default" | "email-address";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   error?: string;
+  rightAdornment?: ReactNode;
+  onRightAdornmentPress?: () => void;
+  rightAdornmentLabel?: string;
 }) => {
   const {
     label,
@@ -24,6 +27,9 @@ const AuthInput = (props: {
     keyboardType = "default",
     autoCapitalize = "none",
     error,
+    rightAdornment,
+    onRightAdornmentPress,
+    rightAdornmentLabel,
   } = props;
 
   return (
@@ -35,17 +41,16 @@ const AuthInput = (props: {
         {label}
       </Text>
       <View
-        className="h-14 flex-row items-center gap-3 rounded-[18px] border px-4"
+        className="h-16 flex-row items-center gap-3 rounded-[8px] border px-4"
         style={{
           borderColor: error ? LOGIN_PALETTE.dangerLine : LOGIN_PALETTE.cardLine,
           backgroundColor: LOGIN_PALETTE.card,
         }}
       >
         <View
-          className="h-9 w-9 items-center justify-center rounded-xl border"
+          className="h-9 w-9 items-center justify-center rounded-xl"
           style={{
-            backgroundColor: "rgba(255,255,255,0.03)",
-            borderColor: LOGIN_PALETTE.cardLine,
+            backgroundColor: "rgba(255,255,255,0.015)",
           }}
         >
           {icon}
@@ -62,6 +67,16 @@ const AuthInput = (props: {
           className="flex-1 text-base web:outline-none"
           style={{ color: LOGIN_PALETTE.navy }}
         />
+        {rightAdornment ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={rightAdornmentLabel}
+            onPress={onRightAdornmentPress}
+            className="h-9 w-9 items-center justify-center rounded-xl"
+          >
+            {rightAdornment}
+          </Pressable>
+        ) : null}
       </View>
       {error ? (
         <Text className="text-[12px]" style={{ color: LOGIN_PALETTE.dangerText }}>

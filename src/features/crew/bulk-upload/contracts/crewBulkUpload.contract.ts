@@ -1,3 +1,5 @@
+import type { PaginatedResponseDto } from "@/src/contracts/pagination.contract";
+
 export type CrewBulkUploadIssueSeverity = "CRITICAL" | "WARNING" | "INFO";
 
 export type CrewBulkUploadIssueDto = {
@@ -124,6 +126,31 @@ export type CrewBulkUploadSessionSummaryDto = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CrewBulkUploadSessionListStatsDto = {
+  total: number;
+  readyForReview: number;
+  committed: number;
+  discarded: number;
+  pendingCritical: number;
+};
+
+export type CrewBulkUploadSessionPageDto =
+  PaginatedResponseDto<CrewBulkUploadSessionSummaryDto> & {
+    stats: CrewBulkUploadSessionListStatsDto;
+  };
+
+export type CrewBulkUploadRowPageStatsDto = {
+  total: number;
+  critical: number;
+  warning: number;
+  info: number;
+};
+
+export type CrewBulkUploadRowPageDto =
+  PaginatedResponseDto<CrewBulkUploadRowDto> & {
+    stats: CrewBulkUploadRowPageStatsDto;
+  };
 
 export type CrewBulkUploadSessionDto = CrewBulkUploadSessionSummaryDto & {
   summary: CrewBulkUploadSessionMeta | null;

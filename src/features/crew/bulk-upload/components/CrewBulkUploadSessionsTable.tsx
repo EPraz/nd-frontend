@@ -1,5 +1,6 @@
 import {
   DataTable,
+  type DataTableProps,
   RegistryTableTextStack,
   type Column,
 } from "@/src/components/ui/table";
@@ -25,6 +26,7 @@ type Props = {
   error: string | null;
   onRetry: () => void;
   onRowPress: (row: CrewBulkUploadSessionSummaryDto) => void;
+  pagination?: DataTableProps<CrewBulkUploadSessionSummaryDto>["pagination"];
 };
 
 export function CrewBulkUploadSessionsTable({
@@ -36,16 +38,8 @@ export function CrewBulkUploadSessionsTable({
   error,
   onRetry,
   onRowPress,
+  pagination,
 }: Props) {
-  const rows = useMemo(
-    () =>
-      [...data].sort(
-        (left, right) =>
-          new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
-      ),
-    [data],
-  );
-
   const columns = useMemo<Column<CrewBulkUploadSessionSummaryDto>[]>(() => {
     return [
       {
@@ -131,7 +125,7 @@ export function CrewBulkUploadSessionsTable({
       title={title}
       subtitleRight={subtitleRight}
       headerActions={headerActions}
-      data={rows}
+      data={data}
       isLoading={isLoading}
       error={error}
       onRetry={onRetry}
@@ -140,6 +134,7 @@ export function CrewBulkUploadSessionsTable({
       getRowId={(row) => row.id}
       onRowPress={onRowPress}
       emptyText="No bulk sessions yet."
+      pagination={pagination}
     />
   );
 }

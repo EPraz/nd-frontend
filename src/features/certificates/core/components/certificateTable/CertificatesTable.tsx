@@ -1,4 +1,8 @@
-import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
+import {
+  DataTable,
+  type Column,
+  type DataTableProps,
+} from "@/src/components/ui/table/DataTable";
 import { TableLink } from "@/src/components/ui/table/TableLink";
 import { Text } from "@/src/components/ui/text/Text";
 import { formatDate } from "@/src/helpers";
@@ -28,6 +32,7 @@ type Props = {
   showVesselColumn?: boolean;
   sortByExpiry?: boolean;
   selectedRowId?: string | null;
+  pagination?: DataTableProps<CertificateDto>["pagination"];
 };
 
 export function CertificatesTable(props: Props) {
@@ -150,6 +155,7 @@ export function CertificatesTable(props: Props) {
       onRowPress={props.onRowPress}
       emptyText="No certificates found."
       selectedRowId={props.selectedRowId ?? null}
+      pagination={props.pagination}
     />
   );
 }

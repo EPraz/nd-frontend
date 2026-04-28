@@ -4,6 +4,7 @@ import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { useCrewBulkUploadSession } from "../../hooks/useCrewBulkUploadSession";
 import { useCrewBulkUploadSessionActions } from "../../hooks/useCrewBulkUploadSessionActions";
+import { useCrewBulkUploadSessionRows } from "../../hooks/useCrewBulkUploadSessionRows";
 import type { CrewBulkUploadSessionDto } from "../../contracts/crewBulkUpload.contract";
 import CrewBulkUploadSessionScreen from "../CrewBulkUploadSessionScreen";
 
@@ -28,10 +29,23 @@ jest.mock("../../hooks/useCrewBulkUploadSessionActions", () => ({
   useCrewBulkUploadSessionActions: jest.fn(),
 }));
 
+jest.mock("../../hooks/useCrewBulkUploadSessionRows", () => ({
+  useCrewBulkUploadSessionRows: jest.fn(),
+}));
+
 const routerPush = jest.fn();
 const showToast = jest.fn();
 const refresh = jest.fn();
 const setSession = jest.fn();
+
+const rowPageMeta = {
+  page: 1,
+  pageSize: 10,
+  totalItems: 1,
+  totalPages: 1,
+  hasPreviousPage: false,
+  hasNextPage: false,
+};
 
 function createSession(
   overrides: Partial<CrewBulkUploadSessionDto> = {},
@@ -172,6 +186,24 @@ describe("CrewBulkUploadSessionScreen", () => {
       loading: false,
       error: null,
     });
+    (useCrewBulkUploadSessionRows as jest.Mock).mockImplementation(
+      (_projectId, _sessionId, options) => ({
+        rows:
+          options.rowKind === "CERTIFICATE"
+            ? []
+            : createSession().rows.filter((row) => row.rowKind === "CREW"),
+        pagination: rowPageMeta,
+        stats: {
+          total: options.rowKind === "CERTIFICATE" ? 0 : 1,
+          critical: 0,
+          warning: 0,
+          info: 0,
+        },
+        loading: false,
+        error: null,
+        refresh,
+      }),
+    );
   });
 
   it("GIVEN a committed session WHEN rendered SHOULD expose commit outcome and certificate recovery action", () => {

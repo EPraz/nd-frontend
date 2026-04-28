@@ -1,14 +1,36 @@
 import { apiClient } from "@/src/api/client";
+import type { PaginationRequest } from "@/src/contracts/pagination.contract";
+import { buildPaginationQuery } from "@/src/contracts/pagination.contract";
 import {
   ConfirmCrewCertificateIngestionInput,
   ConfirmCrewCertificateIngestionResultDto,
   CreateCrewCertificateIngestionInput,
   CrewCertificateDto,
+  CrewCertificatePageDto,
   CrewCertificateIngestionDto,
+  CrewCertificateRequirementPageDto,
   CrewCertificateRequirementDto,
   CrewComplianceSummaryDto,
   CrewRequirementGenerationResult,
 } from "../contracts";
+
+type CrewCertificateRequirementPageQuery = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  status?: string;
+  assetId?: string;
+  crewState?: string;
+};
+
+type CrewCertificatePageQuery = PaginationRequest & {
+  sort?: string;
+  search?: string;
+  status?: string;
+  workflowStatus?: string;
+  dateWindow?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
 
 function appendUploadFile(
   formData: FormData,
@@ -40,6 +62,34 @@ export async function fetchCrewCertificateRequirementsByProject(
   );
 }
 
+export async function fetchCrewCertificateRequirementPageByAsset(
+  projectId: string,
+  assetId: string,
+  params: CrewCertificateRequirementPageQuery,
+): Promise<CrewCertificateRequirementPageDto> {
+  return apiClient.get<CrewCertificateRequirementPageDto>(
+    `/projects/${projectId}/assets/${assetId}/crew-certificate-requirements${buildPaginationQuery(params)}`,
+  );
+}
+
+export async function fetchCrewCertificateRequirementsByAsset(
+  projectId: string,
+  assetId: string,
+): Promise<CrewCertificateRequirementDto[]> {
+  return apiClient.get<CrewCertificateRequirementDto[]>(
+    `/projects/${projectId}/assets/${assetId}/crew-certificate-requirements`,
+  );
+}
+
+export async function fetchCrewCertificateRequirementPageByProject(
+  projectId: string,
+  params: CrewCertificateRequirementPageQuery,
+): Promise<CrewCertificateRequirementPageDto> {
+  return apiClient.get<CrewCertificateRequirementPageDto>(
+    `/projects/${projectId}/crew-certificate-requirements${buildPaginationQuery(params)}`,
+  );
+}
+
 export async function fetchCrewCertificateRequirementsByCrew(
   projectId: string,
   assetId: string,
@@ -47,6 +97,17 @@ export async function fetchCrewCertificateRequirementsByCrew(
 ): Promise<CrewCertificateRequirementDto[]> {
   return apiClient.get<CrewCertificateRequirementDto[]>(
     `/projects/${projectId}/assets/${assetId}/crew/${crewId}/certificate-requirements`,
+  );
+}
+
+export async function fetchCrewCertificateRequirementPageByCrew(
+  projectId: string,
+  assetId: string,
+  crewId: string,
+  params: CrewCertificateRequirementPageQuery,
+): Promise<CrewCertificateRequirementPageDto> {
+  return apiClient.get<CrewCertificateRequirementPageDto>(
+    `/projects/${projectId}/assets/${assetId}/crew/${crewId}/certificate-requirements${buildPaginationQuery(params)}`,
   );
 }
 
@@ -92,6 +153,17 @@ export async function fetchCrewCertificatesByCrew(
 ): Promise<CrewCertificateDto[]> {
   return apiClient.get<CrewCertificateDto[]>(
     `/projects/${projectId}/assets/${assetId}/crew/${crewId}/certificates`,
+  );
+}
+
+export async function fetchCrewCertificatePageByCrew(
+  projectId: string,
+  assetId: string,
+  crewId: string,
+  params: CrewCertificatePageQuery,
+): Promise<CrewCertificatePageDto> {
+  return apiClient.get<CrewCertificatePageDto>(
+    `/projects/${projectId}/assets/${assetId}/crew/${crewId}/certificates${buildPaginationQuery(params)}`,
   );
 }
 

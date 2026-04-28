@@ -1,10 +1,17 @@
-import { Column, DataTable, TableActionIcon, Text } from "@/src/components";
+import {
+  Column,
+  DataTable,
+  TableActionIcon,
+  Text,
+  type DataTableProps,
+} from "@/src/components";
 import {
   CertificateStatusPill,
   WorkflowStatusPill,
 } from "@/src/features/certificates/core";
 import { formatDate } from "@/src/helpers";
 import { useRouter } from "expo-router";
+import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { View } from "react-native";
 import type { CrewCertificateDto } from "../contracts";
@@ -17,6 +24,8 @@ type Props = {
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
+  headerActions?: ReactNode;
+  pagination?: DataTableProps<CrewCertificateDto>["pagination"];
 };
 
 export function CrewCertificatesTable({
@@ -27,26 +36,10 @@ export function CrewCertificatesTable({
   isLoading,
   error,
   onRetry,
+  headerActions,
+  pagination,
 }: Props) {
   const router = useRouter();
-
-  const rows = useMemo(() => {
-    return [...data].sort((left, right) => {
-      if (left.workflowStatus !== right.workflowStatus) {
-        const rank = {
-          SUBMITTED: 0,
-          REJECTED: 1,
-          APPROVED: 2,
-          ARCHIVED: 3,
-          DRAFT: 4,
-        } as const;
-
-        return rank[left.workflowStatus] - rank[right.workflowStatus];
-      }
-
-      return left.certificateName.localeCompare(right.certificateName);
-    });
-  }, [data]);
 
   const columns = useMemo<Column<CrewCertificateDto>[]>(() => {
     return [
@@ -107,7 +100,8 @@ export function CrewCertificatesTable({
     <DataTable<CrewCertificateDto>
       title={title}
       subtitleRight={subtitleRight}
-      data={rows}
+      headerActions={headerActions}
+      data={data}
       isLoading={isLoading}
       error={error}
       onRetry={onRetry}
@@ -115,6 +109,7 @@ export function CrewCertificatesTable({
       minWidth={920}
       getRowId={(row) => row.id}
       emptyText="No crew certificates uploaded yet."
+      pagination={pagination}
     />
   );
 }

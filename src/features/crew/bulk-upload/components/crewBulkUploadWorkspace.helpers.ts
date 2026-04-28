@@ -1,4 +1,5 @@
 import type {
+  CrewBulkUploadSessionListStatsDto,
   CrewBulkUploadSessionSummaryDto,
   CrewBulkUploadSessionStatus,
 } from "../contracts/crewBulkUpload.contract";
@@ -99,6 +100,37 @@ export function getCrewBulkUploadSummaryItems(
       value: String(pendingCriticalCount),
       helper: "counted only across open review sessions",
       tone: pendingCriticalCount > 0 ? ("danger" as const) : ("ok" as const),
+    },
+  ];
+}
+
+export function getCrewBulkUploadSummaryItemsFromStats(
+  stats: CrewBulkUploadSessionListStatsDto,
+) {
+  return [
+    {
+      label: "Sessions",
+      value: String(stats.total),
+      helper: "bulk uploads created",
+      tone: "accent" as const,
+    },
+    {
+      label: "Ready for review",
+      value: String(stats.readyForReview),
+      helper: "need a final commit decision",
+      tone: stats.readyForReview > 0 ? ("warn" as const) : ("ok" as const),
+    },
+    {
+      label: "Committed",
+      value: String(stats.committed),
+      helper: "already applied to crew records",
+      tone: stats.committed > 0 ? ("ok" as const) : ("accent" as const),
+    },
+    {
+      label: "Critical before commit",
+      value: String(stats.pendingCritical),
+      helper: "counted only across open review sessions",
+      tone: stats.pendingCritical > 0 ? ("danger" as const) : ("ok" as const),
     },
   ];
 }

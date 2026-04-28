@@ -1,20 +1,26 @@
 import { Badge } from "@/src/components/ui/badge/Badge";
 import { Button } from "@/src/components/ui/button/Button";
-import { RegistryTablePill } from "@/src/components/ui/table";
+import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
+import {
+  RegistryTablePill,
+  TableFilterSearch,
+  TablePaginationControls,
+} from "@/src/components/ui/table";
 import { Text } from "@/src/components/ui/text/Text";
 import type {
   AdminProjectDto,
   AdminUserDto,
   UserRole,
 } from "@/src/contracts/admin.contract";
+import type { PaginationMetaDto } from "@/src/contracts/pagination.contract";
 import {
   ArrowUpRight,
-  Search,
   Settings2,
   UserRoundCog,
 } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { useState } from "react";
+import { ScrollView, View } from "react-native";
 import {
   formatAdminDate,
   KIND_LABEL,
@@ -24,8 +30,6 @@ import {
 } from "../admin.constants";
 import { EmptyAdminState } from "./AdminPrimitives";
 
-const SEARCH_ICON_COLOR = "#9fb0c8";
-const PLACEHOLDER_COLOR = "#8d9ab0";
 const ACTION_ICON_COLOR = "#ffd0a8";
 const OPEN_ICON_COLOR = "#7dd3fc";
 const ACCESS_ICON_COLOR = "#86efac";
@@ -43,13 +47,33 @@ const ACTION_BUTTON_STYLES = {
     backgroundColor: "rgba(134, 239, 172, 0.09)",
   },
 } as const;
+const PROJECT_STATUS_OPTIONS = ["ALL", "ACTIVE", "ARCHIVED"] as const;
+const PROJECT_KIND_FILTER_OPTIONS = [
+  "ALL",
+  "MARITIME",
+  "STORE",
+  "BARBERSHOP",
+  "OTHER",
+] as const;
+const ACCESS_FILTER_OPTIONS = ["ALL", "ASSIGNED", "UNASSIGNED"] as const;
 
 type ProjectDirectoryTableProps = {
   projects: AdminProjectDto[];
   totalProjects: number;
   loading: boolean;
+  error: string | null;
   search: string;
   onSearchChange: (value: string) => void;
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
+  kindFilter: string;
+  onKindFilterChange: (value: string) => void;
+  assignedUserFilter: string;
+  users: AdminUserDto[];
+  onAssignedUserFilterChange: (value: string) => void;
+  pagination: PaginationMetaDto | null;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
   onOpenProject: (projectId: string) => void;
   onOpenSettings: (projectId: string) => void;
   onManageAccess: (project: AdminProjectDto) => void;
@@ -60,22 +84,46 @@ type UserDirectoryTableProps = {
   totalUsers: number;
   projectsById: Map<string, AdminProjectDto>;
   loading: boolean;
+  error: string | null;
   search: string;
   roleFilter: UserRole | "ALL";
+  projectFilter: string;
+  accessFilter: string;
+  projects: AdminProjectDto[];
   onSearchChange: (value: string) => void;
   onRoleFilterChange: (value: UserRole | "ALL") => void;
+  onProjectFilterChange: (value: string) => void;
+  onAccessFilterChange: (value: string) => void;
+  pagination: PaginationMetaDto | null;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export function ProjectDirectoryTable({
   projects,
   totalProjects,
   loading,
+  error,
   search,
   onSearchChange,
+  statusFilter,
+  onStatusFilterChange,
+  kindFilter,
+  onKindFilterChange,
+  assignedUserFilter,
+  users,
+  onAssignedUserFilterChange,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
   onOpenProject,
   onOpenSettings,
   onManageAccess,
 }: ProjectDirectoryTableProps) {
+  const [openControl, setOpenControl] = useState<string | null>(null);
+  const toggleControl = (controlId: string) =>
+    setOpenControl((current) => (current === controlId ? null : controlId));
+
   return (
     <View className="gap-4">
       <AdminDirectoryHeader
@@ -85,11 +133,53 @@ export function ProjectDirectoryTable({
         count={formatCount(totalProjects, "project")}
       />
 
-      <AdminSearchInput
-        value={search}
-        onChangeText={onSearchChange}
-        placeholder="Search by project, status, kind, or user"
-      />
+      <View className="flex-row flex-wrap items-center gap-2">
+        <TableFilterSearch
+          value={search}
+          onChangeText={onSearchChange}
+          placeholder="Search by project, status, kind, or user"
+          open
+          onOpenChange={() => undefined}
+          minWidth={360}
+        />
+        <ToolbarSelect
+          value={statusFilter}
+          options={[...PROJECT_STATUS_OPTIONS]}
+          open={openControl === "project-status"}
+          onToggle={() => toggleControl("project-status")}
+          onChange={onStatusFilterChange}
+          renderLabel={(value) =>
+            value === "ALL" ? "All status" : PROJECT_STATUS_LABEL[value as keyof typeof PROJECT_STATUS_LABEL]
+          }
+          triggerIconName="pulse-outline"
+          minWidth={150}
+        />
+        <ToolbarSelect
+          value={kindFilter}
+          options={[...PROJECT_KIND_FILTER_OPTIONS]}
+          open={openControl === "project-kind"}
+          onToggle={() => toggleControl("project-kind")}
+          onChange={onKindFilterChange}
+          renderLabel={(value) =>
+            value === "ALL" ? "All kinds" : KIND_LABEL[value as keyof typeof KIND_LABEL]
+          }
+          triggerIconName="compass-outline"
+          minWidth={150}
+        />
+        <ToolbarSelect
+          value={assignedUserFilter}
+          options={["ALL", ...users.map((user) => user.id)]}
+          open={openControl === "project-assignee"}
+          onToggle={() => toggleControl("project-assignee")}
+          onChange={onAssignedUserFilterChange}
+          renderLabel={(value) => {
+            if (value === "ALL") return "All assignees";
+            return users.find((user) => user.id === value)?.name ?? "User";
+          }}
+          triggerIconName="person-outline"
+          minWidth={190}
+        />
+      </View>
 
       <AdminTableShell minWidth={1040}>
         <AdminTableHeader
@@ -104,6 +194,8 @@ export function ProjectDirectoryTable({
 
         {loading ? (
           <AdminTableMessage>Loading projects...</AdminTableMessage>
+        ) : error ? (
+          <AdminTableMessage>{error}</AdminTableMessage>
         ) : projects.length === 0 ? (
           <EmptyAdminState>
             No projects matched this filter. Create a workspace or adjust the
@@ -127,7 +219,7 @@ export function ProjectDirectoryTable({
               >
                 <RegistryTablePill
                   label={KIND_LABEL[project.kind]}
-                  tone="neutral"
+                  tone="info"
                 />
                 <RegistryTablePill
                   label={PROJECT_STATUS_LABEL[project.status]}
@@ -146,7 +238,7 @@ export function ProjectDirectoryTable({
                     <RegistryTablePill
                       key={`${project.id}-${user.id}`}
                       label={`${user.name} - ${ROLE_LABEL[user.role]}`}
-                      tone="info"
+                      tone={user.role === "ADMIN" ? "warn" : "neutral"}
                     />
                   ))
                 )}
@@ -198,6 +290,14 @@ export function ProjectDirectoryTable({
           ))
         )}
       </AdminTableShell>
+
+      {pagination ? (
+        <TablePaginationControls
+          meta={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      ) : null}
     </View>
   );
 }
@@ -207,11 +307,24 @@ export function UserDirectoryTable({
   totalUsers,
   projectsById,
   loading,
+  error,
   search,
   roleFilter,
+  projectFilter,
+  accessFilter,
+  projects,
   onSearchChange,
   onRoleFilterChange,
+  onProjectFilterChange,
+  onAccessFilterChange,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
 }: UserDirectoryTableProps) {
+  const [openControl, setOpenControl] = useState<string | null>(null);
+  const toggleControl = (controlId: string) =>
+    setOpenControl((current) => (current === controlId ? null : controlId));
+
   return (
     <View className="gap-4">
       <AdminDirectoryHeader
@@ -221,18 +334,51 @@ export function UserDirectoryTable({
         count={formatCount(totalUsers, "user")}
       />
 
-      <View className="gap-3 web:flex-row web:items-end">
-        <View className="flex-1">
-          <AdminSearchInput
-            value={search}
-            onChangeText={onSearchChange}
-            placeholder="Search by name, email, role, or project"
-          />
-        </View>
-
-        <RoleFilterTabs
+      <View className="flex-row flex-wrap items-center gap-2">
+        <TableFilterSearch
+          value={search}
+          onChangeText={onSearchChange}
+          placeholder="Search by name, email, role, or project"
+          open
+          onOpenChange={() => undefined}
+          minWidth={360}
+        />
+        <ToolbarSelect
           value={roleFilter}
+          options={["ALL", ...USER_ROLE_OPTIONS]}
+          open={openControl === "user-role"}
+          onToggle={() => toggleControl("user-role")}
           onChange={onRoleFilterChange}
+          renderLabel={(value) =>
+            value === "ALL" ? "All roles" : ROLE_LABEL[value]
+          }
+          triggerIconName="shield-outline"
+          minWidth={150}
+        />
+        <ToolbarSelect
+          value={projectFilter}
+          options={["ALL", ...projects.map((project) => project.id)]}
+          open={openControl === "user-project"}
+          onToggle={() => toggleControl("user-project")}
+          onChange={onProjectFilterChange}
+          renderLabel={(value) => {
+            if (value === "ALL") return "All projects";
+            return projectsById.get(value)?.name ?? "Project";
+          }}
+          triggerIconName="briefcase-outline"
+          minWidth={180}
+        />
+        <ToolbarSelect
+          value={accessFilter}
+          options={[...ACCESS_FILTER_OPTIONS]}
+          open={openControl === "user-access"}
+          onToggle={() => toggleControl("user-access")}
+          onChange={onAccessFilterChange}
+          renderLabel={(value) =>
+            value === "ALL" ? "All access" : value === "ASSIGNED" ? "Assigned" : "Unassigned"
+          }
+          triggerIconName="key-outline"
+          minWidth={150}
         />
       </View>
 
@@ -248,6 +394,8 @@ export function UserDirectoryTable({
 
         {loading ? (
           <AdminTableMessage>Loading users...</AdminTableMessage>
+        ) : error ? (
+          <AdminTableMessage>{error}</AdminTableMessage>
         ) : users.length === 0 ? (
           <EmptyAdminState>
             No users matched this filter. Create a user or adjust the search.
@@ -265,7 +413,13 @@ export function UserDirectoryTable({
               <View className="flex-1 px-3 py-4">
                 <RegistryTablePill
                   label={ROLE_LABEL[user.role]}
-                  tone={user.role === "ADMIN" ? "warn" : "accent"}
+                  tone={
+                    user.role === "ADMIN"
+                      ? "warn"
+                      : user.role === "OPS"
+                        ? "info"
+                        : "neutral"
+                  }
                 />
               </View>
 
@@ -298,49 +452,14 @@ export function UserDirectoryTable({
           ))
         )}
       </AdminTableShell>
-    </View>
-  );
-}
 
-function RoleFilterTabs({
-  value,
-  onChange,
-}: {
-  value: UserRole | "ALL";
-  onChange: (value: UserRole | "ALL") => void;
-}) {
-  const options = ["ALL", ...USER_ROLE_OPTIONS] as (UserRole | "ALL")[];
-
-  return (
-    <View className="gap-2 web:min-w-[360px]">
-      <Text className="text-sm font-medium text-muted">Role</Text>
-      <View className="flex-row items-center gap-5 border-b border-shellLine">
-        {options.map((option) => {
-          const active = value === option;
-
-          return (
-            <Pressable
-              key={option}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              onPress={() => onChange(option)}
-              className={[
-                "border-b-2 pb-2",
-                active ? "border-accent" : "border-transparent",
-              ].join(" ")}
-            >
-              <Text
-                className={[
-                  "text-sm font-semibold",
-                  active ? "text-textMain" : "text-muted",
-                ].join(" ")}
-              >
-                {option === "ALL" ? "All" : ROLE_LABEL[option]}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      {pagination ? (
+        <TablePaginationControls
+          meta={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      ) : null}
     </View>
   );
 }
@@ -375,30 +494,6 @@ function AdminDirectoryHeader({
       <Badge variant="secondary" className="self-start px-3 py-1">
         <Text className="text-xs uppercase">{count}</Text>
       </Badge>
-    </View>
-  );
-}
-
-function AdminSearchInput({
-  value,
-  onChangeText,
-  placeholder,
-}: {
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder: string;
-}) {
-  return (
-    <View className="flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChrome px-4 py-3 web:max-w-[560px] web:backdrop-blur-md">
-      <Search size={18} color={SEARCH_ICON_COLOR} />
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={PLACEHOLDER_COLOR}
-        className="flex-1 text-textMain web:outline-none"
-        autoCapitalize="none"
-      />
     </View>
   );
 }

@@ -63,6 +63,27 @@ describe("FuelByAssetScreen", () => {
     expect(screen.getByText("Critical gaps")).toBeOnTheScreen();
   });
 
+  it("GIVEN a vessel fuel lane WHEN bootstrapping SHOULD request the first backend page", () => {
+    render(<FuelByAssetScreen />);
+
+    expect(useFuelByAsset).toHaveBeenCalledWith(
+      "project-atlantic",
+      "vessel-one",
+      {
+        page: 1,
+        pageSize: 10,
+        sort: "DATE_DESC",
+        search: "",
+        eventType: undefined,
+        fuelType: undefined,
+        dateWindow: undefined,
+        dateFrom: "",
+        dateTo: "",
+        hasCriticalGap: undefined,
+      },
+    );
+  });
+
   it("GIVEN fuel create is dormant WHEN rendered SHOULD not expose the create action", () => {
     render(<FuelByAssetScreen />);
 

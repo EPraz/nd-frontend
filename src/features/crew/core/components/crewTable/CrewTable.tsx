@@ -1,5 +1,6 @@
 import {
   DataTable,
+  type DataTableProps,
   RegistryTableTextStack,
   TableActionMenu,
   type TableActionMenuItem,
@@ -28,6 +29,7 @@ type Props = {
   showVesselColumn?: boolean;
   sortBy?: "ACTIVE_FIRST" | "NAME_ASC" | "NAME_DESC";
   selectedRowId?: string | null;
+  pagination?: DataTableProps<CrewDto>["pagination"];
 };
 
 function humanizeDepartment(value: CrewDepartment | null): string {
@@ -104,7 +106,9 @@ export function CrewTable(props: Props) {
               <TableLink
                 tooltip="Open crew profile"
                 onPress={() =>
-                  router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`)
+                  router.push(
+                    `/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`,
+                  )
                 }
               >
                 {row.fullName}
@@ -163,7 +167,9 @@ export function CrewTable(props: Props) {
         key: "medical",
         header: "Medical",
         flex: 1,
-        render: (row) => <CrewMedicalPill valid={row.medicalCertificateValid} />,
+        render: (row) => (
+          <CrewMedicalPill valid={row.medicalCertificateValid} />
+        ),
       },
       {
         key: "nextChange",
@@ -190,13 +196,17 @@ export function CrewTable(props: Props) {
               label: "Open profile",
               icon: "person-outline",
               onPress: () =>
-                router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`),
+                router.push(
+                  `/projects/${pid}/vessels/${row.assetId}/crew/${row.id}`,
+                ),
             },
             {
               label: "Edit crew",
               icon: "create-outline",
               onPress: () =>
-                router.push(`/projects/${pid}/vessels/${row.assetId}/crew/${row.id}/edit`),
+                router.push(
+                  `/projects/${pid}/vessels/${row.assetId}/crew/${row.id}/edit`,
+                ),
             },
             {
               label: "Certificates",
@@ -212,7 +222,8 @@ export function CrewTable(props: Props) {
             actions.push({
               label: "Open vessel",
               icon: "open-outline",
-              onPress: () => router.push(`/projects/${pid}/vessels/${row.assetId}`),
+              onPress: () =>
+                router.push(`/projects/${pid}/vessels/${row.assetId}`),
               tone: "accent",
             });
           }
@@ -240,6 +251,7 @@ export function CrewTable(props: Props) {
       onRowPress={props.onRowPress}
       emptyText="No crew members found."
       selectedRowId={props.selectedRowId ?? null}
+      pagination={props.pagination}
     />
   );
 }

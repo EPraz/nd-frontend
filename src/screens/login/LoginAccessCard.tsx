@@ -1,10 +1,10 @@
-import { Button } from "@/src/components/ui/button/Button";
 import { Text } from "@/src/components/ui/text/Text";
-import { ArrowRight, LockKeyhole, Mail } from "lucide-react-native";
+import { LinearGradient as ExpoLinearGradient } from "expo-linear-gradient";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react-native";
+import { useState } from "react";
 import { Control, Controller, FieldErrors } from "react-hook-form";
-import { View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import AuthInput from "./AuthInput";
-import { LoginBrandMark } from "./LoginBrandMark";
 import { LOGIN_PALETTE } from "./login.constants";
 
 type LoginFormValues = {
@@ -27,34 +27,38 @@ export function LoginAccessCard({
   loading,
   isSubmitting,
 }: LoginAccessCardProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isBusy = loading || isSubmitting;
+
   return (
     <View
-      className="justify-center h-full px-5 py-5 web:px-8 web:py-8"
+      className="h-full justify-center px-6 py-8"
       style={{ backgroundColor: LOGIN_PALETTE.card }}
     >
-      <View className="mx-auto w-full max-w-[356px] gap-6 ">
-        <View className="gap-3">
-          <View className="gap-2">
-            <View className="flex-row gap-2">
-              <Text
-                className="text-[32px] font-semibold leading-[42px]"
-                style={{ color: LOGIN_PALETTE.navy }}
-              >
-                Welcome to ARXIS
-              </Text>
-              <LoginBrandMark />
-            </View>
-            <Text
-              className="text-[14px] leading-6"
-              style={{ color: LOGIN_PALETTE.navySoft }}
-            >
-              Sign in once and continue into projects, company control, and the
-              operational surfaces beyond them.
-            </Text>
-          </View>
+      <View
+        className="mx-auto w-full"
+        style={{ maxWidth: 430, gap: 32 }}
+      >
+        <View className="gap-4">
+          <Text
+            className="font-semibold"
+            style={{
+              color: LOGIN_PALETTE.navy,
+              fontSize: 29,
+              lineHeight: 38,
+            }}
+          >
+            Welcome back
+          </Text>
+          <Text
+            className="text-[15px] leading-6"
+            style={{ color: LOGIN_PALETTE.navySoft }}
+          >
+            Access the ARXIS intelligence platform.
+          </Text>
         </View>
 
-        <View className="gap-3">
+        <View style={{ gap: 22 }}>
           <Controller
             control={control}
             name="email"
@@ -68,11 +72,11 @@ export function LoginAccessCard({
             render={({ field: { onChange, value } }) => (
               <AuthInput
                 label="Email"
-                placeholder="your@email.test"
+                placeholder="Enter your email"
                 value={value}
                 onChangeText={onChange}
                 keyboardType="email-address"
-                icon={<Mail size={18} color={LOGIN_PALETTE.navy} />}
+                icon={<Mail size={20} color={LOGIN_PALETTE.navyMute} />}
                 error={errors.email?.message}
               />
             )}
@@ -94,16 +98,27 @@ export function LoginAccessCard({
                 placeholder="Enter your password"
                 value={value}
                 onChangeText={onChange}
-                secureTextEntry
-                icon={<LockKeyhole size={18} color={LOGIN_PALETTE.navy} />}
+                secureTextEntry={!showPassword}
+                icon={<LockKeyhole size={20} color={LOGIN_PALETTE.navyMute} />}
                 error={errors.password?.message}
+                rightAdornment={
+                  showPassword ? (
+                    <EyeOff size={20} color={LOGIN_PALETTE.navySoft} />
+                  ) : (
+                    <Eye size={20} color={LOGIN_PALETTE.navySoft} />
+                  )
+                }
+                rightAdornmentLabel={
+                  showPassword ? "Hide password" : "Show password"
+                }
+                onRightAdornmentPress={() => setShowPassword((value) => !value)}
               />
             )}
           />
 
           {errors.root?.message ? (
             <View
-              className="flex-row items-center gap-3 rounded-[18px] border px-4 py-3"
+              className="flex-row items-center gap-3 rounded-[16px] border px-4 py-3"
               style={{
                 borderColor: LOGIN_PALETTE.dangerLine,
                 backgroundColor: LOGIN_PALETTE.dangerSoft,
@@ -123,47 +138,51 @@ export function LoginAccessCard({
           ) : null}
         </View>
 
-        {/* <View className="flex-row items-center justify-between gap-3">
-          <Text
-            className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: LOGIN_PALETTE.navyMute }}
-          >
-            Private access
-          </Text>
-          <Text
-            className="text-[12px]"
-            style={{ color: LOGIN_PALETTE.navySoft }}
-          >
-            Local admin email is prefilled
-          </Text>
-        </View> */}
-
-        <Button
+        <Pressable
+          accessibilityRole="button"
           onPress={onSubmit}
-          loading={loading || isSubmitting}
-          spinnerColor={LOGIN_PALETTE.card}
-          className="h-[52px] w-full rounded-[18px]"
-          style={{ backgroundColor: LOGIN_PALETTE.accent }}
-          rightIcon={
-            !(loading || isSubmitting) ? (
-              <ArrowRight size={18} color={LOGIN_PALETTE.navy} />
-            ) : undefined
-          }
+          disabled={isBusy}
+          className="w-full flex-row items-center justify-center overflow-hidden rounded-[8px]"
+          style={{
+            minHeight: 64,
+            paddingHorizontal: 28,
+            opacity: isBusy ? 0.62 : 1,
+          }}
         >
-          <Text
-            className="text-base font-semibold"
-            style={{ color: LOGIN_PALETTE.navy }}
-          >
-            Enter workspace
-          </Text>
-        </Button>
+          <ExpoLinearGradient
+            colors={[LOGIN_PALETTE.action, LOGIN_PALETTE.actionHighlight]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={{ position: "absolute", inset: 0 }}
+          />
+          {isBusy ? (
+            <ActivityIndicator color={LOGIN_PALETTE.navy} />
+          ) : (
+            <View className="w-full flex-row items-center justify-between">
+              <View style={{ width: 24 }} />
+              <Text
+                className="text-base font-semibold"
+                style={{ color: LOGIN_PALETTE.navy }}
+              >
+                Sign In
+              </Text>
+              <ArrowRight size={24} color={LOGIN_PALETTE.navy} />
+            </View>
+          )}
+        </Pressable>
 
-        <Text
-          className="text-center text-[10px] leading-6"
-          style={{ color: LOGIN_PALETTE.navyMute }}
-        >
-          Secure maritime access for ARXIS workspaces and control surfaces.
-        </Text>
+        <View className="flex-row items-center gap-3 pt-4">
+          <View
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: LOGIN_PALETTE.aqua }}
+          />
+          <Text className="text-[13px]" style={{ color: LOGIN_PALETTE.navyMute }}>
+            System Status:{" "}
+            <Text className="text-[13px]" style={{ color: LOGIN_PALETTE.aqua }}>
+              Operational
+            </Text>
+          </Text>
+        </View>
       </View>
     </View>
   );

@@ -1,5 +1,6 @@
 import { CertificatesTable } from "@/src/features/certificates/core";
 import type { CertificateDto } from "@/src/features/certificates/shared";
+import type { DataTableProps } from "@/src/components/ui/table";
 import type { ReactNode } from "react";
 import { View } from "react-native";
 
@@ -9,6 +10,7 @@ type Props = {
   error: string | null;
   onRetry: () => void;
   headerActions?: ReactNode;
+  pagination?: DataTableProps<CertificateDto>["pagination"];
 };
 
 export function AssetCertificatesOverviewWorkspaceSection({
@@ -17,6 +19,7 @@ export function AssetCertificatesOverviewWorkspaceSection({
   error,
   onRetry,
   headerActions,
+  pagination,
 }: Props) {
   return (
     <View className="flex-1">
@@ -31,6 +34,7 @@ export function AssetCertificatesOverviewWorkspaceSection({
         onRetry={onRetry}
         showVesselColumn={false}
         sortByExpiry
+        pagination={pagination}
       />
     </View>
   );

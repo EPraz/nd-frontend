@@ -1,4 +1,5 @@
 import { ErrorState, Loading, Text } from "@/src/components";
+import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
   RegistryHeaderActionButton,
   RegistrySummaryStrip,
@@ -6,11 +7,18 @@ import {
   RegistryWorkspaceSection,
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
+import {
+  TableDateRangeFilter,
+  TableFilterSearch,
+} from "@/src/components/ui/table";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
+import { DEFAULT_PAGE_SIZE } from "@/src/contracts/pagination.contract";
+import { humanizeTechnicalLabel } from "@/src/helpers/humanizeTechnicalLabel";
+import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { canUser } from "@/src/security/rolePermissions";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { useCrewById } from "../../../core/hooks/useCrewById";
 import {
@@ -30,6 +38,44 @@ import {
   useGenerateCrewCertificateRequirements,
 } from "../../hooks";
 
+const REQUIREMENT_STATUS_OPTIONS = [
+  "ALL",
+  "MISSING",
+  "UNDER_REVIEW",
+  "PROVIDED",
+  "EXPIRED",
+  "EXEMPT",
+  "REQUIRED",
+] as const;
+const CERTIFICATE_STATUS_OPTIONS = [
+  "ALL",
+  "VALID",
+  "EXPIRED",
+  "EXPIRING_SOON",
+  "PENDING",
+] as const;
+const WORKFLOW_STATUS_OPTIONS = [
+  "ALL",
+  "DRAFT",
+  "SUBMITTED",
+  "APPROVED",
+  "REJECTED",
+  "ARCHIVED",
+] as const;
+const CERTIFICATE_DATE_WINDOWS = [
+  "ALL",
+  "OVERDUE",
+  "NEXT_30",
+  "NEXT_90",
+  "THIS_YEAR",
+] as const;
+const CERTIFICATE_SORT_OPTIONS = [
+  "EXPIRY_ASC",
+  "EXPIRY_DESC",
+  "CERT_ASC",
+  "UPDATED_DESC",
+] as const;
+
 export default function CrewCertificatesByCrewScreen() {
   const router = useRouter();
   const { show } = useToast();
@@ -45,6 +91,26 @@ export default function CrewCertificatesByCrewScreen() {
   const cid = String(crewId);
   const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
   const canUpdateOperationalRecords = canUser(session, "OPERATIONAL_WRITE");
+  const [requirementsPage, setRequirementsPage] = useState(1);
+  const [requirementsPageSize, setRequirementsPageSize] =
+    useState(DEFAULT_PAGE_SIZE);
+  const [requirementsSearch, setRequirementsSearch] = useState("");
+  const [requirementsStatusFilter, setRequirementsStatusFilter] =
+    useState("ALL");
+  const [certificatesPage, setCertificatesPage] = useState(1);
+  const [certificatesPageSize, setCertificatesPageSize] =
+    useState(DEFAULT_PAGE_SIZE);
+  const [certificatesSearch, setCertificatesSearch] = useState("");
+  const [certificatesStatusFilter, setCertificatesStatusFilter] =
+    useState("ALL");
+  const [workflowStatusFilter, setWorkflowStatusFilter] = useState("ALL");
+  const [certificateDateWindow, setCertificateDateWindow] = useState("ALL");
+  const [certificateDateFrom, setCertificateDateFrom] = useState("");
+  const [certificateDateTo, setCertificateDateTo] = useState("");
+  const [certificatesSort, setCertificatesSort] = useState("EXPIRY_ASC");
+  const [openControl, setOpenControl] = useState<string | null>(null);
+  const debouncedRequirementsSearch = useDebouncedValue(requirementsSearch, 180);
+  const debouncedCertificatesSearch = useDebouncedValue(certificatesSearch, 180);
 
   const {
     crew,
@@ -54,16 +120,39 @@ export default function CrewCertificatesByCrewScreen() {
   } = useCrewById(pid, aid, cid);
   const {
     requirements,
+    pagination: requirementsPagination,
+    stats: requirementsPageStats,
     loading: requirementsLoading,
     error: requirementsError,
     refresh: refreshRequirements,
-  } = useCrewCertificateRequirementsByCrew(pid, aid, cid);
+  } = useCrewCertificateRequirementsByCrew(pid, aid, cid, {
+    page: requirementsPage,
+    pageSize: requirementsPageSize,
+    search: debouncedRequirementsSearch,
+    status:
+      requirementsStatusFilter === "ALL" ? undefined : requirementsStatusFilter,
+  });
   const {
     certificates,
+    pagination: certificatesPagination,
+    stats: certificatesPageStats,
     loading: certificatesLoading,
     error: certificatesError,
     refresh: refreshCertificates,
-  } = useCrewCertificatesByCrew(pid, aid, cid);
+  } = useCrewCertificatesByCrew(pid, aid, cid, {
+    page: certificatesPage,
+    pageSize: certificatesPageSize,
+    sort: certificatesSort,
+    search: debouncedCertificatesSearch,
+    status:
+      certificatesStatusFilter === "ALL" ? undefined : certificatesStatusFilter,
+    workflowStatus:
+      workflowStatusFilter === "ALL" ? undefined : workflowStatusFilter,
+    dateWindow:
+      certificateDateWindow === "ALL" ? undefined : certificateDateWindow,
+    dateFrom: certificateDateFrom,
+    dateTo: certificateDateTo,
+  });
   const {
     summary: msmcSummary,
     loading: msmcLoading,
@@ -76,8 +165,24 @@ export default function CrewCertificatesByCrewScreen() {
     error: generationError,
   } = useGenerateCrewCertificateRequirements(pid, aid, cid);
 
-  const requirementStats = summarizeCrewCertificateRequirements(requirements);
-  const certificateStats = summarizeCrewCertificates(certificates);
+  const localRequirementStats = summarizeCrewCertificateRequirements(requirements);
+  const localCertificateStats = summarizeCrewCertificates(certificates);
+  const requirementStats = {
+    totalRequirements:
+      requirementsPageStats?.total ?? localRequirementStats.totalRequirements,
+    missingRequirements:
+      requirementsPageStats?.missing ?? localRequirementStats.missingRequirements,
+    underReviewRequirements:
+      requirementsPageStats?.underReview ??
+      localRequirementStats.underReviewRequirements,
+  };
+  const certificateStats = {
+    activeCertificates:
+      certificatesPageStats?.valid ?? localCertificateStats.activeCertificates,
+    expiringSoonCertificates:
+      certificatesPageStats?.expiringSoon ??
+      localCertificateStats.expiringSoonCertificates,
+  };
   const statsLoading = requirementsLoading || certificatesLoading;
 
   const assignedVesselName = crew?.assetName ?? crew?.asset?.name ?? "Assigned vessel";
@@ -122,6 +227,10 @@ export default function CrewCertificatesByCrewScreen() {
       refreshCertificates(),
       refreshMsmc(),
     ]);
+  }
+
+  function toggleControl(controlId: string) {
+    setOpenControl((current) => (current === controlId ? null : controlId));
   }
 
   async function onGenerate() {
@@ -269,24 +378,195 @@ export default function CrewCertificatesByCrewScreen() {
       <CrewCertificateRequirementsTable
         projectId={pid}
         title="Crew certificate requirements"
-        subtitleRight={`${requirements.length} rows in this crew lane`}
+        subtitleRight={`${requirementsPagination?.totalItems ?? requirements.length} rows in this crew lane`}
+        headerActions={
+          <>
+            <TableFilterSearch
+              value={requirementsSearch}
+              onChangeText={(value) => {
+                setRequirementsSearch(value);
+                setRequirementsPage(1);
+              }}
+              placeholder="Search requirements..."
+              open={openControl === "requirements-search"}
+              onOpenChange={(open) =>
+                setOpenControl(open ? "requirements-search" : null)
+              }
+              minWidth={300}
+            />
+            <ToolbarSelect
+              value={requirementsStatusFilter}
+              options={[...REQUIREMENT_STATUS_OPTIONS]}
+              open={openControl === "requirements-status"}
+              onToggle={() => toggleControl("requirements-status")}
+              onChange={(value) => {
+                setRequirementsStatusFilter(value);
+                setRequirementsPage(1);
+              }}
+              renderLabel={(value) =>
+                value === "ALL" ? "All status" : humanizeTechnicalLabel(value)
+              }
+              triggerIconName="filter-outline"
+              minWidth={170}
+            />
+          </>
+        }
         data={requirements}
         isLoading={requirementsLoading}
         error={requirementsError}
         onRetry={refreshRequirements}
         onUpload={openUpload}
         canUpload={canUploadDocuments}
+        pagination={
+          requirementsPagination
+            ? {
+                meta: requirementsPagination,
+                onPageChange: setRequirementsPage,
+                onPageSizeChange: (nextPageSize) => {
+                  setRequirementsPageSize(nextPageSize);
+                  setRequirementsPage(1);
+                },
+              }
+            : undefined
+        }
       />
 
       <CrewCertificatesTable
         projectId={pid}
         title="Uploaded certificates"
-        subtitleRight={`${certificates.length} certificate records`}
+        subtitleRight={`${certificatesPagination?.totalItems ?? certificates.length} certificate records`}
+        headerActions={
+          <>
+            <TableFilterSearch
+              value={certificatesSearch}
+              onChangeText={(value) => {
+                setCertificatesSearch(value);
+                setCertificatesPage(1);
+              }}
+              placeholder="Search certificates..."
+              open={openControl === "certificates-search"}
+              onOpenChange={(open) =>
+                setOpenControl(open ? "certificates-search" : null)
+              }
+              minWidth={300}
+            />
+            <ToolbarSelect
+              value={certificatesStatusFilter}
+              options={[...CERTIFICATE_STATUS_OPTIONS]}
+              open={openControl === "certificates-status"}
+              onToggle={() => toggleControl("certificates-status")}
+              onChange={(value) => {
+                setCertificatesStatusFilter(value);
+                setCertificatesPage(1);
+              }}
+              renderLabel={(value) =>
+                value === "ALL" ? "All status" : humanizeTechnicalLabel(value)
+              }
+              triggerIconName="shield-checkmark-outline"
+              minWidth={170}
+            />
+            <ToolbarSelect
+              value={workflowStatusFilter}
+              options={[...WORKFLOW_STATUS_OPTIONS]}
+              open={openControl === "certificates-workflow"}
+              onToggle={() => toggleControl("certificates-workflow")}
+              onChange={(value) => {
+                setWorkflowStatusFilter(value);
+                setCertificatesPage(1);
+              }}
+              renderLabel={(value) =>
+                value === "ALL" ? "All workflow" : humanizeTechnicalLabel(value)
+              }
+              triggerIconName="git-branch-outline"
+              minWidth={174}
+            />
+            <ToolbarSelect
+              value={certificateDateWindow}
+              options={[...CERTIFICATE_DATE_WINDOWS]}
+              open={openControl === "certificates-date-window"}
+              onToggle={() => toggleControl("certificates-date-window")}
+              onChange={(value) => {
+                setCertificateDateWindow(value);
+                setCertificateDateFrom("");
+                setCertificateDateTo("");
+                setCertificatesPage(1);
+              }}
+              renderLabel={(value) =>
+                value === "ALL" ? "All expiry" : humanizeTechnicalLabel(value)
+              }
+              triggerIconName="calendar-outline"
+              minWidth={160}
+            />
+            <TableDateRangeFilter
+              from={certificateDateFrom}
+              to={certificateDateTo}
+              open={openControl === "certificates-date-range"}
+              onOpenChange={(open) =>
+                setOpenControl(open ? "certificates-date-range" : null)
+              }
+              onFromChange={(value) => {
+                setCertificateDateFrom(value);
+                setCertificateDateWindow("ALL");
+                setCertificatesPage(1);
+              }}
+              onToChange={(value) => {
+                setCertificateDateTo(value);
+                setCertificateDateWindow("ALL");
+                setCertificatesPage(1);
+              }}
+              onClear={() => {
+                setCertificateDateFrom("");
+                setCertificateDateTo("");
+                setCertificatesPage(1);
+              }}
+              label="Custom expiry"
+            />
+            <ToolbarSelect
+              value={certificatesSort}
+              options={[...CERTIFICATE_SORT_OPTIONS]}
+              open={openControl === "certificates-sort"}
+              onToggle={() => toggleControl("certificates-sort")}
+              onChange={(value) => {
+                setCertificatesSort(value);
+                setCertificatesPage(1);
+              }}
+              renderLabel={renderCertificateSortLabel}
+              triggerIconName="swap-vertical-outline"
+              minWidth={160}
+            />
+          </>
+        }
         data={certificates}
         isLoading={certificatesLoading}
         error={certificatesError}
         onRetry={refreshCertificates}
+        pagination={
+          certificatesPagination
+            ? {
+                meta: certificatesPagination,
+                onPageChange: setCertificatesPage,
+                onPageSizeChange: (nextPageSize) => {
+                  setCertificatesPageSize(nextPageSize);
+                  setCertificatesPage(1);
+                },
+              }
+            : undefined
+        }
       />
     </View>
   );
+}
+
+function renderCertificateSortLabel(value: string) {
+  switch (value) {
+    case "EXPIRY_DESC":
+      return "Expiry latest";
+    case "CERT_ASC":
+      return "Certificate A-Z";
+    case "UPDATED_DESC":
+      return "Recently updated";
+    case "EXPIRY_ASC":
+    default:
+      return "Expiry soonest";
+  }
 }

@@ -1,3 +1,4 @@
+import type { PaginationMetaDto } from "@/src/contracts/pagination.contract";
 import React from "react";
 import {
   FlatList,
@@ -32,10 +33,15 @@ export type DataTableProps<Row> = {
   getRowId: (row: Row) => string;
   onRowPress?: (row: Row) => void;
 
-  // ✅ NUEVO: selección
   selectedRowId?: string | null;
 
   emptyText?: string;
+  pagination?: {
+    meta: PaginationMetaDto;
+    onPageChange: (page: number) => void;
+    onPageSizeChange?: (pageSize: number) => void;
+    pageSizeOptions?: number[];
+  };
 };
 
 export function DataTable<Row>(props: DataTableProps<Row>) {
@@ -70,7 +76,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
         <View className="flex-1">
           {props.isLoading ? (
             <View className="px-5 py-6">
-              <Text className="text-sm text-muted">Loading…</Text>
+              <Text className="text-sm text-muted">Loading...</Text>
             </View>
           ) : props.error ? (
             <View className="gap-3 px-5 py-5">
@@ -100,7 +106,119 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
           )}
         </View>
       </View>
+
+      {props.pagination && !props.isLoading && !props.error ? (
+        <TablePaginationControls
+          meta={props.pagination.meta}
+          onPageChange={props.pagination.onPageChange}
+          onPageSizeChange={props.pagination.onPageSizeChange}
+          pageSizeOptions={props.pagination.pageSizeOptions}
+        />
+      ) : null}
     </View>
+  );
+}
+
+export function TablePaginationControls({
+  meta,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [10, 25, 50, 100],
+}: {
+  meta: PaginationMetaDto;
+  onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: number[];
+}) {
+  const start = meta.totalItems === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
+  const end = Math.min(meta.totalItems, meta.page * meta.pageSize);
+
+  return (
+    <View className="flex-row flex-wrap items-center justify-between gap-3 border-t border-shellLine pt-4">
+      <Text className="text-[12px] text-muted">
+        Showing {start}-{end} of {meta.totalItems}
+      </Text>
+
+      <View className="flex-row flex-wrap items-center gap-2">
+        {onPageSizeChange ? (
+          <View className="flex-row items-center gap-1">
+            {pageSizeOptions.map((option) => {
+              const active = option === meta.pageSize;
+
+              return (
+                <Pressable
+                  key={option}
+                  onPress={() => onPageSizeChange(option)}
+                  className={[
+                    "rounded-full border px-3 py-2",
+                    active
+                      ? "border-accent/45 bg-accent/15"
+                      : "border-shellLine bg-shellPanelSoft",
+                  ].join(" ")}
+                >
+                  <Text
+                    className={[
+                      "text-[12px] font-semibold",
+                      active ? "text-accent" : "text-muted",
+                    ].join(" ")}
+                  >
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        <View className="flex-row items-center gap-2">
+          <PaginationButton
+            label="Previous"
+            disabled={!meta.hasPreviousPage}
+            onPress={() => onPageChange(meta.page - 1)}
+          />
+          <Text className="text-[12px] font-semibold text-textMain">
+            Page {meta.page} of {meta.totalPages}
+          </Text>
+          <PaginationButton
+            label="Next"
+            disabled={!meta.hasNextPage}
+            onPress={() => onPageChange(meta.page + 1)}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function PaginationButton({
+  label,
+  disabled,
+  onPress,
+}: {
+  label: string;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      disabled={disabled}
+      onPress={onPress}
+      className={[
+        "rounded-full border px-4 py-2",
+        disabled
+          ? "border-shellLine bg-shellPanelSoft opacity-50"
+          : "border-accent/35 bg-accent/10 web:hover:bg-accent/15",
+      ].join(" ")}
+    >
+      <Text
+        className={[
+          "text-[12px] font-semibold",
+          disabled ? "text-muted" : "text-accent",
+        ].join(" ")}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -161,7 +279,6 @@ function RowItem<Row>(props: {
 
     const active = hovered || props.selected;
 
-    // ✅ color base para TODO texto dentro del row
     const textClass = active
       ? "text-textMain text-[12px]"
       : "text-muted text-[12px]";

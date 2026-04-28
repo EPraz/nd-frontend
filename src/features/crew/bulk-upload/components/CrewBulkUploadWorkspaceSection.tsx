@@ -3,9 +3,14 @@ import {
   RegistrySummaryStrip,
   RegistryWorkspaceSection,
 } from "@/src/components/ui/registryWorkspace";
+import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
+import { TableFilterSearch } from "@/src/components/ui/table";
+import { DEFAULT_PAGE_SIZE } from "@/src/contracts/pagination.contract";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { useVessels } from "@/src/features/vessels/core";
+import { humanizeTechnicalLabel } from "@/src/helpers";
+import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { canUser } from "@/src/security/rolePermissions";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
@@ -17,7 +22,10 @@ import { useCrewBulkUploadSessionActions } from "../hooks/useCrewBulkUploadSessi
 import { useCrewBulkUploadSessions } from "../hooks/useCrewBulkUploadSessions";
 import { CrewBulkUploadSessionsTable } from "./CrewBulkUploadSessionsTable";
 import { CrewBulkUploadStartSessionSection } from "./CrewBulkUploadStartSessionSection";
-import { getCrewBulkUploadSummaryItems } from "./crewBulkUploadWorkspace.helpers";
+import {
+  getCrewBulkUploadSummaryItems,
+  getCrewBulkUploadSummaryItemsFromStats,
+} from "./crewBulkUploadWorkspace.helpers";
 
 type FormValues = {
   defaultAssetId: string;
@@ -32,6 +40,17 @@ export function CrewBulkUploadWorkspaceSection({
   const { show } = useToast();
   const { session } = useSessionContext();
   const canCreateBulkUploadSession = canUser(session, "DOCUMENT_UPLOAD");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [sessionSearch, setSessionSearch] = useState("");
+  const [sessionStatusFilter, setSessionStatusFilter] = useState("ALL");
+  const [sessionAssetFilter, setSessionAssetFilter] = useState("ALL");
+  const [sessionCriticalFilter, setSessionCriticalFilter] = useState("ALL");
+  const [showSessionSearch, setShowSessionSearch] = useState(false);
+  const [showSessionStatusMenu, setShowSessionStatusMenu] = useState(false);
+  const [showSessionAssetMenu, setShowSessionAssetMenu] = useState(false);
+  const [showSessionCriticalMenu, setShowSessionCriticalMenu] = useState(false);
+  const debouncedSessionSearch = useDebouncedValue(sessionSearch, 180);
 
   const {
     vessels,
@@ -39,8 +58,19 @@ export function CrewBulkUploadWorkspaceSection({
     error: vesselsError,
     refresh: refreshVessels,
   } = useVessels(projectId);
-  const { sessions, loading, error, refresh } =
-    useCrewBulkUploadSessions(projectId);
+  const { sessions, pagination, stats, loading, error, refresh } =
+    useCrewBulkUploadSessions(projectId, {
+      page,
+      pageSize,
+      sort: "UPDATED_DESC",
+      search: debouncedSessionSearch,
+      status:
+        sessionStatusFilter === "ALL" ? undefined : sessionStatusFilter,
+      defaultAssetId:
+        sessionAssetFilter === "ALL" ? undefined : sessionAssetFilter,
+      hasCriticalIssues:
+        sessionCriticalFilter === "ALL" ? undefined : sessionCriticalFilter,
+    });
   const { submit, loading: uploading, error: uploadError } =
     useCreateCrewBulkUploadSession(projectId);
   const {
@@ -72,8 +102,11 @@ export function CrewBulkUploadWorkspaceSection({
   const selectedVessel =
     vessels.find((vessel) => vessel.id === defaultAssetId) ?? null;
   const summaryItems = useMemo(
-    () => getCrewBulkUploadSummaryItems(sessions),
-    [sessions],
+    () =>
+      stats
+        ? getCrewBulkUploadSummaryItemsFromStats(stats)
+        : getCrewBulkUploadSummaryItems(sessions),
+    [sessions, stats],
   );
 
   async function onPickWorkbook() {
@@ -188,13 +221,96 @@ export function CrewBulkUploadWorkspaceSection({
 
       <CrewBulkUploadSessionsTable
         title="Existing sessions"
-        subtitleRight={`${sessions.length} sessions in this workspace`}
+        subtitleRight={
+          pagination
+            ? `${pagination.totalItems} sessions in scope`
+            : `${sessions.length} sessions in this workspace`
+        }
+        headerActions={
+          <>
+            <TableFilterSearch
+              value={sessionSearch}
+              onChangeText={(value) => {
+                setSessionSearch(value);
+                setPage(1);
+              }}
+              placeholder="Search workbook or vessel..."
+              open={showSessionSearch}
+              onOpenChange={setShowSessionSearch}
+              minWidth={300}
+            />
+
+            <ToolbarSelect
+              value={sessionStatusFilter}
+              options={["ALL", "READY_FOR_REVIEW", "COMMITTED", "DISCARDED"]}
+              open={showSessionStatusMenu}
+              onToggle={() => setShowSessionStatusMenu((prev) => !prev)}
+              onChange={(value) => {
+                setSessionStatusFilter(value);
+                setPage(1);
+                setShowSessionStatusMenu(false);
+              }}
+              renderLabel={(value) =>
+                value === "ALL" ? "All sessions" : humanizeTechnicalLabel(value)
+              }
+              triggerIconName="filter-outline"
+              minWidth={170}
+            />
+
+            <ToolbarSelect
+              value={sessionAssetFilter}
+              options={["ALL", ...vessels.map((vessel) => vessel.id)]}
+              open={showSessionAssetMenu}
+              onToggle={() => setShowSessionAssetMenu((prev) => !prev)}
+              onChange={(value) => {
+                setSessionAssetFilter(value);
+                setPage(1);
+                setShowSessionAssetMenu(false);
+              }}
+              renderLabel={(value) => {
+                if (value === "ALL") return "All vessels";
+                return vessels.find((vessel) => vessel.id === value)?.name ?? "Vessel";
+              }}
+              triggerIconName="boat-outline"
+              minWidth={170}
+            />
+
+            <ToolbarSelect
+              value={sessionCriticalFilter}
+              options={["ALL", "true"]}
+              open={showSessionCriticalMenu}
+              onToggle={() => setShowSessionCriticalMenu((prev) => !prev)}
+              onChange={(value) => {
+                setSessionCriticalFilter(value);
+                setPage(1);
+                setShowSessionCriticalMenu(false);
+              }}
+              renderLabel={(value) =>
+                value === "ALL" ? "All issues" : "Critical issues"
+              }
+              triggerIconName="alert-circle-outline"
+              minWidth={158}
+            />
+          </>
+        }
         data={sessions}
         isLoading={loading}
         error={error}
         onRetry={refresh}
         onRowPress={(session) =>
           router.push(`/projects/${projectId}/crew/bulk-upload/${session.id}`)
+        }
+        pagination={
+          pagination
+            ? {
+                meta: pagination,
+                onPageChange: setPage,
+                onPageSizeChange: (nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  setPage(1);
+                },
+              }
+            : undefined
         }
       />
     </View>

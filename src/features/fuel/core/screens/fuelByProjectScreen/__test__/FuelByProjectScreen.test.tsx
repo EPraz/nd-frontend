@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { render, screen } from "@testing-library/react-native";
 import type { ReactNode } from "react";
+import { useVessels } from "@/src/features/vessels/core";
 import FuelByProjectScreen from "../FuelByProjectScreen";
 import { useFuelPageData } from "../../../hooks";
 
@@ -13,6 +14,10 @@ jest.mock("expo-router", () => ({
 
 jest.mock("../../../hooks", () => ({
   useFuelPageData: jest.fn(),
+}));
+
+jest.mock("@/src/features/vessels/core", () => ({
+  useVessels: jest.fn(),
 }));
 
 jest.mock("@/src/components/ui/button/Button", () => ({
@@ -94,6 +99,17 @@ describe("FuelByProjectScreen", () => {
       isLoading: false,
       error: null,
       refetch: jest.fn(),
+    });
+    (useVessels as jest.Mock).mockReturnValue({
+      vessels: [
+        {
+          id: "asset-1",
+          name: "MV Navigate One",
+        },
+      ],
+      loading: false,
+      error: null,
+      refresh: jest.fn(),
     });
   });
 

@@ -1,4 +1,8 @@
-import { DataTable, type Column } from "@/src/components/ui/table/DataTable";
+import {
+  DataTable,
+  type Column,
+  type DataTableProps,
+} from "@/src/components/ui/table/DataTable";
 import { TableActionIcon } from "@/src/components/ui/table/TableActionIcon";
 import { TableLink } from "@/src/components/ui/table/TableLink";
 import { Text } from "@/src/components/ui/text/Text";
@@ -22,6 +26,7 @@ type Props = {
   onRetry: () => void;
   onUpload: (row: CertificateRequirementDto) => void;
   canUpload?: boolean;
+  pagination?: DataTableProps<CertificateRequirementDto>["pagination"];
 };
 
 export function CertificateRequirementsTable(props: Props) {
@@ -38,6 +43,7 @@ export function CertificateRequirementsTable(props: Props) {
     onRetry,
     onUpload,
     canUpload = true,
+    pagination,
   } = props;
 
   const rows = useMemo(() => {
@@ -185,6 +191,7 @@ export function CertificateRequirementsTable(props: Props) {
       minWidth={980}
       getRowId={(row) => row.id}
       emptyText="No certificate requirements found."
+      pagination={pagination}
     />
   );
 }
