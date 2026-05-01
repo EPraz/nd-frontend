@@ -3,7 +3,12 @@ import { LinearGradient as ExpoLinearGradient } from "expo-linear-gradient";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react-native";
 import { useState } from "react";
 import { Control, Controller, FieldErrors } from "react-hook-form";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import AuthInput from "./AuthInput";
 import { LOGIN_PALETTE } from "./login.constants";
 
@@ -28,16 +33,22 @@ export function LoginAccessCard({
   isSubmitting,
 }: LoginAccessCardProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const { width, height } = useWindowDimensions();
   const isBusy = loading || isSubmitting;
+  const isDesktop = width >= 1100;
+  const isTight = height < 780;
 
   return (
     <View
-      className="min-h-[440px] min-w-0 flex-1 justify-center px-6 py-8 md:px-8"
-      style={{ backgroundColor: LOGIN_PALETTE.card }}
+      className="min-w-0 flex-1 justify-center px-6 py-8 md:px-8"
+      style={{
+        backgroundColor: LOGIN_PALETTE.card,
+        minHeight: isDesktop ? undefined : isTight ? 360 : 390,
+      }}
     >
       <View
         className="mx-auto w-full min-w-0"
-        style={{ maxWidth: 430, gap: 32 }}
+        style={{ maxWidth: 430, gap: isTight ? 24 : 32 }}
       >
         <View className="gap-4">
           <Text
@@ -58,7 +69,7 @@ export function LoginAccessCard({
           </Text>
         </View>
 
-        <View style={{ gap: 22 }}>
+        <View style={{ gap: isTight ? 16 : 22 }}>
           <Controller
             control={control}
             name="email"
@@ -144,7 +155,7 @@ export function LoginAccessCard({
           disabled={isBusy}
           className="w-full flex-row items-center justify-center overflow-hidden rounded-[8px]"
           style={{
-            minHeight: 64,
+            minHeight: isTight ? 58 : 64,
             paddingHorizontal: 28,
             opacity: isBusy ? 0.62 : 1,
           }}

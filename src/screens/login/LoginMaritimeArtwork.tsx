@@ -1,18 +1,21 @@
 import maritimeNetworkArt from "@/assets/images/login-maritime-network.jpeg";
 import { LinearGradient as ExpoLinearGradient } from "expo-linear-gradient";
-import { ImageBackground, View } from "react-native";
+import { ImageBackground, View, useWindowDimensions } from "react-native";
 
 type LoginMaritimeArtworkProps = {
   compact: boolean;
 };
 
 export function LoginMaritimeArtwork({ compact }: LoginMaritimeArtworkProps) {
+  const { height } = useWindowDimensions();
+  const isTightDesktop = !compact && height < 820;
+
   return (
     <View
       className="absolute inset-x-0 overflow-hidden"
       style={{
-        bottom: compact ? 44 : 88,
-        height: compact ? 120 : 280,
+        bottom: compact ? 34 : isTightDesktop ? 56 : 88,
+        height: compact ? 112 : isTightDesktop ? 220 : 280,
       }}
     >
       <ImageBackground
