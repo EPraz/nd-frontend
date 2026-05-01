@@ -81,12 +81,13 @@ export default function CrewViewScreen() {
   const assignedVesselName = crew.assetName ?? crew.asset?.name ?? "Not set";
 
   return (
-    <View className="flex-1">
+    <View className="min-w-0 flex-1 overflow-hidden">
       <ScrollView
+        className="min-w-0 flex-1"
         contentContainerClassName="p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="mx-auto w-full max-w-[1480px] gap-5">
+        <View className="mx-auto w-full max-w-full gap-5 xl:max-w-[1480px]">
           <CrewProfileHero
             crew={crew}
             assignedVesselName={assignedVesselName}
@@ -101,14 +102,14 @@ export default function CrewViewScreen() {
             deleting={deleting}
           />
 
-          <View className="gap-5 web:xl:flex-row web:xl:items-start">
-            <View className="flex-1 gap-5">
+          <View className="min-w-0 gap-5 xl:flex-row xl:items-start">
+            <View className="min-w-0 flex-1 gap-5">
               <CrewProfileSection
                 eyebrow="Identity"
                 title="Profile baseline"
                 description="Core identity, travel documents, and vessel assignment the crew surfaces read."
               >
-                <View className="gap-5 web:grid web:grid-cols-2">
+                <View className="gap-5 md:grid md:grid-cols-2">
                   <FieldDisplay
                     label="Assigned vessel"
                     value={assignedVesselName}
@@ -143,7 +144,7 @@ export default function CrewViewScreen() {
                 title="Contract cycle"
                 description="Ownership, embarkation window, and next leave planning around the current assignment."
               >
-                <View className="gap-5 web:grid web:grid-cols-2">
+                <View className="gap-5 md:grid md:grid-cols-2">
                   <FieldDisplay
                     label="Contract type"
                     value={crew.contractType ?? "Not set"}
@@ -188,7 +189,7 @@ export default function CrewViewScreen() {
                 title="Experience and familiarization"
                 description="Sea time depth, current-rank context, and onboard familiarization readiness."
               >
-                <View className="gap-5 web:grid web:grid-cols-2">
+                <View className="gap-5 md:grid md:grid-cols-2">
                   <FieldDisplay
                     label="Total sea experience"
                     value={formatYears(crew.totalSeaExperienceYears)}
@@ -225,7 +226,7 @@ export default function CrewViewScreen() {
               </CrewProfileSection>
             </View>
 
-            <View className="w-full gap-5 web:xl:w-[390px]">
+            <View className="w-full min-w-0 gap-5 xl:w-[390px] xl:flex-none">
               <CrewProfileSection
                 eyebrow="Portrait"
                 title="Crew photo"

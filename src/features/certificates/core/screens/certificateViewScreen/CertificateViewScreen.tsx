@@ -198,7 +198,7 @@ export default function CertificateViewScreen() {
 
   return (
     <>
-      <View className="flex-1 p-4 web:p-6 gap-5">
+      <View className="min-w-0 flex-1 gap-5 p-4 web:p-6">
         <View className="gap-3">
           <Pressable
             onPress={goBack}
@@ -208,9 +208,9 @@ export default function CertificateViewScreen() {
             <Text className="text-accent font-semibold">Back</Text>
           </Pressable>
 
-          <View className="flex-row items-start justify-between gap-4">
-            <View className="gap-1 flex-1">
-              <Text className="text-textMain text-[34px] font-semibold leading-[110%]">
+          <View className="gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <View className="min-w-0 flex-1 gap-1">
+              <Text className="text-[30px] font-semibold leading-[110%] text-textMain lg:text-[34px]">
                 Certificate - {certificate.certificateName}
               </Text>
               <Text className="text-muted text-[14px]">
@@ -219,7 +219,7 @@ export default function CertificateViewScreen() {
               </Text>
             </View>
 
-            <View className="flex-row items-center gap-2">
+            <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
               <Button
                 variant="icon"
                 size="iconLg"
@@ -272,7 +272,7 @@ export default function CertificateViewScreen() {
           </View>
         </View>
 
-        <View className="gap-5 web:lg:flex-row">
+        <View className="gap-5 lg:flex-row">
           <View className="flex-1 gap-5">
             <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
               <CardHeaderRow>
@@ -312,7 +312,7 @@ export default function CertificateViewScreen() {
                     </View>
                   </View>
 
-                  <View className="gap-4 web:flex-row">
+              <View className="gap-4 md:flex-row">
                     <View className="flex-1 gap-4">
                       <FieldDisplay label="Number" value={certificate.number ?? "-"} />
                       <FieldDisplay label="Issuer" value={certificate.issuer ?? "-"} />
@@ -428,7 +428,7 @@ export default function CertificateViewScreen() {
             </Card>
           </View>
 
-          <View className="w-full web:lg:w-[380px] gap-5">
+          <View className="w-full gap-5 lg:w-[380px]">
             <Card className="rounded-[24px] shadow-sm shadow-black/10 web:shadow-black/30">
               <CardHeaderRow>
                 <CardTitle className="text-[16px] text-textMain">

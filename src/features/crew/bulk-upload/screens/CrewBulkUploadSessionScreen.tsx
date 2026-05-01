@@ -1,10 +1,11 @@
 import { ErrorState, Loading, Text } from "@/src/components";
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import { RegistryWorkspaceSection } from "@/src/components/ui/registryWorkspace";
 import {
   DataTable,
   RegistryTablePill,
-  TableFilterSearch,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
@@ -68,7 +69,7 @@ function SessionTimingCard({
   updatedAt: string;
 }) {
   return (
-    <View className="min-w-[260px] flex-[1.15] gap-3 rounded-[20px] border border-shellLine bg-shellPanelSoft px-4 py-3.5">
+    <View className="min-w-0 flex-[1.15] gap-3 rounded-[20px] border border-shellLine bg-shellPanelSoft px-4 py-3.5">
       <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">
         Session timing
       </Text>
@@ -243,7 +244,7 @@ function SheetCard({
 }
 
 function SessionRowsTableActions({
-  prefix,
+  title,
   search,
   onSearchChange,
   actionFilter,
@@ -252,11 +253,8 @@ function SessionRowsTableActions({
   onCommitFilterChange,
   issueFilter,
   onIssueFilterChange,
-  openControl,
-  setOpenControl,
-  toggleControl,
 }: {
-  prefix: string;
+  title: string;
   search: string;
   onSearchChange: (value: string) => void;
   actionFilter: string;
@@ -265,56 +263,59 @@ function SessionRowsTableActions({
   onCommitFilterChange: (value: string) => void;
   issueFilter: string;
   onIssueFilterChange: (value: string) => void;
-  openControl: string | null;
-  setOpenControl: (value: string | null) => void;
-  toggleControl: (controlId: string) => void;
 }) {
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (actionFilter !== "ALL" ? 1 : 0) +
+    (commitFilter !== "ALL" ? 1 : 0) +
+    (issueFilter !== "ALL" ? 1 : 0);
+
   return (
     <>
-      <TableFilterSearch
+      <TableToolbarSearch
         value={search}
         onChangeText={onSearchChange}
         placeholder="Search rows..."
-        open={openControl === `${prefix}-search`}
-        onOpenChange={(open) => setOpenControl(open ? `${prefix}-search` : null)}
-        minWidth={280}
       />
-      <ToolbarSelect
+
+      <TableFilterMenu
+        title={title}
+        activeCount={activeFilterCount}
+        onClear={() => {
+          onSearchChange("");
+          onActionFilterChange("ALL");
+          onCommitFilterChange("ALL");
+          onIssueFilterChange("ALL");
+        }}
+      >
+      <TableFilterOptionGroup
+        label="Proposed action"
         value={actionFilter}
         options={[...ROW_ACTION_OPTIONS]}
-        open={openControl === `${prefix}-action`}
-        onToggle={() => toggleControl(`${prefix}-action`)}
         onChange={onActionFilterChange}
         renderLabel={(value) =>
           value === "ALL" ? "All actions" : humanizeTechnicalLabel(value)
         }
-        triggerIconName="flash-outline"
-        minWidth={160}
       />
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Commit state"
         value={commitFilter}
         options={[...COMMIT_STATUS_OPTIONS]}
-        open={openControl === `${prefix}-commit`}
-        onToggle={() => toggleControl(`${prefix}-commit`)}
         onChange={onCommitFilterChange}
         renderLabel={(value) =>
           value === "ALL" ? "All commit" : humanizeTechnicalLabel(value)
         }
-        triggerIconName="checkmark-done-outline"
-        minWidth={160}
       />
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Issue severity"
         value={issueFilter}
         options={[...ISSUE_SEVERITY_OPTIONS]}
-        open={openControl === `${prefix}-issues`}
-        onToggle={() => toggleControl(`${prefix}-issues`)}
         onChange={onIssueFilterChange}
         renderLabel={(value) =>
           value === "ALL" ? "All issues" : humanizeTechnicalLabel(value)
         }
-        triggerIconName="warning-outline"
-        minWidth={150}
       />
+      </TableFilterMenu>
     </>
   );
 }
@@ -346,7 +347,6 @@ export default function CrewBulkUploadSessionScreen() {
     useState("ALL");
   const [certificateRowsIssueFilter, setCertificateRowsIssueFilter] =
     useState("ALL");
-  const [openControl, setOpenControl] = useState<string | null>(null);
   const debouncedCrewRowsSearch = useDebouncedValue(crewRowsSearch, 180);
   const debouncedCertificateRowsSearch = useDebouncedValue(
     certificateRowsSearch,
@@ -423,10 +423,6 @@ export default function CrewBulkUploadSessionScreen() {
     canConfirmIngestion &&
     currentSession.status === "READY_FOR_REVIEW" &&
     blockingCrewRowsCount === 0;
-
-  function toggleControl(controlId: string) {
-    setOpenControl((current) => (current === controlId ? null : controlId));
-  }
 
   async function refreshAll() {
     await Promise.all([
@@ -519,6 +515,7 @@ export default function CrewBulkUploadSessionScreen() {
 
   return (
     <ScrollView
+      className="min-w-0 flex-1"
       contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
       showsVerticalScrollIndicator={false}
     >
@@ -539,7 +536,7 @@ export default function CrewBulkUploadSessionScreen() {
         }
       />
 
-      <View className="gap-5 web:xl:flex-row web:xl:items-start">
+      <View className="min-w-0 gap-5 xl:flex-row xl:items-start">
         <View className="min-w-0 flex-[1.45] gap-5">
           <RegistryWorkspaceSection
             title="Session snapshot"
@@ -649,7 +646,7 @@ export default function CrewBulkUploadSessionScreen() {
             subtitleRight={`${crewRowsPageResult.pagination?.totalItems ?? crewRows.length} row${(crewRowsPageResult.pagination?.totalItems ?? crewRows.length) === 1 ? "" : "s"} visible in this review session`}
             headerActions={
               <SessionRowsTableActions
-                prefix="crew"
+                title="Crew decision rows"
                 search={crewRowsSearch}
                 onSearchChange={(value) => {
                   setCrewRowsSearch(value);
@@ -670,9 +667,6 @@ export default function CrewBulkUploadSessionScreen() {
                   setCrewRowsIssueFilter(value);
                   setCrewRowsPage(1);
                 }}
-                openControl={openControl}
-                setOpenControl={setOpenControl}
-                toggleControl={toggleControl}
               />
             }
             data={crewRows}
@@ -702,7 +696,7 @@ export default function CrewBulkUploadSessionScreen() {
             subtitleRight={`${certificateRowsPageResult.pagination?.totalItems ?? certificateRows.length} row${(certificateRowsPageResult.pagination?.totalItems ?? certificateRows.length) === 1 ? "" : "s"} kept visible in preview-only mode`}
             headerActions={
               <SessionRowsTableActions
-                prefix="certificate"
+                title="Certificate preview rows"
                 search={certificateRowsSearch}
                 onSearchChange={(value) => {
                   setCertificateRowsSearch(value);
@@ -723,9 +717,6 @@ export default function CrewBulkUploadSessionScreen() {
                   setCertificateRowsIssueFilter(value);
                   setCertificateRowsPage(1);
                 }}
-                openControl={openControl}
-                setOpenControl={setOpenControl}
-                toggleControl={toggleControl}
               />
             }
             data={certificateRows}

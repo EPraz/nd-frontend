@@ -118,6 +118,14 @@
 
 /* ---------- Base element styling ---------- */
 @layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   * {
     border-color: hsl(var(--border));
   }

@@ -11,8 +11,8 @@ export function LoginMaritimeArtwork({ compact }: LoginMaritimeArtworkProps) {
     <View
       className="absolute inset-x-0 overflow-hidden"
       style={{
-        bottom: compact ? 48 : 88,
-        height: compact ? 160 : 280,
+        bottom: compact ? 44 : 88,
+        height: compact ? 120 : 280,
       }}
     >
       <ImageBackground

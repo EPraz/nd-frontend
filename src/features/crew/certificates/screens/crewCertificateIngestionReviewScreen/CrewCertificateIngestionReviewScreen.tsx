@@ -516,7 +516,7 @@ export default function CrewCertificateIngestionReviewScreen() {
         <RegistrySummaryStrip items={summaryItems} />
       </View>
 
-      <View className="gap-5 web:xl:flex-row web:xl:items-start">
+      <View className="min-w-0 gap-5 xl:flex-row xl:items-start">
         <View className="min-w-0 flex-[1.4] gap-5">
           <RegistryWorkspaceSection
             title="Extraction snapshot"
@@ -526,7 +526,7 @@ export default function CrewCertificateIngestionReviewScreen() {
               {ingestion.sourceKind === "REQUIREMENT" ? (
                 <View className="rounded-[20px] border border-accent/25 bg-accent/10 p-4">
                   <View className="flex-row flex-wrap items-start justify-between gap-4">
-                    <View className="min-w-[220px] flex-1 gap-1">
+                    <View className="min-w-0 flex-1 gap-1">
                       <Text className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent/80">
                         Requirement-linked intake
                       </Text>
@@ -548,7 +548,7 @@ export default function CrewCertificateIngestionReviewScreen() {
 
               <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
                 <View className="flex-row flex-wrap items-start justify-between gap-4">
-                  <View className="min-w-[220px] flex-1 gap-2">
+                  <View className="min-w-0 flex-1 gap-2">
                     <Text className="text-[16px] font-semibold text-textMain">
                       {ingestion.fileName}
                     </Text>
@@ -705,7 +705,7 @@ export default function CrewCertificateIngestionReviewScreen() {
           </RegistryWorkspaceSection>
         </View>
 
-        <View className="w-full gap-5 web:xl:w-[380px]">
+        <View className="w-full min-w-0 gap-5 xl:w-[380px] xl:flex-none">
           <RegistryWorkspaceSection
             title="Review policy"
             subtitle="Keep the review lane anchored to the source document before anything enters compliance."

@@ -35,7 +35,7 @@ export function ProjectsWorkspaceRow({
         index > 0 ? "border-t" : "",
       ].join(" ")}
     >
-      <View className="hidden web:flex web:flex-row web:items-center web:gap-4">
+      <View className="hidden lg:flex lg:flex-row lg:items-center lg:gap-4">
         <View className="flex-[2.6] gap-1 pr-3">
           <Text className="text-[15px] font-semibold text-textMain">
             {project.name}
@@ -98,7 +98,7 @@ export function ProjectsWorkspaceRow({
         </View>
       </View>
 
-      <View className="gap-3 web:hidden">
+      <View className="gap-3 lg:hidden">
         <View className="flex-row items-start justify-between gap-3">
           <View className="flex-1 gap-2">
             <View className="self-start rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1">

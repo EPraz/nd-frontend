@@ -166,7 +166,7 @@ export default function CertificateFormCard({
             description="Capture certificate number, issuer, and validity dates. Notes stay optional and operational."
           >
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Number"
@@ -189,7 +189,7 @@ export default function CertificateFormCard({
               </View>
             </View>
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <DateField
                   label="Issue Date"

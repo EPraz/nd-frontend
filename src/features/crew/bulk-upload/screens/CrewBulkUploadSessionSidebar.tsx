@@ -20,9 +20,9 @@ import {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <View className="flex-row items-start justify-between gap-4">
-      <Text className="flex-1 text-[12px] text-muted">{label}</Text>
-      <Text className="max-w-[220px] text-right text-[12px] font-semibold text-textMain">
+    <View className="min-w-0 flex-row items-start justify-between gap-4">
+      <Text className="min-w-0 flex-1 text-[12px] text-muted">{label}</Text>
+      <Text className="max-w-[60%] text-right text-[12px] font-semibold text-textMain">
         {value}
       </Text>
     </View>
@@ -179,7 +179,7 @@ export function CrewBulkUploadSessionSidebar({
   const latestRevision = revisionHistory[0] ?? null;
 
   return (
-    <View className="w-full gap-5 web:xl:w-[390px]">
+    <View className="w-full min-w-0 gap-5 xl:w-[390px] xl:flex-none">
       <RegistryWorkspaceSection
         title="Session control"
         subtitle="Track the live state of this review lane before anyone commits or discards it."

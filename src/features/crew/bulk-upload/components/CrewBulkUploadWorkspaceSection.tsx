@@ -3,8 +3,11 @@ import {
   RegistrySummaryStrip,
   RegistryWorkspaceSection,
 } from "@/src/components/ui/registryWorkspace";
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
-import { TableFilterSearch } from "@/src/components/ui/table";
+import {
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
+} from "@/src/components/ui/table";
 import { DEFAULT_PAGE_SIZE } from "@/src/contracts/pagination.contract";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
@@ -46,10 +49,6 @@ export function CrewBulkUploadWorkspaceSection({
   const [sessionStatusFilter, setSessionStatusFilter] = useState("ALL");
   const [sessionAssetFilter, setSessionAssetFilter] = useState("ALL");
   const [sessionCriticalFilter, setSessionCriticalFilter] = useState("ALL");
-  const [showSessionSearch, setShowSessionSearch] = useState(false);
-  const [showSessionStatusMenu, setShowSessionStatusMenu] = useState(false);
-  const [showSessionAssetMenu, setShowSessionAssetMenu] = useState(false);
-  const [showSessionCriticalMenu, setShowSessionCriticalMenu] = useState(false);
   const debouncedSessionSearch = useDebouncedValue(sessionSearch, 180);
 
   const {
@@ -101,6 +100,11 @@ export function CrewBulkUploadWorkspaceSection({
 
   const selectedVessel =
     vessels.find((vessel) => vessel.id === defaultAssetId) ?? null;
+  const activeSessionFilterCount =
+    (sessionSearch ? 1 : 0) +
+    (sessionStatusFilter !== "ALL" ? 1 : 0) +
+    (sessionAssetFilter !== "ALL" ? 1 : 0) +
+    (sessionCriticalFilter !== "ALL" ? 1 : 0);
   const summaryItems = useMemo(
     () =>
       stats
@@ -183,7 +187,7 @@ export function CrewBulkUploadWorkspaceSection({
   }
 
   return (
-    <View className="gap-4">
+    <View className="min-w-0 max-w-full gap-4">
       <RegistrySummaryStrip items={summaryItems} />
 
       {canCreateBulkUploadSession ? (
@@ -228,69 +232,66 @@ export function CrewBulkUploadWorkspaceSection({
         }
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={sessionSearch}
               onChangeText={(value) => {
                 setSessionSearch(value);
                 setPage(1);
               }}
               placeholder="Search workbook or vessel..."
-              open={showSessionSearch}
-              onOpenChange={setShowSessionSearch}
-              minWidth={300}
             />
 
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Bulk upload sessions"
+              activeCount={activeSessionFilterCount}
+              onClear={() => {
+                setSessionSearch("");
+                setSessionStatusFilter("ALL");
+                setSessionAssetFilter("ALL");
+                setSessionCriticalFilter("ALL");
+                setPage(1);
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Session status"
               value={sessionStatusFilter}
               options={["ALL", "READY_FOR_REVIEW", "COMMITTED", "DISCARDED"]}
-              open={showSessionStatusMenu}
-              onToggle={() => setShowSessionStatusMenu((prev) => !prev)}
               onChange={(value) => {
                 setSessionStatusFilter(value);
                 setPage(1);
-                setShowSessionStatusMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL" ? "All sessions" : humanizeTechnicalLabel(value)
               }
-              triggerIconName="filter-outline"
-              minWidth={170}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Vessel"
               value={sessionAssetFilter}
               options={["ALL", ...vessels.map((vessel) => vessel.id)]}
-              open={showSessionAssetMenu}
-              onToggle={() => setShowSessionAssetMenu((prev) => !prev)}
               onChange={(value) => {
                 setSessionAssetFilter(value);
                 setPage(1);
-                setShowSessionAssetMenu(false);
               }}
               renderLabel={(value) => {
                 if (value === "ALL") return "All vessels";
                 return vessels.find((vessel) => vessel.id === value)?.name ?? "Vessel";
               }}
-              triggerIconName="boat-outline"
-              minWidth={170}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Issue state"
               value={sessionCriticalFilter}
               options={["ALL", "true"]}
-              open={showSessionCriticalMenu}
-              onToggle={() => setShowSessionCriticalMenu((prev) => !prev)}
               onChange={(value) => {
                 setSessionCriticalFilter(value);
                 setPage(1);
-                setShowSessionCriticalMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL" ? "All issues" : "Critical issues"
               }
-              triggerIconName="alert-circle-outline"
-              minWidth={158}
             />
+            </TableFilterMenu>
           </>
         }
         data={sessions}

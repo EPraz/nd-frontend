@@ -12,11 +12,11 @@ type LoginVisualSceneProps = {
 export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
   return (
     <View
-      className="relative flex-1 overflow-hidden"
+      className="relative min-w-0 flex-1 overflow-hidden"
       style={{
         minHeight: compact ? 420 : 800,
-        paddingHorizontal: compact ? 32 : 56,
-        paddingVertical: compact ? 34 : 52,
+        paddingHorizontal: compact ? 26 : 56,
+        paddingVertical: compact ? 28 : 52,
       }}
     >
       <ExpoLinearGradient
@@ -40,9 +40,9 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
               className="font-medium uppercase"
               style={{
                 color: LOGIN_PALETTE.navySoft,
-                fontSize: compact ? 12 : 16,
-                lineHeight: compact ? 22 : 27,
-                letterSpacing: compact ? 3.4 : 5.4,
+                fontSize: compact ? 11 : 16,
+                lineHeight: compact ? 20 : 27,
+                letterSpacing: compact ? 3 : 5.4,
                 maxWidth: compact ? 360 : 560,
               }}
             >
@@ -53,27 +53,27 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
           <View
             className="rounded-full"
             style={{
-              marginTop: compact ? 34 : 82,
+              marginTop: compact ? 26 : 82,
               width: 72,
               height: 3,
               backgroundColor: LOGIN_PALETTE.actionHighlight,
             }}
           />
 
-          <View style={{ gap: 10, marginTop: compact ? 28 : 16 }}>
+          <View style={{ gap: 8, marginTop: compact ? 22 : 16 }}>
             <Text
               style={{
                 color: LOGIN_PALETTE.navy,
-                fontSize: compact ? 20 : 30,
-                lineHeight: compact ? 30 : 42,
+                fontSize: compact ? 18 : 30,
+                lineHeight: compact ? 28 : 42,
               }}
             >
               Intelligence that{" "}
               <Text
                 style={{
                   color: LOGIN_PALETTE.action,
-                  fontSize: compact ? 20 : 30,
-                  lineHeight: compact ? 30 : 42,
+                  fontSize: compact ? 18 : 30,
+                  lineHeight: compact ? 28 : 42,
                 }}
               >
                 navigates
@@ -83,16 +83,16 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
             <Text
               style={{
                 color: LOGIN_PALETTE.navy,
-                fontSize: compact ? 20 : 30,
-                lineHeight: compact ? 30 : 42,
+                fontSize: compact ? 18 : 30,
+                lineHeight: compact ? 28 : 42,
               }}
             >
               Systems that drive{" "}
               <Text
                 style={{
                   color: LOGIN_PALETTE.action,
-                  fontSize: compact ? 20 : 30,
-                  lineHeight: compact ? 30 : 42,
+                  fontSize: compact ? 18 : 30,
+                  lineHeight: compact ? 28 : 42,
                 }}
               >
                 decisions

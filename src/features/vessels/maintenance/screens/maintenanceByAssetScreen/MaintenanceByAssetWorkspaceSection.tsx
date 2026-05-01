@@ -65,12 +65,6 @@ export function MaintenanceByAssetWorkspaceSection({
   onSortChange: (sort: MaintenanceSortOption) => void;
 }) {
   const [selectedTask, setSelectedTask] = useState<MaintenanceDto | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
 
   return (
     <>
@@ -80,44 +74,20 @@ export function MaintenanceByAssetWorkspaceSection({
         headerActions={
           <MaintenanceByAssetTableActions
             search={search}
-            showSearch={showSearch}
             onSearchChange={onSearchChange}
-            onSearchOpenChange={setShowSearch}
             filterStatus={statusFilter}
             priorityFilter={priorityFilter}
             dateWindow={dateWindow}
             dateFrom={dateFrom}
             dateTo={dateTo}
             sortBy={sortBy}
-            showStatusMenu={showStatusMenu}
-            showPriorityMenu={showPriorityMenu}
-            showDateWindowMenu={showDateWindowMenu}
-            showDateRangeMenu={showDateRangeMenu}
-            showSortMenu={showSortMenu}
-            onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
-            onTogglePriorityMenu={() => setShowPriorityMenu((prev) => !prev)}
-            onToggleDateWindowMenu={() => setShowDateWindowMenu((prev) => !prev)}
-            onToggleDateRangeMenu={setShowDateRangeMenu}
-            onToggleSortMenu={() => setShowSortMenu((prev) => !prev)}
-            onFilterChange={(value) => {
-              onStatusFilterChange(value);
-              setShowStatusMenu(false);
-            }}
-            onPriorityFilterChange={(value) => {
-              onPriorityFilterChange(value);
-              setShowPriorityMenu(false);
-            }}
-            onDateWindowChange={(value) => {
-              onDateWindowChange(value);
-              setShowDateWindowMenu(false);
-            }}
+            onFilterChange={onStatusFilterChange}
+            onPriorityFilterChange={onPriorityFilterChange}
+            onDateWindowChange={onDateWindowChange}
             onDateFromChange={onDateFromChange}
             onDateToChange={onDateToChange}
             onDateRangeClear={onDateRangeClear}
-            onSortChange={(value) => {
-              onSortChange(value);
-              setShowSortMenu(false);
-            }}
+            onSortChange={onSortChange}
           />
         }
         data={list}

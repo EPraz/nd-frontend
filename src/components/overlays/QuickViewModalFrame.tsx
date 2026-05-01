@@ -34,9 +34,9 @@ export default function QuickViewModalFrame({
   if (!open) return null;
 
   const content = (
-    <View className="gap-3">
+    <View className="min-w-0 gap-3">
       <View className="gap-2 border-b border-shellLine pb-2">
-        <View className="items-start gap-2 web:flex-row web:items-start web:justify-between">
+        <View className="min-w-0 items-start gap-2 lg:flex-row lg:items-start lg:justify-between">
           <View className="min-w-0 flex-1 gap-1">
             {eyebrow ? (
               <Text className="text-[11px] uppercase tracking-[0.24em] text-accent">
@@ -56,15 +56,17 @@ export default function QuickViewModalFrame({
           </View>
 
           {headerActions ? (
-            <View className="flex-row items-center gap-2">{headerActions}</View>
+            <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+              {headerActions}
+            </View>
           ) : null}
         </View>
       </View>
 
-      <View className="gap-3">{children}</View>
+      <View className="min-w-0 gap-3">{children}</View>
 
       {footer ? (
-        <View className="flex-row justify-end gap-2 border-t border-shellLine pt-2">
+        <View className="min-w-0 flex-row flex-wrap justify-start gap-2 border-t border-shellLine pt-2 lg:justify-end">
           {footer}
         </View>
       ) : null}
@@ -82,18 +84,18 @@ export default function QuickViewModalFrame({
           <View className="absolute inset-0 bg-black/45" />
         </Pressable>
 
-        <View className="flex-1 items-center justify-center p-2 web:p-3">
+        <View className="min-w-0 flex-1 items-center justify-center p-2 web:p-3">
           <View
             style={{ maxWidth, maxHeight: "90%" }}
             className={[
-              "min-h-0 w-full rounded-[24px] border p-4",
+              "min-h-0 w-full min-w-0 max-w-full rounded-[24px] border p-3 md:p-4",
               "bg-shellPanel border-shellLine web:backdrop-blur-md",
               "shadow-[0_20px_80px_rgba(0,0,0,0.55)]",
             ].join(" ")}
           >
             {scroll ? (
               <ScrollView
-                className="min-h-0"
+                className="min-h-0 min-w-0 max-w-full"
                 style={{ maxHeight: "100%" }}
                 showsVerticalScrollIndicator={false}
                 contentContainerClassName="gap-3"

@@ -92,10 +92,10 @@ export default function Header({
     <>
       <SafeAreaView
         edges={["top", "left", "right"]}
-        className="border-b border-shellLine bg-shellChrome web:backdrop-blur-xl"
+        className="max-w-full overflow-hidden border-b border-shellLine bg-shellChrome web:backdrop-blur-xl"
       >
         <View
-          className="w-full flex-row items-center gap-3 px-3 py-2 lg:px-4"
+          className="w-full min-w-0 flex-row items-center gap-3 px-3 py-2 lg:px-4"
           style={{ paddingLeft: leftInset }}
         >
           <View
@@ -133,7 +133,7 @@ export default function Header({
 
           <View className="hidden lg:flex flex-1" />
 
-          <View className="flex-row items-center gap-2">
+          <View className="min-w-0 flex-row items-center gap-2">
             <View className="hidden lg:flex h-5 w-px bg-shellLine mx-1" />
 
             <Pressable

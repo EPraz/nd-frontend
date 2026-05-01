@@ -88,8 +88,9 @@ export default function CreateMaintenanceScreen() {
   }
 
   return (
-    <View className="flex-1 bg-shellCanvas">
+    <View className="min-w-0 flex-1 overflow-hidden bg-shellCanvas">
       <ScrollView
+        className="min-w-0 flex-1"
         contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
         showsVerticalScrollIndicator={false}
       >
@@ -108,9 +109,9 @@ export default function CreateMaintenanceScreen() {
             </Text>
           </Pressable>
 
-          <View className="web:flex-row web:items-start web:justify-between gap-4">
-            <View className="gap-1 flex-1">
-              <Text className="text-textMain text-[34px] web:text-[44px] font-semibold leading-[110%]">
+      <View className="min-w-0 gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <View className="min-w-0 flex-1 gap-1">
+              <Text className="text-textMain text-[34px] font-semibold leading-[110%] md:text-[44px]">
                 Add Maintenance Task
               </Text>
               <Text className="text-muted text-[14px]">
@@ -118,7 +119,7 @@ export default function CreateMaintenanceScreen() {
               </Text>
             </View>
 
-            <View className="flex-row items-center gap-2">
+            <View className="flex-row flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 size="lg"
@@ -153,8 +154,8 @@ export default function CreateMaintenanceScreen() {
           </View>
         </View>
 
-        <View className="gap-5 web:lg:flex-row">
-          <View className="flex-1 gap-5 web:lg:w-[60%]">
+        <View className="min-w-0 gap-5 lg:flex-row">
+          <View className="min-w-0 flex-1 gap-5 lg:w-[60%]">
             <MaintenanceFormCard
               fixedAssetId={fixedAssetId}
               currentVessel={
@@ -175,7 +176,7 @@ export default function CreateMaintenanceScreen() {
             />
           </View>
 
-          <View className="flex-1 gap-5 web:lg:w-[40%]">
+          <View className="min-w-0 flex-1 gap-5 lg:w-[40%]">
             <MaintenancePreviewCard values={values} />
           </View>
         </View>

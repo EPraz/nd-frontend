@@ -1,5 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
-import { TableFilterSearch } from "@/src/components/ui/table";
+import {
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
+} from "@/src/components/ui/table";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { humanizeTechnicalLabel } from "@/src/helpers";
 import type { CrewRequirementStatus } from "../contracts";
@@ -15,25 +18,15 @@ import {
 type Props = {
   search: string;
   onSearchChange: (value: string) => void;
-  showSearch: boolean;
-  onSearchOpenChange: (open: boolean) => void;
   statusFilter: string;
   onStatusFilterChange: (value: string) => void;
-  showStatusMenu: boolean;
-  onToggleStatusMenu: () => void;
   assetFilter?: string;
   vessels?: AssetDto[];
   onAssetFilterChange?: (value: string) => void;
-  showAssetMenu?: boolean;
-  onToggleAssetMenu?: () => void;
   crewStateFilter: string;
   onCrewStateFilterChange: (value: string) => void;
-  showCrewStateMenu: boolean;
-  onToggleCrewStateMenu: () => void;
   sortBy: CrewCertificateSortOption;
   onSortChange: (value: CrewCertificateSortOption) => void;
-  showSortMenu: boolean;
-  onToggleSortMenu: () => void;
 };
 
 function renderFilterLabel(value: "ALL" | CrewRequirementStatus) {
@@ -58,54 +51,54 @@ function renderSortLabel(value: CrewCertificateSortOption) {
 export function CrewCertificatesProjectTableActions({
   search,
   onSearchChange,
-  showSearch,
-  onSearchOpenChange,
   statusFilter,
   onStatusFilterChange,
-  showStatusMenu,
-  onToggleStatusMenu,
   assetFilter,
   vessels,
   onAssetFilterChange,
-  showAssetMenu,
-  onToggleAssetMenu,
   crewStateFilter,
   onCrewStateFilterChange,
-  showCrewStateMenu,
-  onToggleCrewStateMenu,
   sortBy,
   onSortChange,
-  showSortMenu,
-  onToggleSortMenu,
 }: Props) {
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (statusFilter !== "ALL" ? 1 : 0) +
+    (assetFilter && assetFilter !== "ALL" ? 1 : 0) +
+    (crewStateFilter !== "ALL" ? 1 : 0);
+
   return (
     <>
-      <TableFilterSearch
+      <TableToolbarSearch
         value={search}
         onChangeText={onSearchChange}
         placeholder="Search crew or certificate..."
-        open={showSearch}
-        onOpenChange={onSearchOpenChange}
-        minWidth={300}
       />
 
-      <ToolbarSelect
+      <TableFilterMenu
+        title="Crew certificate requirements"
+        activeCount={activeFilterCount}
+        onClear={() => {
+          onSearchChange("");
+          onStatusFilterChange("ALL");
+          onAssetFilterChange?.("ALL");
+          onCrewStateFilterChange("ALL");
+          onSortChange("PRIORITY");
+        }}
+      >
+      <TableFilterOptionGroup
+        label="Requirement status"
         value={statusFilter as CrewCertificateRequirementFilter}
         options={[...CREW_CERTIFICATE_REQUIREMENT_FILTERS]}
-        open={showStatusMenu}
-        onToggle={onToggleStatusMenu}
         onChange={onStatusFilterChange}
         renderLabel={renderFilterLabel}
-        triggerIconName="filter-outline"
-        minWidth={170}
       />
 
-      {assetFilter && vessels && onAssetFilterChange && onToggleAssetMenu ? (
-        <ToolbarSelect
+      {assetFilter && vessels && onAssetFilterChange ? (
+        <TableFilterOptionGroup
+          label="Vessel"
           value={assetFilter}
           options={["ALL", ...vessels.map((vessel) => vessel.id)]}
-          open={Boolean(showAssetMenu)}
-          onToggle={onToggleAssetMenu}
           onChange={onAssetFilterChange}
           renderLabel={(value) => {
             if (value === "ALL") return "All vessels";
@@ -113,34 +106,27 @@ export function CrewCertificatesProjectTableActions({
               vessels.find((vessel) => vessel.id === value)?.name ?? "Vessel"
             );
           }}
-          triggerIconName="boat-outline"
-          minWidth={170}
         />
       ) : null}
 
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Crew state"
         value={crewStateFilter}
         options={["ALL", "ACTIVE", "INACTIVE"]}
-        open={showCrewStateMenu}
-        onToggle={onToggleCrewStateMenu}
         onChange={onCrewStateFilterChange}
         renderLabel={(value) =>
           value === "ALL" ? "All crew state" : humanizeTechnicalLabel(value)
         }
-        triggerIconName="people-outline"
-        minWidth={166}
       />
 
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Sort"
         value={sortBy}
         options={[...CREW_CERTIFICATE_SORT_OPTIONS]}
-        open={showSortMenu}
-        onToggle={onToggleSortMenu}
         onChange={onSortChange}
         renderLabel={renderSortLabel}
-        triggerIconName="swap-vertical-outline"
-        minWidth={150}
       />
+      </TableFilterMenu>
     </>
   );
 }

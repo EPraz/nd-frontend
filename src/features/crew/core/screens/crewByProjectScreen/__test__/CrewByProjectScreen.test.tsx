@@ -36,19 +36,6 @@ jest.mock("@/src/components/ui/text/Text", () => ({
   },
 }));
 
-jest.mock("@/src/components/ui/forms/ToolbarSelect", () => ({
-  ToolbarSelect: ({
-    renderLabel,
-    value,
-  }: {
-    renderLabel: (value: string) => string;
-    value: string;
-  }) => {
-    const { Text } = mockReactNative;
-    return <Text>{renderLabel(value)}</Text>;
-  },
-}));
-
 jest.mock("../../../hooks/useCrewPageData", () => ({
   useCrewPageData: jest.fn(),
 }));
@@ -158,6 +145,7 @@ describe("CrewByProjectScreen", () => {
     expect(screen.getByText("Bulk Upload")).toBeOnTheScreen();
     expect(screen.getByText("Crew roster")).toBeOnTheScreen();
     expect(screen.getByText("24")).toBeOnTheScreen();
+    fireEvent.press(screen.getByText("Filters"));
     expect(screen.getByText("Active first")).toBeOnTheScreen();
     expect(useCrewPageData).toHaveBeenCalledWith("project-atlantic", {
       page: 1,

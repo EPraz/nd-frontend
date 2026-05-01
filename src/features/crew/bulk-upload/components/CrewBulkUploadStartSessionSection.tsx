@@ -129,7 +129,7 @@ export function CrewBulkUploadStartSessionSection({
         </Button>
       }
     >
-      <View className="gap-4 web:items-start web:xl:flex-row">
+      <View className="min-w-0 gap-4 xl:flex-row xl:items-start">
         <View className="min-w-0 flex-[1.3] gap-4">
           <View className="gap-5 rounded-[24px] border border-shellLine bg-shellCanvas p-5">
             <View className="gap-2">

@@ -262,7 +262,7 @@ export default function VesselQuickViewModal({
             </>
           }
           aside={
-            <QuickViewMediaPanel className="h-[128px] web:h-[128px]">
+            <QuickViewMediaPanel className="h-[128px]">
               {vessel.imageUrl ? (
                 <VesselImageMedia
                   uri={vessel.imageUrl}
@@ -305,7 +305,7 @@ export default function VesselQuickViewModal({
         </View>
       </View>
 
-      <View className="mt-1 flex-col gap-3 web:flex-row">
+          <View className="mt-1 flex-col gap-3 md:flex-row">
         <View className="flex-1 gap-1.5">
           <Text className="text-[14px] font-semibold text-textMain">
             Operational Insight

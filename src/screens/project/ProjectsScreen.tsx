@@ -81,7 +81,7 @@ export default function ProjectsScreen() {
 
   if (loading) {
     return (
-      <View className="relative flex-1 items-center justify-center bg-shellCanvas">
+      <View className="relative flex-1 items-center justify-center overflow-hidden bg-shellCanvas">
         <WorkspaceBackdrop />
         <Loading className="bg-transparent" />
       </View>
@@ -90,7 +90,7 @@ export default function ProjectsScreen() {
 
   if (error) {
     return (
-      <View className="relative flex-1 bg-shellCanvas">
+      <View className="relative flex-1 overflow-hidden bg-shellCanvas">
         <WorkspaceBackdrop />
         <View className="flex-1 justify-center gap-4 px-6 web:mx-auto web:max-w-[720px]">
           <Text className="text-3xl font-semibold tracking-tight text-textMain">
@@ -111,15 +111,15 @@ export default function ProjectsScreen() {
   }
 
   return (
-    <View className="relative flex-1 bg-shellCanvas">
+    <View className="relative flex-1 overflow-hidden bg-shellCanvas">
       <WorkspaceBackdrop />
 
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-4 py-6 web:items-center web:px-8 web:py-10"
+        className="min-w-0 flex-1"
+        contentContainerClassName="px-4 py-6 md:items-center md:px-8 md:py-10"
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full gap-6 web:max-w-[1180px]">
+        <View className="w-full max-w-full gap-6 lg:max-w-[1180px]">
           <EntryPortalHeader
             eyebrow="Entry portal"
             title="Workspaces"
@@ -130,7 +130,7 @@ export default function ProjectsScreen() {
           <EntryPortalSummaryStrip items={summaryItems} />
 
           <View className="gap-4">
-            <View className="gap-3 web:flex-row web:items-end web:justify-between">
+            <View className="gap-3 lg:flex-row lg:items-end lg:justify-between">
               <View className="gap-1">
                 <Text className="text-[24px] font-semibold tracking-tight text-textMain">
                   Workspace directory
@@ -146,8 +146,8 @@ export default function ProjectsScreen() {
               </Text>
             </View>
 
-            <View className="web:flex-row web:items-center web:justify-between web:gap-4">
-              <View className="flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChrome px-4 py-3 web:max-w-[560px] web:flex-1 web:backdrop-blur-md">
+            <View className="lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+              <View className="min-w-0 flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChrome px-4 py-3 lg:max-w-[560px] lg:flex-1 web:backdrop-blur-md">
                 <Search size={18} color={SEARCH_ICON_COLOR} />
                 <TextInput
                   value={query}
@@ -172,7 +172,7 @@ export default function ProjectsScreen() {
               </View>
             ) : (
               <View className="overflow-hidden rounded-[24px] border border-shellLine bg-shellPanel web:backdrop-blur-md">
-                <View className="hidden web:flex web:flex-row web:items-center web:border-b web:border-shellLine web:bg-shellPanelSoft web:px-5 web:py-3">
+                <View className="hidden lg:flex lg:flex-row lg:items-center lg:border-b lg:border-shellLine lg:bg-shellPanelSoft lg:px-5 lg:py-3">
                   <Text className="flex-[2.6] text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
                     Workspace
                   </Text>

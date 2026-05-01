@@ -5,5 +5,4 @@ export * from "./FieldDisplay";
 export * from "./PopoverMultiSelect";
 export * from "./RowInfo";
 export * from "./SearchableVesselSelect";
-export * from "./ToolbarSelect";
 export * from "./VesselPill";

@@ -111,7 +111,7 @@ function OverlayContent(props: {
       <View className="absolute inset-0 bg-black/20" />
       <View className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/15 to-transparent" />
 
-      <View className="flex-1 flex-row items-stretch">
+      <View className="min-w-0 flex-1 gap-4 lg:flex-row lg:items-stretch">
         <View className="flex-1 px-8 py-7 justify-between">
           <View className="gap-2">
             <Text className="text-textMain text-[28px] font-semibold">
@@ -124,7 +124,7 @@ function OverlayContent(props: {
           </View>
         </View>
 
-        <View className="w-[420px] p-4">
+        <View className="w-full p-4 lg:w-[420px]">
           {blur ? (
             <BlurView
               intensity={42}

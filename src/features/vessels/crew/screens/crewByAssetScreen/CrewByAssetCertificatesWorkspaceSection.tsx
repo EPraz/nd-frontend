@@ -6,7 +6,6 @@ import {
   CrewMsmcComplianceSummary,
 } from "@/src/features/crew/certificates";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { View } from "react-native";
 import type { CrewByAssetCertificatesWorkspaceState } from "./useCrewByAssetCertificatesWorkspace";
 import type { CrewCertificateSortOption } from "@/src/features/crew/certificates/components/crewCertificatesProject.constants";
@@ -42,10 +41,6 @@ export function CrewByAssetCertificatesWorkspaceSection({
   const router = useRouter();
   const { session } = useSessionContext();
   const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
-  const [showSearch, setShowSearch] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showCrewStateMenu, setShowCrewStateMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
 
   return (
     <View className="gap-2">
@@ -75,31 +70,18 @@ export function CrewByAssetCertificatesWorkspaceSection({
           <CrewCertificatesProjectTableActions
             search={search}
             onSearchChange={onSearchChange}
-            showSearch={showSearch}
-            onSearchOpenChange={setShowSearch}
             statusFilter={statusFilter}
             onStatusFilterChange={(value) => {
               onStatusFilterChange(value);
               onPageChange(1);
-              setShowStatusMenu(false);
             }}
-            showStatusMenu={showStatusMenu}
-            onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
             crewStateFilter={crewStateFilter}
             onCrewStateFilterChange={(value) => {
               onCrewStateFilterChange(value);
               onPageChange(1);
-              setShowCrewStateMenu(false);
             }}
-            showCrewStateMenu={showCrewStateMenu}
-            onToggleCrewStateMenu={() => setShowCrewStateMenu((prev) => !prev)}
             sortBy={sortBy}
-            onSortChange={(value) => {
-              onSortChange(value);
-              setShowSortMenu(false);
-            }}
-            showSortMenu={showSortMenu}
-            onToggleSortMenu={() => setShowSortMenu((prev) => !prev)}
+            onSortChange={onSortChange}
           />
         }
         data={workspace.requirements}

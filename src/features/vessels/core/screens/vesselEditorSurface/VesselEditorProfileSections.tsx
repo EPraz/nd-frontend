@@ -55,7 +55,7 @@ export function VesselEditorProfileDetailsSection({
       title="Operational facts"
       description="Facts used by the vessel profile, quick view, and future enrichment work."
     >
-      <View className="gap-4 web:flex-row">
+        <View className="gap-4 md:flex-row">
         <View className="flex-1">
           <VesselEditorControlledField
             control={control}
@@ -78,7 +78,7 @@ export function VesselEditorProfileDetailsSection({
         </View>
       </View>
 
-      <View className="gap-4 web:flex-row">
+        <View className="gap-4 md:flex-row">
         <View className="flex-1">
           <VesselEditorControlledField
             control={control}
@@ -102,7 +102,7 @@ export function VesselEditorProfileDetailsSection({
         </View>
       </View>
 
-      <View className="gap-4 web:flex-row">
+        <View className="gap-4 md:flex-row">
         <View className="flex-1">
           <VesselEditorControlledField
             control={control}

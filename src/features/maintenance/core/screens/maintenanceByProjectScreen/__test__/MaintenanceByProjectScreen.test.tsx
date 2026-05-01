@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { useVessels } from "@/src/features/vessels/core";
 import MaintenanceByProjectScreen from "../MaintenanceByProjectScreen";
@@ -30,19 +30,6 @@ jest.mock("@/src/components/ui/text/Text", () => ({
   Text: ({ children }: { children: ReactNode }) => {
     const { Text } = mockReactNative;
     return <Text>{children}</Text>;
-  },
-}));
-
-jest.mock("@/src/components/ui/forms/ToolbarSelect", () => ({
-  ToolbarSelect: ({
-    renderLabel,
-    value,
-  }: {
-    renderLabel: (value: string) => string;
-    value: string;
-  }) => {
-    const { Text } = mockReactNative;
-    return <Text>{renderLabel(value)}</Text>;
   },
 }));
 
@@ -113,6 +100,7 @@ describe("MaintenanceByProjectScreen", () => {
     expect(screen.getByText("Maintenance")).toBeOnTheScreen();
     expect(screen.getByText("Project maintenance registry")).toBeOnTheScreen();
     expect(screen.getByText("Task queue")).toBeOnTheScreen();
+    fireEvent.press(screen.getByText("Filters"));
     expect(screen.getByText("All status")).toBeOnTheScreen();
     expect(screen.getByText("Next due")).toBeOnTheScreen();
     expect(screen.queryByText("Add Task")).toBeNull();

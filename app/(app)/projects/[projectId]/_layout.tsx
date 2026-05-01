@@ -50,7 +50,7 @@ export default function ProjectShellLayout() {
 
   if (!pid || loading) {
     return (
-      <View className="relative flex-1 items-center justify-center bg-shellCanvas">
+      <View className="relative flex-1 items-center justify-center overflow-hidden bg-shellCanvas">
         <WorkspaceBackdrop />
         <Loading fullScreen className="bg-transparent" />
       </View>
@@ -59,7 +59,7 @@ export default function ProjectShellLayout() {
 
   if (error || !project) {
     return (
-      <View className="flex-1 bg-shellCanvas relative px-6 pt-10 gap-3">
+      <View className="relative flex-1 gap-3 overflow-hidden bg-shellCanvas px-6 pt-10">
         <WorkspaceBackdrop />
         <Text className="text-2xl font-semibold tracking-tight text-textMain">
           Project
@@ -168,7 +168,7 @@ function ProjectShellScaffold({
   };
 
   return (
-    <View className="flex-1 bg-shellCanvas relative">
+    <View className="relative flex-1 overflow-hidden bg-shellCanvas">
       <WorkspaceBackdrop />
       {showOverlay && (
         <Pressable
@@ -195,9 +195,9 @@ function ProjectShellScaffold({
         onOpenWorkspaces={() => router.push("/projects")}
       />
 
-      <View className="flex-1 flex-row">
+      <View className="min-w-0 flex-1 flex-row overflow-hidden">
         <ScrollView
-          className="flex-1 web:transition-all web:duration-200"
+          className="min-w-0 flex-1 web:transition-all web:duration-200"
           contentContainerClassName="p-4 gap-4 web:p-6"
           contentContainerStyle={
             isDesktop ? { marginLeft: shellInset } : undefined

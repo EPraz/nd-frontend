@@ -89,7 +89,7 @@ export function AtmosphericBackdrop({
 
   return (
     <View
-      className="absolute inset-0 -z-10"
+      className="absolute inset-0 -z-10 overflow-hidden"
       style={{ pointerEvents: "none" }}
     >
       <LinearGradient

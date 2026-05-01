@@ -16,8 +16,8 @@ export function RegistryWorkspaceSection({
   children,
 }: Props) {
   return (
-    <View className="gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
-      <View className="flex-row items-start justify-between gap-4">
+    <View className="min-w-0 max-w-full gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-4 web:backdrop-blur-md md:p-5">
+      <View className="min-w-0 gap-3 lg:flex-row lg:items-start lg:justify-between">
         <View className="min-w-0 flex-1 gap-1">
           <Text className="text-[18px] leading-[130%] font-semibold text-textMain">
             {title}
@@ -31,7 +31,7 @@ export function RegistryWorkspaceSection({
         </View>
 
         {actions ? (
-          <View className="ml-auto flex-row flex-wrap items-center justify-end gap-2 self-start">
+          <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
             {actions}
           </View>
         ) : null}

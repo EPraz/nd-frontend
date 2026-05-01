@@ -299,8 +299,8 @@ export default function CrewCertificateViewScreen() {
         <RegistrySummaryStrip items={summaryItems} />
       </View>
 
-      <View className="gap-5 web:xl:flex-row web:xl:items-start">
-        <View className="flex-1 gap-5">
+      <View className="min-w-0 gap-5 xl:flex-row xl:items-start">
+        <View className="min-w-0 flex-1 gap-5">
           <RegistryWorkspaceSection
             title="Certificate details"
             subtitle="Core certificate metadata, requirement linkage, and approval trace for this record."
@@ -327,7 +327,7 @@ export default function CrewCertificateViewScreen() {
                 </View>
               </View>
 
-              <View className="gap-4 web:flex-row">
+              <View className="gap-4 md:flex-row">
                 <View className="flex-1 gap-4">
                   <FieldDisplay label="Number" value={certificate.number ?? "-"} />
                   <FieldDisplay label="Issuer" value={certificate.issuer ?? "-"} />
@@ -446,7 +446,7 @@ export default function CrewCertificateViewScreen() {
           </RegistryWorkspaceSection>
         </View>
 
-        <View className="w-full gap-5 web:xl:w-[380px]">
+        <View className="w-full min-w-0 gap-5 xl:w-[380px] xl:flex-none">
           <RegistryWorkspaceSection
             title="Compliance summary"
             subtitle="Quick read of where this certificate sits in the crew compliance flow."

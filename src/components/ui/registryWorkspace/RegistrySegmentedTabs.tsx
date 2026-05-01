@@ -18,7 +18,7 @@ export function RegistrySegmentedTabs<T extends string>({
   onChange,
 }: Props<T>) {
   return (
-    <View className="w-fit flex-row flex-wrap items-center rounded-full border border-shellLine bg-shellPanelSoft p-1">
+    <View className="max-w-full self-start flex-row flex-wrap items-center rounded-full border border-shellLine bg-shellPanelSoft p-1">
       {tabs.map((tab) => {
         const isActive = activeKey === tab.key;
 

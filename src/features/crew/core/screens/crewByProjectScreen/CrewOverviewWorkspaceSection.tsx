@@ -1,7 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
-  TableDateRangeFilter,
-  TableFilterSearch,
+  TableFilterDateRange,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { PaginationMetaDto } from "@/src/contracts/pagination.contract";
@@ -89,14 +90,13 @@ export function CrewOverviewWorkspaceSection({
   onDateRangeClear,
 }: Props) {
   const [selectedCrew, setSelectedCrew] = useState<CrewDto | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showAssetMenu, setShowAssetMenu] = useState(false);
-  const [showDepartmentMenu, setShowDepartmentMenu] = useState(false);
-  const [showMedicalMenu, setShowMedicalMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (statusFilter !== "ALL" ? 1 : 0) +
+    (assetFilter !== "ALL" ? 1 : 0) +
+    (departmentFilter !== "ALL" ? 1 : 0) +
+    (medicalFilter !== "ALL" ? 1 : 0) +
+    (dateWindow !== "ALL" || dateFrom || dateTo ? 1 : 0);
 
   return (
     <>
@@ -110,89 +110,72 @@ export function CrewOverviewWorkspaceSection({
         }
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={search}
               onChangeText={onSearchChange}
               placeholder="Search crew, rank, email..."
-              open={showSearch}
-              onOpenChange={setShowSearch}
-              minWidth={300}
             />
 
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Crew roster"
+              activeCount={activeFilterCount}
+              onClear={() => {
+                onSearchChange("");
+                onStatusFilterChange("ALL");
+                onAssetFilterChange("ALL");
+                onDepartmentFilterChange("ALL");
+                onMedicalFilterChange("ALL");
+                onDateWindowChange("ALL");
+                onDateRangeClear();
+                onSortChange("ACTIVE_FIRST");
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Status"
               value={statusFilter}
               options={[...STATUS_FILTERS]}
-              open={showStatusMenu}
-              onToggle={() => setShowStatusMenu((prev) => !prev)}
-              onChange={(value) => {
-                onStatusFilterChange(value);
-                setShowStatusMenu(false);
-              }}
+              onChange={onStatusFilterChange}
               renderLabel={(value) =>
                 value === "ALL" ? "All status" : value.toLowerCase()
               }
-              triggerIconName="filter-outline"
-              minWidth={150}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Vessel"
               value={assetFilter}
               options={["ALL", ...vessels.map((vessel) => vessel.id)]}
-              open={showAssetMenu}
-              onToggle={() => setShowAssetMenu((prev) => !prev)}
-              onChange={(value) => {
-                onAssetFilterChange(value);
-                setShowAssetMenu(false);
-              }}
+              onChange={onAssetFilterChange}
               renderLabel={(value) => {
                 if (value === "ALL") return "All vessels";
                 return vessels.find((vessel) => vessel.id === value)?.name ?? "Vessel";
               }}
-              triggerIconName="boat-outline"
-              minWidth={170}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Department"
               value={departmentFilter}
               options={[...DEPARTMENT_FILTERS]}
-              open={showDepartmentMenu}
-              onToggle={() => setShowDepartmentMenu((prev) => !prev)}
-              onChange={(value) => {
-                onDepartmentFilterChange(value);
-                setShowDepartmentMenu(false);
-              }}
+              onChange={onDepartmentFilterChange}
               renderLabel={(value) =>
                 value === "ALL" ? "All departments" : value.toLowerCase()
               }
-              triggerIconName="people-outline"
-              minWidth={176}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Medical"
               value={medicalFilter}
               options={[...MEDICAL_FILTERS]}
-              open={showMedicalMenu}
-              onToggle={() => setShowMedicalMenu((prev) => !prev)}
-              onChange={(value) => {
-                onMedicalFilterChange(value);
-                setShowMedicalMenu(false);
-              }}
+              onChange={onMedicalFilterChange}
               renderLabel={(value) =>
                 value === "ALL" ? "All medical" : value.toLowerCase()
               }
-              triggerIconName="medkit-outline"
-              minWidth={154}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Rotation"
               value={dateWindow}
               options={[...DATE_WINDOW_FILTERS]}
-              open={showDateWindowMenu}
-              onToggle={() => setShowDateWindowMenu((prev) => !prev)}
-              onChange={(value) => {
-                onDateWindowChange(value);
-                setShowDateWindowMenu(false);
-              }}
+              onChange={onDateWindowChange}
               renderLabel={(value) =>
                 value === "ALL"
                   ? "Any rotation"
@@ -202,30 +185,22 @@ export function CrewOverviewWorkspaceSection({
                       ? "Next 30 days"
                       : "Next 90 days"
               }
-              triggerIconName="calendar-outline"
-              minWidth={162}
             />
 
-            <TableDateRangeFilter
+            <TableFilterDateRange
               from={dateFrom}
               to={dateTo}
-              open={showDateRangeMenu}
-              onOpenChange={setShowDateRangeMenu}
               onFromChange={onDateFromChange}
               onToChange={onDateToChange}
               onClear={onDateRangeClear}
               label="Rotation range"
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup<CrewSortOption>
+              label="Sort"
               value={sortBy}
               options={SORT_OPTIONS}
-              open={showSortMenu}
-              onToggle={() => setShowSortMenu((prev) => !prev)}
-              onChange={(value) => {
-                onSortChange(value);
-                setShowSortMenu(false);
-              }}
+              onChange={onSortChange}
               renderLabel={(value) =>
                 value === "ACTIVE_FIRST"
                   ? "Active first"
@@ -233,9 +208,8 @@ export function CrewOverviewWorkspaceSection({
                     ? "A-Z"
                     : "Z-A"
               }
-              triggerIconName="swap-vertical-outline"
-              minWidth={146}
             />
+            </TableFilterMenu>
           </>
         }
         data={list}

@@ -13,7 +13,7 @@ import { useToast } from "@/src/context/ToastProvider";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { canUser } from "@/src/security/rolePermissions";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { CertificateRequirementsTable } from "@/src/features/certificates/requirements/components/certificateRequirementsTable/CertificateRequirementsTable";
 import { CertificatesTable } from "@/src/features/certificates/core/components/certificateTable/CertificatesTable";
@@ -44,13 +44,6 @@ export default function CertificatesByProjectScreen() {
     "overview",
   );
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showAssetMenu, setShowAssetMenu] = useState(false);
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
-  const [showWorkflowMenu, setShowWorkflowMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [requirementFilter, setRequirementFilter] = useState<
     "ALL" | RequirementStatus
   >("ALL");
@@ -152,10 +145,6 @@ export default function CertificatesByProjectScreen() {
     };
   }, [certificates.length, recordsStats, requirements, requirementsStats]);
 
-  useEffect(() => {
-    setShowStatusMenu(false);
-  }, [activeTab, isExpanded]);
-
   async function refreshAll() {
     await Promise.all([refresh(), refreshRecords()]);
   }
@@ -223,6 +212,88 @@ export default function CertificatesByProjectScreen() {
     },
   ];
 
+  function resetFilterPages() {
+    setRequirementsPage(1);
+    setRecordsPage(1);
+  }
+
+  function resetAllFilters() {
+    setRequirementFilter("ALL");
+    setRecordStatusFilter("ALL");
+    setCategoryFilter("ALL");
+    setAssetFilter("ALL");
+    setWorkflowStatusFilter("ALL");
+    setDateWindow("ALL");
+    setDateFrom("");
+    setDateTo("");
+    setVesselQuery("");
+    resetFilterPages();
+  }
+
+  const tableActions = (
+    <CertificatesByProjectTableActions
+      activeTab={activeTab}
+      requirementFilter={requirementFilter}
+      recordStatusFilter={recordStatusFilter}
+      onRequirementFilterChange={(value) => {
+        setRequirementFilter(value);
+        setRequirementsPage(1);
+      }}
+      onRecordStatusFilterChange={(value) => {
+        setRecordStatusFilter(value);
+        setRecordsPage(1);
+      }}
+      categoryFilter={categoryFilter}
+      assetFilter={assetFilter}
+      vessels={vessels}
+      onAssetFilterChange={(value) => {
+        setAssetFilter(value);
+        resetFilterPages();
+      }}
+      onCategoryFilterChange={(value) => {
+        setCategoryFilter(value);
+        resetFilterPages();
+      }}
+      workflowStatusFilter={workflowStatusFilter}
+      onWorkflowStatusFilterChange={(value) => {
+        setWorkflowStatusFilter(value);
+        setRecordsPage(1);
+      }}
+      dateWindow={dateWindow}
+      dateFrom={dateFrom}
+      dateTo={dateTo}
+      onDateWindowChange={(value) => {
+        setDateWindow(value);
+        setDateFrom("");
+        setDateTo("");
+        setRecordsPage(1);
+      }}
+      onDateFromChange={(value) => {
+        setDateFrom(value);
+        setDateWindow("ALL");
+        setRecordsPage(1);
+      }}
+      onDateToChange={(value) => {
+        setDateTo(value);
+        setDateWindow("ALL");
+        setRecordsPage(1);
+      }}
+      onDateRangeClear={() => {
+        setDateFrom("");
+        setDateTo("");
+        setRecordsPage(1);
+      }}
+      vesselQuery={vesselQuery}
+      onVesselQueryChange={(value) => {
+        setVesselQuery(value);
+        resetFilterPages();
+      }}
+      isExpanded={isExpanded}
+      onExpandedChange={setIsExpanded}
+      onReset={resetAllFilters}
+    />
+  );
+
   return (
     <View className="gap-4 p-4 web:p-6">
       <View className="gap-5">
@@ -273,105 +344,7 @@ export default function CertificatesByProjectScreen() {
               : `${requirements.length} requirements currently visible`
           }
           headerActions={
-            <CertificatesByProjectTableActions
-              activeTab={activeTab}
-              requirementFilter={requirementFilter}
-              recordStatusFilter={recordStatusFilter}
-              showStatusMenu={showStatusMenu}
-              onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
-              onRequirementFilterChange={(value) => {
-                setRequirementFilter(value);
-                setRequirementsPage(1);
-                setShowStatusMenu(false);
-              }}
-              onRecordStatusFilterChange={(value) => {
-                setRecordStatusFilter(value);
-                setRecordsPage(1);
-                setShowStatusMenu(false);
-              }}
-              categoryFilter={categoryFilter}
-              assetFilter={assetFilter}
-              vessels={vessels}
-              showAssetMenu={showAssetMenu}
-              onToggleAssetMenu={() => setShowAssetMenu((prev) => !prev)}
-              onAssetFilterChange={(value) => {
-                setAssetFilter(value);
-                setRequirementsPage(1);
-                setRecordsPage(1);
-                setShowAssetMenu(false);
-              }}
-              showCategoryMenu={showCategoryMenu}
-              onToggleCategoryMenu={() => setShowCategoryMenu((prev) => !prev)}
-              onCategoryFilterChange={(value) => {
-                setCategoryFilter(value);
-                setRequirementsPage(1);
-                setRecordsPage(1);
-                setShowCategoryMenu(false);
-              }}
-              workflowStatusFilter={workflowStatusFilter}
-              showWorkflowMenu={showWorkflowMenu}
-              onToggleWorkflowMenu={() => setShowWorkflowMenu((prev) => !prev)}
-              onWorkflowStatusFilterChange={(value) => {
-                setWorkflowStatusFilter(value);
-                setRecordsPage(1);
-                setShowWorkflowMenu(false);
-              }}
-              dateWindow={dateWindow}
-              dateFrom={dateFrom}
-              dateTo={dateTo}
-              showDateWindowMenu={showDateWindowMenu}
-              onToggleDateWindowMenu={() =>
-                setShowDateWindowMenu((prev) => !prev)
-              }
-              showDateRangeMenu={showDateRangeMenu}
-              onDateRangeOpenChange={setShowDateRangeMenu}
-              onDateWindowChange={(value) => {
-                setDateWindow(value);
-                setDateFrom("");
-                setDateTo("");
-                setRecordsPage(1);
-                setShowDateWindowMenu(false);
-              }}
-              onDateFromChange={(value) => {
-                setDateFrom(value);
-                setDateWindow("ALL");
-                setRecordsPage(1);
-              }}
-              onDateToChange={(value) => {
-                setDateTo(value);
-                setDateWindow("ALL");
-                setRecordsPage(1);
-              }}
-              onDateRangeClear={() => {
-                setDateFrom("");
-                setDateTo("");
-                setRecordsPage(1);
-              }}
-              vesselQuery={vesselQuery}
-              onVesselQueryChange={(value) => {
-                setVesselQuery(value);
-                setRequirementsPage(1);
-                setRecordsPage(1);
-              }}
-              isSearchOpen={isSearchOpen}
-              onSearchOpenChange={setIsSearchOpen}
-              isExpanded={isExpanded}
-              onExpandedChange={setIsExpanded}
-              onReset={() => {
-                setRequirementFilter("ALL");
-                setRecordStatusFilter("ALL");
-                setCategoryFilter("ALL");
-                setAssetFilter("ALL");
-                setWorkflowStatusFilter("ALL");
-                setDateWindow("ALL");
-                setDateFrom("");
-                setDateTo("");
-                setVesselQuery("");
-                setRequirementsPage(1);
-                setRecordsPage(1);
-                setIsSearchOpen(false);
-              }}
-            />
+            tableActions
           }
           toolbarContent={null}
           data={requirements}
@@ -403,105 +376,7 @@ export default function CertificatesByProjectScreen() {
                 : `${certificates.length} records currently visible`
             }
             headerActions={
-              <CertificatesByProjectTableActions
-                activeTab={activeTab}
-                requirementFilter={requirementFilter}
-                recordStatusFilter={recordStatusFilter}
-                showStatusMenu={showStatusMenu}
-                onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
-                onRequirementFilterChange={(value) => {
-                setRequirementFilter(value);
-                setRequirementsPage(1);
-                setShowStatusMenu(false);
-              }}
-              onRecordStatusFilterChange={(value) => {
-                setRecordStatusFilter(value);
-                setRecordsPage(1);
-                setShowStatusMenu(false);
-              }}
-              categoryFilter={categoryFilter}
-              assetFilter={assetFilter}
-              vessels={vessels}
-              showAssetMenu={showAssetMenu}
-              onToggleAssetMenu={() => setShowAssetMenu((prev) => !prev)}
-              onAssetFilterChange={(value) => {
-                setAssetFilter(value);
-                setRequirementsPage(1);
-                setRecordsPage(1);
-                setShowAssetMenu(false);
-              }}
-              showCategoryMenu={showCategoryMenu}
-              onToggleCategoryMenu={() => setShowCategoryMenu((prev) => !prev)}
-              onCategoryFilterChange={(value) => {
-                setCategoryFilter(value);
-                setRequirementsPage(1);
-                setRecordsPage(1);
-                setShowCategoryMenu(false);
-              }}
-              workflowStatusFilter={workflowStatusFilter}
-              showWorkflowMenu={showWorkflowMenu}
-              onToggleWorkflowMenu={() => setShowWorkflowMenu((prev) => !prev)}
-              onWorkflowStatusFilterChange={(value) => {
-                setWorkflowStatusFilter(value);
-                setRecordsPage(1);
-                setShowWorkflowMenu(false);
-              }}
-              dateWindow={dateWindow}
-              dateFrom={dateFrom}
-              dateTo={dateTo}
-              showDateWindowMenu={showDateWindowMenu}
-              onToggleDateWindowMenu={() =>
-                setShowDateWindowMenu((prev) => !prev)
-              }
-              showDateRangeMenu={showDateRangeMenu}
-              onDateRangeOpenChange={setShowDateRangeMenu}
-              onDateWindowChange={(value) => {
-                setDateWindow(value);
-                setDateFrom("");
-                setDateTo("");
-                setRecordsPage(1);
-                setShowDateWindowMenu(false);
-              }}
-              onDateFromChange={(value) => {
-                setDateFrom(value);
-                setDateWindow("ALL");
-                setRecordsPage(1);
-              }}
-              onDateToChange={(value) => {
-                setDateTo(value);
-                setDateWindow("ALL");
-                setRecordsPage(1);
-              }}
-              onDateRangeClear={() => {
-                setDateFrom("");
-                setDateTo("");
-                setRecordsPage(1);
-              }}
-              vesselQuery={vesselQuery}
-                onVesselQueryChange={(value) => {
-                  setVesselQuery(value);
-                  setRequirementsPage(1);
-                  setRecordsPage(1);
-                }}
-                isSearchOpen={isSearchOpen}
-                onSearchOpenChange={setIsSearchOpen}
-                isExpanded={isExpanded}
-                onExpandedChange={setIsExpanded}
-                onReset={() => {
-                  setRequirementFilter("ALL");
-                  setRecordStatusFilter("ALL");
-                  setCategoryFilter("ALL");
-                  setAssetFilter("ALL");
-                  setWorkflowStatusFilter("ALL");
-                  setDateWindow("ALL");
-                  setDateFrom("");
-                  setDateTo("");
-                  setVesselQuery("");
-                  setRequirementsPage(1);
-                  setRecordsPage(1);
-                  setIsSearchOpen(false);
-                }}
-              />
+              tableActions
             }
             toolbarContent={null}
             data={certificates}

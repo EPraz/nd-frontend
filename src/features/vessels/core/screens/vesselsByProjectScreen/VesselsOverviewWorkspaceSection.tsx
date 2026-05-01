@@ -1,5 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
-import { TableFilterSearch } from "@/src/components/ui/table";
+import {
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
+} from "@/src/components/ui/table";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { PaginationMetaDto } from "@/src/contracts/pagination.contract";
 import { useState } from "react";
@@ -48,10 +51,10 @@ export function VesselsOverviewWorkspaceSection({
   onProfileFilterChange,
 }: Props) {
   const [selectedVessel, setSelectedVessel] = useState<AssetDto | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (statusFilter !== "ALL" ? 1 : 0) +
+    (profileFilter !== "ALL" ? 1 : 0);
 
   return (
     <>
@@ -65,40 +68,37 @@ export function VesselsOverviewWorkspaceSection({
         }
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={search}
-              onChangeText={onSearchChange}
+              onChangeText={(value) => onSearchChange(value)}
               placeholder="Search vessel, IMO, license..."
-              open={showSearch}
-              onOpenChange={setShowSearch}
-              minWidth={300}
             />
 
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Fleet registry"
+              activeCount={activeFilterCount}
+              onClear={() => {
+                onSearchChange("");
+                onStatusFilterChange("ALL");
+                onProfileFilterChange("ALL");
+                onSortChange("NAME_ASC");
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Status"
               value={statusFilter}
               options={[...STATUS_FILTERS]}
-              open={showStatusMenu}
-              onToggle={() => setShowStatusMenu((prev) => !prev)}
-              onChange={(value) => {
-                onStatusFilterChange(value);
-                setShowStatusMenu(false);
-              }}
+              onChange={onStatusFilterChange}
               renderLabel={(value) =>
                 value === "ALL" ? "All status" : value.toLowerCase()
               }
-              triggerIconName="filter-outline"
-              minWidth={150}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Profile"
               value={profileFilter}
               options={[...PROFILE_FILTERS]}
-              open={showProfileMenu}
-              onToggle={() => setShowProfileMenu((prev) => !prev)}
-              onChange={(value) => {
-                onProfileFilterChange(value);
-                setShowProfileMenu(false);
-              }}
+              onChange={onProfileFilterChange}
               renderLabel={(value) =>
                 value === "ALL"
                   ? "All profiles"
@@ -108,23 +108,16 @@ export function VesselsOverviewWorkspaceSection({
                       ? "Missing flag"
                       : "Ready"
               }
-              triggerIconName="flag-outline"
-              minWidth={172}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup<VesselsSortKey>
+              label="Sort"
               value={sortBy}
               options={["NAME_ASC", "NAME_DESC"]}
-              open={showSortMenu}
-              onToggle={() => setShowSortMenu((prev) => !prev)}
-              onChange={(value) => {
-                onSortChange(value);
-                setShowSortMenu(false);
-              }}
+              onChange={onSortChange}
               renderLabel={(value) => (value === "NAME_DESC" ? "Z-A" : "A-Z")}
-              triggerIconName="swap-vertical-outline"
-              minWidth={112}
             />
+            </TableFilterMenu>
           </>
         }
         data={list}

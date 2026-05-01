@@ -1,7 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
-  TableDateRangeFilter,
-  TableFilterSearch,
+  TableFilterDateRange,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import {
   RegistryHeaderActionButton,
@@ -66,13 +67,12 @@ export default function MaintenanceByProjectScreen() {
     dateTo,
   });
   const [selectedTask, setSelectedTask] = useState<MaintenanceDto | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showAssetMenu, setShowAssetMenu] = useState(false);
-  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (statusFilter !== "ALL" ? 1 : 0) +
+    (assetFilter !== "ALL" ? 1 : 0) +
+    (priorityFilter !== "ALL" ? 1 : 0) +
+    (dateWindow !== "ALL" || dateFrom || dateTo ? 1 : 0);
 
   const summaryItems = [
     {
@@ -140,27 +140,37 @@ export default function MaintenanceByProjectScreen() {
         }
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={search}
               onChangeText={(value) => {
                 setSearch(value);
                 setPageNumber(1);
               }}
               placeholder="Search task or vessel"
-              open={showSearch}
-              onOpenChange={setShowSearch}
-              minWidth={280}
             />
 
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Maintenance tasks"
+              activeCount={activeFilterCount}
+              onClear={() => {
+                setSearch("");
+                setStatusFilter("ALL");
+                setAssetFilter("ALL");
+                setPriorityFilter("ALL");
+                setDateWindow("ALL");
+                setDateFrom("");
+                setDateTo("");
+                setSortBy("DUE_ASC");
+                setPageNumber(1);
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Status"
               value={statusFilter}
               options={[...STATUS_OPTIONS]}
-              open={showStatusMenu}
-              onToggle={() => setShowStatusMenu((prev) => !prev)}
               onChange={(value) => {
-                setStatusFilter(value);
+                setStatusFilter(value as "ALL" | MaintenanceStatus);
                 setPageNumber(1);
-                setShowStatusMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL"
@@ -169,56 +179,44 @@ export default function MaintenanceByProjectScreen() {
                     ? "In progress"
                     : value
               }
-              triggerIconName="filter-outline"
-              minWidth={160}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Vessel"
               value={assetFilter}
               options={["ALL", ...vessels.map((vessel) => vessel.id)]}
-              open={showAssetMenu}
-              onToggle={() => setShowAssetMenu((prev) => !prev)}
               onChange={(value) => {
                 setAssetFilter(value);
                 setPageNumber(1);
-                setShowAssetMenu(false);
               }}
               renderLabel={(value) => {
                 if (value === "ALL") return "All vessels";
                 return vessels.find((vessel) => vessel.id === value)?.name ?? "Vessel";
               }}
-              triggerIconName="boat-outline"
-              minWidth={170}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Priority"
               value={priorityFilter}
               options={[...PRIORITY_OPTIONS]}
-              open={showPriorityMenu}
-              onToggle={() => setShowPriorityMenu((prev) => !prev)}
               onChange={(value) => {
                 setPriorityFilter(value as "ALL" | MaintenancePriority);
                 setPageNumber(1);
-                setShowPriorityMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL" ? "All priority" : value
               }
-              triggerIconName="flag-outline"
-              minWidth={152}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Due date preset"
               value={dateWindow}
               options={[...DATE_WINDOW_OPTIONS]}
-              open={showDateWindowMenu}
-              onToggle={() => setShowDateWindowMenu((prev) => !prev)}
               onChange={(value) => {
-                setDateWindow(value);
+                setDateWindow(value as "ALL" | DateWindowFilter);
                 setDateFrom("");
                 setDateTo("");
                 setPageNumber(1);
-                setShowDateWindowMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL"
@@ -229,15 +227,11 @@ export default function MaintenanceByProjectScreen() {
                       ? "Next 30 days"
                       : "Next 90 days"
               }
-              triggerIconName="calendar-outline"
-              minWidth={154}
             />
 
-            <TableDateRangeFilter
+            <TableFilterDateRange
               from={dateFrom}
               to={dateTo}
-              open={showDateRangeMenu}
-              onOpenChange={setShowDateRangeMenu}
               onFromChange={(value) => {
                 setDateFrom(value);
                 setDateWindow("ALL");
@@ -255,15 +249,13 @@ export default function MaintenanceByProjectScreen() {
               }}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Sort"
               value={sortBy}
               options={[...SORT_OPTIONS]}
-              open={showSortMenu}
-              onToggle={() => setShowSortMenu((prev) => !prev)}
               onChange={(value) => {
-                setSortBy(value);
+                setSortBy(value as (typeof SORT_OPTIONS)[number]);
                 setPageNumber(1);
-                setShowSortMenu(false);
               }}
               renderLabel={(value) =>
                 value === "DUE_ASC"
@@ -272,9 +264,8 @@ export default function MaintenanceByProjectScreen() {
                     ? "Latest due"
                     : "Title A-Z"
               }
-              triggerIconName="swap-vertical-outline"
-              minWidth={148}
             />
+            </TableFilterMenu>
           </>
         }
         data={page.list}

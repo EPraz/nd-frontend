@@ -69,13 +69,6 @@ export function FuelByAssetWorkspaceSection({
   onSortChange: (sort: FuelSortOption) => void;
 }) {
   const [selectedFuel, setSelectedFuel] = useState<FuelDto | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showEventMenu, setShowEventMenu] = useState(false);
-  const [showFuelTypeMenu, setShowFuelTypeMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
-  const [showCriticalMenu, setShowCriticalMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
 
   return (
     <>
@@ -85,9 +78,7 @@ export function FuelByAssetWorkspaceSection({
         headerActions={
           <FuelByAssetTableActions
             search={search}
-            showSearch={showSearch}
             onSearchChange={onSearchChange}
-            onSearchOpenChange={setShowSearch}
             filterEventType={eventFilter}
             fuelTypeFilter={fuelTypeFilter}
             dateWindow={dateWindow}
@@ -95,41 +86,14 @@ export function FuelByAssetWorkspaceSection({
             dateTo={dateTo}
             criticalFilter={criticalFilter}
             sortBy={sortBy}
-            showEventMenu={showEventMenu}
-            showFuelTypeMenu={showFuelTypeMenu}
-            showDateWindowMenu={showDateWindowMenu}
-            showDateRangeMenu={showDateRangeMenu}
-            showCriticalMenu={showCriticalMenu}
-            showSortMenu={showSortMenu}
-            onToggleEventMenu={() => setShowEventMenu((prev) => !prev)}
-            onToggleFuelTypeMenu={() => setShowFuelTypeMenu((prev) => !prev)}
-            onToggleDateWindowMenu={() => setShowDateWindowMenu((prev) => !prev)}
-            onToggleDateRangeMenu={setShowDateRangeMenu}
-            onToggleCriticalMenu={() => setShowCriticalMenu((prev) => !prev)}
-            onToggleSortMenu={() => setShowSortMenu((prev) => !prev)}
-            onFilterChange={(value) => {
-              onEventFilterChange(value);
-              setShowEventMenu(false);
-            }}
-            onFuelTypeFilterChange={(value) => {
-              onFuelTypeFilterChange(value);
-              setShowFuelTypeMenu(false);
-            }}
-            onDateWindowChange={(value) => {
-              onDateWindowChange(value);
-              setShowDateWindowMenu(false);
-            }}
+            onFilterChange={onEventFilterChange}
+            onFuelTypeFilterChange={onFuelTypeFilterChange}
+            onDateWindowChange={onDateWindowChange}
             onDateFromChange={onDateFromChange}
             onDateToChange={onDateToChange}
             onDateRangeClear={onDateRangeClear}
-            onCriticalFilterChange={(value) => {
-              onCriticalFilterChange(value);
-              setShowCriticalMenu(false);
-            }}
-            onSortChange={(value) => {
-              onSortChange(value);
-              setShowSortMenu(false);
-            }}
+            onCriticalFilterChange={onCriticalFilterChange}
+            onSortChange={onSortChange}
           />
         }
         data={list}

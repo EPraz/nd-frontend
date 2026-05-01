@@ -1,7 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
-  TableDateRangeFilter,
-  TableFilterSearch,
+  TableFilterDateRange,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import type { DateWindowFilter } from "@/src/contracts/pagination.contract";
 import type {
@@ -18,25 +19,13 @@ const DATE_WINDOW_OPTIONS = ["ALL", "OVERDUE", "NEXT_30", "NEXT_90"] as const;
 
 type Props = {
   search: string;
-  showSearch: boolean;
   filterStatus: "ALL" | MaintenanceStatus;
   priorityFilter: "ALL" | MaintenancePriority;
   dateWindow: "ALL" | DateWindowFilter;
   dateFrom: string;
   dateTo: string;
   sortBy: MaintenanceSortOption;
-  showStatusMenu: boolean;
-  showPriorityMenu: boolean;
-  showDateWindowMenu: boolean;
-  showDateRangeMenu: boolean;
-  showSortMenu: boolean;
   onSearchChange: (value: string) => void;
-  onSearchOpenChange: (open: boolean) => void;
-  onToggleStatusMenu: () => void;
-  onTogglePriorityMenu: () => void;
-  onToggleDateWindowMenu: () => void;
-  onToggleDateRangeMenu: (open: boolean) => void;
-  onToggleSortMenu: () => void;
   onFilterChange: (value: "ALL" | MaintenanceStatus) => void;
   onPriorityFilterChange: (value: "ALL" | MaintenancePriority) => void;
   onDateWindowChange: (value: "ALL" | DateWindowFilter) => void;
@@ -48,25 +37,13 @@ type Props = {
 
 export function MaintenanceByAssetTableActions({
   search,
-  showSearch,
   filterStatus,
   priorityFilter,
   dateWindow,
   dateFrom,
   dateTo,
   sortBy,
-  showStatusMenu,
-  showPriorityMenu,
-  showDateWindowMenu,
-  showDateRangeMenu,
-  showSortMenu,
   onSearchChange,
-  onSearchOpenChange,
-  onToggleStatusMenu,
-  onTogglePriorityMenu,
-  onToggleDateWindowMenu,
-  onToggleDateRangeMenu,
-  onToggleSortMenu,
   onFilterChange,
   onPriorityFilterChange,
   onDateWindowChange,
@@ -75,21 +52,36 @@ export function MaintenanceByAssetTableActions({
   onDateRangeClear,
   onSortChange,
 }: Props) {
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (filterStatus !== "ALL" ? 1 : 0) +
+    (priorityFilter !== "ALL" ? 1 : 0) +
+    (dateWindow !== "ALL" || dateFrom || dateTo ? 1 : 0);
+
   return (
     <>
-      <TableFilterSearch
+      <TableToolbarSearch
         value={search}
         onChangeText={onSearchChange}
         placeholder="Search task..."
-        open={showSearch}
-        onOpenChange={onSearchOpenChange}
       />
 
-      <ToolbarSelect
+      <TableFilterMenu
+        title="Maintenance work orders"
+        activeCount={activeFilterCount}
+        onClear={() => {
+          onSearchChange("");
+          onFilterChange("ALL");
+          onPriorityFilterChange("ALL");
+          onDateWindowChange("ALL");
+          onDateRangeClear();
+          onSortChange("DUE_ASC");
+        }}
+      >
+      <TableFilterOptionGroup
+        label="Status"
         value={filterStatus}
         options={[...STATUS_OPTIONS]}
-        open={showStatusMenu}
-        onToggle={onToggleStatusMenu}
         onChange={(value) => onFilterChange(value as "ALL" | MaintenanceStatus)}
         renderLabel={(value) =>
           value === "ALL"
@@ -98,38 +90,22 @@ export function MaintenanceByAssetTableActions({
               ? "In progress"
               : value
         }
-        triggerIconName="filter-outline"
-        minWidth={160}
       />
 
-      <TableDateRangeFilter
-        from={dateFrom}
-        to={dateTo}
-        open={showDateRangeMenu}
-        onOpenChange={onToggleDateRangeMenu}
-        onFromChange={onDateFromChange}
-        onToChange={onDateToChange}
-        onClear={onDateRangeClear}
-      />
-
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Priority"
         value={priorityFilter}
         options={[...PRIORITY_OPTIONS]}
-        open={showPriorityMenu}
-        onToggle={onTogglePriorityMenu}
         onChange={(value) =>
           onPriorityFilterChange(value as "ALL" | MaintenancePriority)
         }
         renderLabel={(value) => (value === "ALL" ? "All priority" : value)}
-        triggerIconName="flag-outline"
-        minWidth={152}
       />
 
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Due date preset"
         value={dateWindow}
         options={[...DATE_WINDOW_OPTIONS]}
-        open={showDateWindowMenu}
-        onToggle={onToggleDateWindowMenu}
         onChange={(value) =>
           onDateWindowChange(value as "ALL" | DateWindowFilter)
         }
@@ -142,15 +118,20 @@ export function MaintenanceByAssetTableActions({
                 ? "Next 30 days"
                 : "Next 90 days"
         }
-        triggerIconName="calendar-outline"
-        minWidth={154}
       />
 
-      <ToolbarSelect
+      <TableFilterDateRange
+        from={dateFrom}
+        to={dateTo}
+        onFromChange={onDateFromChange}
+        onToChange={onDateToChange}
+        onClear={onDateRangeClear}
+      />
+
+      <TableFilterOptionGroup
+        label="Sort"
         value={sortBy}
         options={["DUE_ASC", "DUE_DESC", "TITLE_ASC"]}
-        open={showSortMenu}
-        onToggle={onToggleSortMenu}
         onChange={(value) => onSortChange(value as MaintenanceSortOption)}
         renderLabel={(value) =>
           value === "DUE_ASC"
@@ -159,9 +140,8 @@ export function MaintenanceByAssetTableActions({
               ? "Latest due"
               : "Title A-Z"
         }
-        triggerIconName="swap-vertical-outline"
-        minWidth={148}
       />
+      </TableFilterMenu>
     </>
   );
 }

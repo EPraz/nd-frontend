@@ -32,11 +32,11 @@ export function LoginAccessCard({
 
   return (
     <View
-      className="h-full justify-center px-6 py-8"
+      className="min-h-[440px] min-w-0 flex-1 justify-center px-6 py-8 md:px-8"
       style={{ backgroundColor: LOGIN_PALETTE.card }}
     >
       <View
-        className="mx-auto w-full"
+        className="mx-auto w-full min-w-0"
         style={{ maxWidth: 430, gap: 32 }}
       >
         <View className="gap-4">

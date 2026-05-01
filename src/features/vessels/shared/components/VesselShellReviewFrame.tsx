@@ -50,13 +50,13 @@ export function VesselShellReviewFrame({
   return (
     <View className="overflow-hidden">
       <View className="gap-4">
-        <View className="flex-row flex-wrap items-start justify-between gap-4">
-          <View className="min-w-[280px] flex-1 gap-3">
+        <View className="gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <View className="min-w-0 flex-1 gap-3">
             <View className="gap-1">
               <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-shellHighlight">
                 Operational profile
               </Text>
-              <Text className="text-[34px] leading-[1.05] font-semibold tracking-tight text-textMain">
+              <Text className="text-[32px] leading-[1.05] font-semibold tracking-tight text-textMain lg:text-[34px]">
                 {vessel.name}
               </Text>
               <Text className="text-[13px] leading-6 text-muted">
@@ -65,8 +65,8 @@ export function VesselShellReviewFrame({
             </View>
           </View>
 
-          <View className="min-w-[220px] items-end gap-2">
-            <View className="flex-row flex-wrap items-center justify-end gap-2">
+          <View className="w-full min-w-0 items-start gap-2 lg:w-auto lg:items-end">
+            <View className="flex-row flex-wrap items-center gap-2 lg:justify-end">
               <Button
                 variant="icon"
                 size="icon"

@@ -73,7 +73,7 @@ export function VesselEditorPreviewRail({
   const hasEmail = Boolean(email);
 
   return (
-    <View className="gap-4 web:xl:sticky web:xl:top-6">
+    <View className="min-w-0 gap-4 xl:sticky xl:top-6">
       <View className="overflow-hidden rounded-[28px] border border-shellLine bg-shellPanel">
         <View className="gap-1 border-b border-shellLine px-5 py-4">
           <Text className="text-[11px] font-semibold uppercase tracking-[0.32em] text-accent">
@@ -124,7 +124,7 @@ export function VesselEditorPreviewRail({
               Profile details
             </Text>
 
-            <View className="gap-3 web:grid web:grid-cols-2">
+            <View className="gap-3 md:grid md:grid-cols-2">
               <PreviewItem
                 label="Flag"
                 value={flag || "Not set"}

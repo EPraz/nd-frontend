@@ -22,7 +22,7 @@ export function QuickViewFooterActions({
   actions = [],
 }: Props) {
   return (
-    <View className="flex-row flex-wrap justify-end gap-2">
+    <View className="w-full min-w-0 flex-row flex-wrap justify-start gap-2 lg:w-auto lg:justify-end">
       <Button variant="outline" size="pillXs" onPress={onClose}>
         {closeLabel}
       </Button>

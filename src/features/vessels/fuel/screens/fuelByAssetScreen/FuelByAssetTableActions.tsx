@@ -1,7 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
-  TableDateRangeFilter,
-  TableFilterSearch,
+  TableFilterDateRange,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import type { DateWindowFilter } from "@/src/contracts/pagination.contract";
 import type {
@@ -31,7 +32,6 @@ const CRITICAL_OPTIONS = ["ALL", "true"] as const;
 
 type Props = {
   search: string;
-  showSearch: boolean;
   filterEventType: "ALL" | FuelEventType;
   fuelTypeFilter: "ALL" | FuelType;
   dateWindow: "ALL" | DateWindowFilter;
@@ -39,20 +39,7 @@ type Props = {
   dateTo: string;
   criticalFilter: "ALL" | "true";
   sortBy: FuelSortOption;
-  showEventMenu: boolean;
-  showFuelTypeMenu: boolean;
-  showDateWindowMenu: boolean;
-  showDateRangeMenu: boolean;
-  showCriticalMenu: boolean;
-  showSortMenu: boolean;
   onSearchChange: (value: string) => void;
-  onSearchOpenChange: (open: boolean) => void;
-  onToggleEventMenu: () => void;
-  onToggleFuelTypeMenu: () => void;
-  onToggleDateWindowMenu: () => void;
-  onToggleDateRangeMenu: (open: boolean) => void;
-  onToggleCriticalMenu: () => void;
-  onToggleSortMenu: () => void;
   onFilterChange: (value: "ALL" | FuelEventType) => void;
   onFuelTypeFilterChange: (value: "ALL" | FuelType) => void;
   onDateWindowChange: (value: "ALL" | DateWindowFilter) => void;
@@ -65,7 +52,6 @@ type Props = {
 
 export function FuelByAssetTableActions({
   search,
-  showSearch,
   filterEventType,
   fuelTypeFilter,
   dateWindow,
@@ -73,20 +59,7 @@ export function FuelByAssetTableActions({
   dateTo,
   criticalFilter,
   sortBy,
-  showEventMenu,
-  showFuelTypeMenu,
-  showDateWindowMenu,
-  showDateRangeMenu,
-  showCriticalMenu,
-  showSortMenu,
   onSearchChange,
-  onSearchOpenChange,
-  onToggleEventMenu,
-  onToggleFuelTypeMenu,
-  onToggleDateWindowMenu,
-  onToggleDateRangeMenu,
-  onToggleCriticalMenu,
-  onToggleSortMenu,
   onFilterChange,
   onFuelTypeFilterChange,
   onDateWindowChange,
@@ -96,21 +69,38 @@ export function FuelByAssetTableActions({
   onCriticalFilterChange,
   onSortChange,
 }: Props) {
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (filterEventType !== "ALL" ? 1 : 0) +
+    (fuelTypeFilter !== "ALL" ? 1 : 0) +
+    (dateWindow !== "ALL" || dateFrom || dateTo ? 1 : 0) +
+    (criticalFilter !== "ALL" ? 1 : 0);
+
   return (
     <>
-      <TableFilterSearch
+      <TableToolbarSearch
         value={search}
         onChangeText={onSearchChange}
         placeholder="Search fuel logs..."
-        open={showSearch}
-        onOpenChange={onSearchOpenChange}
       />
 
-      <ToolbarSelect
+      <TableFilterMenu
+        title="Fuel logs"
+        activeCount={activeFilterCount}
+        onClear={() => {
+          onSearchChange("");
+          onFilterChange("ALL");
+          onFuelTypeFilterChange("ALL");
+          onDateWindowChange("ALL");
+          onDateRangeClear();
+          onCriticalFilterChange("ALL");
+          onSortChange("DATE_DESC");
+        }}
+      >
+      <TableFilterOptionGroup
+        label="Event type"
         value={filterEventType}
         options={[...EVENT_OPTIONS]}
-        open={showEventMenu}
-        onToggle={onToggleEventMenu}
         onChange={(value) => onFilterChange(value as "ALL" | FuelEventType)}
         renderLabel={(value) =>
           value === "ALL"
@@ -119,36 +109,20 @@ export function FuelByAssetTableActions({
               ? "Adjustments"
               : value.charAt(0) + value.slice(1).toLowerCase()
         }
-        triggerIconName="filter-outline"
-        minWidth={160}
       />
 
-      <TableDateRangeFilter
-        from={dateFrom}
-        to={dateTo}
-        open={showDateRangeMenu}
-        onOpenChange={onToggleDateRangeMenu}
-        onFromChange={onDateFromChange}
-        onToChange={onDateToChange}
-        onClear={onDateRangeClear}
-      />
-
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Fuel type"
         value={fuelTypeFilter}
         options={[...FUEL_TYPE_OPTIONS]}
-        open={showFuelTypeMenu}
-        onToggle={onToggleFuelTypeMenu}
         onChange={(value) => onFuelTypeFilterChange(value as "ALL" | FuelType)}
         renderLabel={(value) => (value === "ALL" ? "All fuel" : value)}
-        triggerIconName="water-outline"
-        minWidth={132}
       />
 
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Date preset"
         value={dateWindow}
         options={[...DATE_WINDOW_OPTIONS]}
-        open={showDateWindowMenu}
-        onToggle={onToggleDateWindowMenu}
         onChange={(value) =>
           onDateWindowChange(value as "ALL" | DateWindowFilter)
         }
@@ -163,28 +137,30 @@ export function FuelByAssetTableActions({
                   ? "Next 30 days"
                   : "Next 90 days"
         }
-        triggerIconName="calendar-outline"
-        minWidth={144}
       />
 
-      <ToolbarSelect
+      <TableFilterDateRange
+        from={dateFrom}
+        to={dateTo}
+        onFromChange={onDateFromChange}
+        onToChange={onDateToChange}
+        onClear={onDateRangeClear}
+      />
+
+      <TableFilterOptionGroup
+        label="Issue state"
         value={criticalFilter}
         options={[...CRITICAL_OPTIONS]}
-        open={showCriticalMenu}
-        onToggle={onToggleCriticalMenu}
         onChange={(value) => onCriticalFilterChange(value)}
         renderLabel={(value) =>
           value === "ALL" ? "All records" : "Critical gaps"
         }
-        triggerIconName="alert-circle-outline"
-        minWidth={152}
       />
 
-      <ToolbarSelect
+      <TableFilterOptionGroup
+        label="Sort"
         value={sortBy}
         options={["DATE_DESC", "DATE_ASC", "QTY_DESC"]}
-        open={showSortMenu}
-        onToggle={onToggleSortMenu}
         onChange={(value) => onSortChange(value as FuelSortOption)}
         renderLabel={(value) =>
           value === "DATE_DESC"
@@ -193,9 +169,8 @@ export function FuelByAssetTableActions({
               ? "Oldest first"
               : "Qty high-low"
         }
-        triggerIconName="swap-vertical-outline"
-        minWidth={152}
       />
+      </TableFilterMenu>
     </>
   );
 }

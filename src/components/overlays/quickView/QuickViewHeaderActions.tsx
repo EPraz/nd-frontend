@@ -23,7 +23,7 @@ export function QuickViewHeaderActions({
   closeLabel = "Close modal",
 }: Props) {
   return (
-    <View className="flex-row flex-wrap items-center justify-end gap-2">
+    <View className="w-full min-w-0 flex-row flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
       {actions.map((action) => (
         <Button
           key={action.label}

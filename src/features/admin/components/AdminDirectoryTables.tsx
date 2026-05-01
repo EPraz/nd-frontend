@@ -1,10 +1,11 @@
 import { Badge } from "@/src/components/ui/badge/Badge";
 import { Button } from "@/src/components/ui/button/Button";
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
   RegistryTablePill,
-  TableFilterSearch,
+  TableFilterMenu,
+  TableFilterOptionGroup,
   TablePaginationControls,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import { Text } from "@/src/components/ui/text/Text";
 import type {
@@ -19,7 +20,6 @@ import {
   UserRoundCog,
 } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
   formatAdminDate,
@@ -120,9 +120,11 @@ export function ProjectDirectoryTable({
   onOpenSettings,
   onManageAccess,
 }: ProjectDirectoryTableProps) {
-  const [openControl, setOpenControl] = useState<string | null>(null);
-  const toggleControl = (controlId: string) =>
-    setOpenControl((current) => (current === controlId ? null : controlId));
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (statusFilter !== "ALL" ? 1 : 0) +
+    (kindFilter !== "ALL" ? 1 : 0) +
+    (assignedUserFilter !== "ALL" ? 1 : 0);
 
   return (
     <View className="gap-4">
@@ -133,52 +135,57 @@ export function ProjectDirectoryTable({
         count={formatCount(totalProjects, "project")}
       />
 
-      <View className="flex-row flex-wrap items-center gap-2">
-        <TableFilterSearch
+      <View className="flex-row flex-wrap items-center gap-2 md:justify-end">
+        <TableToolbarSearch
           value={search}
           onChangeText={onSearchChange}
           placeholder="Search by project, status, kind, or user"
-          open
-          onOpenChange={() => undefined}
-          minWidth={360}
         />
-        <ToolbarSelect
-          value={statusFilter}
-          options={[...PROJECT_STATUS_OPTIONS]}
-          open={openControl === "project-status"}
-          onToggle={() => toggleControl("project-status")}
-          onChange={onStatusFilterChange}
-          renderLabel={(value) =>
-            value === "ALL" ? "All status" : PROJECT_STATUS_LABEL[value as keyof typeof PROJECT_STATUS_LABEL]
-          }
-          triggerIconName="pulse-outline"
-          minWidth={150}
-        />
-        <ToolbarSelect
-          value={kindFilter}
-          options={[...PROJECT_KIND_FILTER_OPTIONS]}
-          open={openControl === "project-kind"}
-          onToggle={() => toggleControl("project-kind")}
-          onChange={onKindFilterChange}
-          renderLabel={(value) =>
-            value === "ALL" ? "All kinds" : KIND_LABEL[value as keyof typeof KIND_LABEL]
-          }
-          triggerIconName="compass-outline"
-          minWidth={150}
-        />
-        <ToolbarSelect
-          value={assignedUserFilter}
-          options={["ALL", ...users.map((user) => user.id)]}
-          open={openControl === "project-assignee"}
-          onToggle={() => toggleControl("project-assignee")}
-          onChange={onAssignedUserFilterChange}
-          renderLabel={(value) => {
-            if (value === "ALL") return "All assignees";
-            return users.find((user) => user.id === value)?.name ?? "User";
+        <TableFilterMenu
+          title="Project directory"
+          activeCount={activeFilterCount}
+          onClear={() => {
+            onSearchChange("");
+            onStatusFilterChange("ALL");
+            onKindFilterChange("ALL");
+            onAssignedUserFilterChange("ALL");
           }}
-          triggerIconName="person-outline"
-          minWidth={190}
-        />
+        >
+          <TableFilterOptionGroup
+            label="Status"
+            value={statusFilter}
+            options={[...PROJECT_STATUS_OPTIONS]}
+            onChange={onStatusFilterChange}
+            renderLabel={(value) =>
+              value === "ALL"
+                ? "All status"
+                : PROJECT_STATUS_LABEL[
+                    value as keyof typeof PROJECT_STATUS_LABEL
+                  ]
+            }
+          />
+          <TableFilterOptionGroup
+            label="Kind"
+            value={kindFilter}
+            options={[...PROJECT_KIND_FILTER_OPTIONS]}
+            onChange={onKindFilterChange}
+            renderLabel={(value) =>
+              value === "ALL"
+                ? "All kinds"
+                : KIND_LABEL[value as keyof typeof KIND_LABEL]
+            }
+          />
+          <TableFilterOptionGroup
+            label="Assigned user"
+            value={assignedUserFilter}
+            options={["ALL", ...users.map((user) => user.id)]}
+            onChange={onAssignedUserFilterChange}
+            renderLabel={(value) => {
+              if (value === "ALL") return "All assignees";
+              return users.find((user) => user.id === value)?.name ?? "User";
+            }}
+          />
+        </TableFilterMenu>
       </View>
 
       <AdminTableShell minWidth={1040}>
@@ -321,9 +328,11 @@ export function UserDirectoryTable({
   onPageChange,
   onPageSizeChange,
 }: UserDirectoryTableProps) {
-  const [openControl, setOpenControl] = useState<string | null>(null);
-  const toggleControl = (controlId: string) =>
-    setOpenControl((current) => (current === controlId ? null : controlId));
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (roleFilter !== "ALL" ? 1 : 0) +
+    (projectFilter !== "ALL" ? 1 : 0) +
+    (accessFilter !== "ALL" ? 1 : 0);
 
   return (
     <View className="gap-4">
@@ -334,52 +343,55 @@ export function UserDirectoryTable({
         count={formatCount(totalUsers, "user")}
       />
 
-      <View className="flex-row flex-wrap items-center gap-2">
-        <TableFilterSearch
+      <View className="flex-row flex-wrap items-center gap-2 md:justify-end">
+        <TableToolbarSearch
           value={search}
           onChangeText={onSearchChange}
           placeholder="Search by name, email, role, or project"
-          open
-          onOpenChange={() => undefined}
-          minWidth={360}
         />
-        <ToolbarSelect
-          value={roleFilter}
-          options={["ALL", ...USER_ROLE_OPTIONS]}
-          open={openControl === "user-role"}
-          onToggle={() => toggleControl("user-role")}
-          onChange={onRoleFilterChange}
-          renderLabel={(value) =>
-            value === "ALL" ? "All roles" : ROLE_LABEL[value]
-          }
-          triggerIconName="shield-outline"
-          minWidth={150}
-        />
-        <ToolbarSelect
-          value={projectFilter}
-          options={["ALL", ...projects.map((project) => project.id)]}
-          open={openControl === "user-project"}
-          onToggle={() => toggleControl("user-project")}
-          onChange={onProjectFilterChange}
-          renderLabel={(value) => {
-            if (value === "ALL") return "All projects";
-            return projectsById.get(value)?.name ?? "Project";
+        <TableFilterMenu
+          title="User directory"
+          activeCount={activeFilterCount}
+          onClear={() => {
+            onSearchChange("");
+            onRoleFilterChange("ALL");
+            onProjectFilterChange("ALL");
+            onAccessFilterChange("ALL");
           }}
-          triggerIconName="briefcase-outline"
-          minWidth={180}
-        />
-        <ToolbarSelect
-          value={accessFilter}
-          options={[...ACCESS_FILTER_OPTIONS]}
-          open={openControl === "user-access"}
-          onToggle={() => toggleControl("user-access")}
-          onChange={onAccessFilterChange}
-          renderLabel={(value) =>
-            value === "ALL" ? "All access" : value === "ASSIGNED" ? "Assigned" : "Unassigned"
-          }
-          triggerIconName="key-outline"
-          minWidth={150}
-        />
+        >
+          <TableFilterOptionGroup
+            label="Role"
+            value={roleFilter}
+            options={["ALL", ...USER_ROLE_OPTIONS]}
+            onChange={onRoleFilterChange}
+            renderLabel={(value) =>
+              value === "ALL" ? "All roles" : ROLE_LABEL[value]
+            }
+          />
+          <TableFilterOptionGroup
+            label="Project"
+            value={projectFilter}
+            options={["ALL", ...projects.map((project) => project.id)]}
+            onChange={onProjectFilterChange}
+            renderLabel={(value) => {
+              if (value === "ALL") return "All projects";
+              return projectsById.get(value)?.name ?? "Project";
+            }}
+          />
+          <TableFilterOptionGroup
+            label="Access"
+            value={accessFilter}
+            options={[...ACCESS_FILTER_OPTIONS]}
+            onChange={onAccessFilterChange}
+            renderLabel={(value) =>
+              value === "ALL"
+                ? "All access"
+                : value === "ASSIGNED"
+                  ? "Assigned"
+                  : "Unassigned"
+            }
+          />
+        </TableFilterMenu>
       </View>
 
       <AdminTableShell minWidth={980}>
@@ -476,7 +488,7 @@ function AdminDirectoryHeader({
   count: string;
 }) {
   return (
-    <View className="gap-3 web:flex-row web:items-end web:justify-between">
+    <View className="gap-3 lg:flex-row lg:items-end lg:justify-between">
       <View className="gap-2">
         <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
           {eyebrow}

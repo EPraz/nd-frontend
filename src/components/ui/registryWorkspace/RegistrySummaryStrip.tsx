@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { Text } from "../text/Text";
 
 export type RegistrySummaryTone =
@@ -68,17 +68,19 @@ export function RegistrySummaryStrip({
   loading?: boolean;
 }) {
   const isCompact = size === "compact";
+  const { width } = useWindowDimensions();
+  const useFixedColumns = Boolean(columns) && width >= 768;
 
   return (
     <View
       className={[
-        "rounded-[18px] border border-shellLine bg-shellPanelSoft",
+        "max-w-full overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft",
         isCompact ? "px-3 py-2.5" : "px-4 py-3",
       ].join(" ")}
     >
       <View
         className={[
-          columns
+          useFixedColumns
             ? "flex-row flex-nowrap gap-3"
             : "flex-row flex-wrap",
           isCompact ? "gap-x-4 gap-y-3" : "gap-x-6 gap-y-4",
@@ -92,7 +94,7 @@ export function RegistrySummaryStrip({
             helper={item.helper}
             tone={item.tone}
             compact={isCompact}
-            fixedColumns={Boolean(columns)}
+            fixedColumns={useFixedColumns}
             loading={loading}
           />
         ))}

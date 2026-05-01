@@ -62,7 +62,7 @@ export default function VesselImagePanel({
         </Text>
       </View>
 
-      <View className={compact ? "gap-3" : "gap-4 web:flex-row"}>
+      <View className={compact ? "gap-3" : "gap-4 md:flex-row"}>
         <View
           className={[
             "overflow-hidden border border-shellLine bg-shellPanelSoft",

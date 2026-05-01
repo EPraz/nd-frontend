@@ -158,7 +158,7 @@ export default function SuperAdminWorkspaceScreen() {
 
   if (!isAdmin) {
     return (
-      <View className="relative flex-1 bg-shellCanvas px-6 pt-10">
+      <View className="relative flex-1 overflow-hidden bg-shellCanvas px-6 pt-10">
         <WorkspaceBackdrop />
         <Card className="border-shellLine bg-shellPanel">
           <CardContent className="gap-3 py-6">
@@ -289,14 +289,14 @@ export default function SuperAdminWorkspaceScreen() {
   };
 
   return (
-    <View className="relative flex-1 bg-shellCanvas">
+    <View className="relative flex-1 overflow-hidden bg-shellCanvas">
       <WorkspaceBackdrop />
       <ScrollView
-        className="flex-1"
+        className="min-w-0 flex-1"
         contentContainerClassName="px-5 pt-10 pb-10 web:items-center"
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full gap-6 web:max-w-[1480px]">
+        <View className="w-full max-w-full gap-6 web:max-w-[1480px]">
           <EntryPortalHeader
             eyebrow="Company control"
             title="Admin workspace"

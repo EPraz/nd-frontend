@@ -27,7 +27,7 @@ export default function CrewEditorPreviewRail({
   disabled = false,
 }: Props) {
   return (
-    <View className="gap-4 web:xl:sticky web:xl:top-6">
+    <View className="min-w-0 gap-4 xl:sticky xl:top-6">
       <CrewPreviewCard values={values} hasPhoto={Boolean(photoPreviewUrl)} />
       <CrewPhotoPanel
         photoPreviewUrl={photoPreviewUrl}

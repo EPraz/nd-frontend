@@ -81,12 +81,11 @@ export function AnchoredPopover({
     onOpenChange(false);
   }
 
-  const popoverWidth =
+  const maxViewportWidth = viewportWidth - VIEWPORT_PADDING * 2;
+  const requestedPopoverWidth =
     width ??
-    Math.min(
-      Math.max(anchorRect?.width ?? minWidth, minWidth),
-      Math.min(maxWidth, viewportWidth - VIEWPORT_PADDING * 2),
-    );
+    Math.min(Math.max(anchorRect?.width ?? minWidth, minWidth), maxWidth);
+  const popoverWidth = Math.min(requestedPopoverWidth, maxViewportWidth);
   const belowTop =
     (anchorRect?.y ?? VIEWPORT_PADDING) + (anchorRect?.height ?? 0) + offset;
   const belowSpace = viewportHeight - belowTop - VIEWPORT_PADDING;

@@ -18,10 +18,10 @@ export function RegistryWorkspaceHeader({
   showDivider = true,
 }: Props) {
   return (
-    <View className="gap-4">
-      <View className="flex-row items-start justify-between gap-4">
+    <View className="min-w-0 max-w-full gap-4">
+      <View className="min-w-0 gap-4 lg:flex-row lg:items-start lg:justify-between">
         <View className="min-w-0 flex-1 gap-2">
-          <Text className="text-[34px] leading-[1.05] font-semibold tracking-tight text-textMain">
+          <Text className="text-[30px] leading-[1.08] font-semibold tracking-tight text-textMain md:text-[34px]">
             {title}
           </Text>
           <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">
@@ -35,7 +35,7 @@ export function RegistryWorkspaceHeader({
         </View>
 
         {actions ? (
-          <View className="ml-auto flex-row flex-wrap items-center justify-end gap-2 self-start">
+          <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 lg:w-auto lg:max-w-[48%] lg:justify-end">
             {actions}
           </View>
         ) : null}

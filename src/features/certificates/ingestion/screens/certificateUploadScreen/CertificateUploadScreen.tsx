@@ -350,7 +350,7 @@ export default function CertificateUploadScreen() {
         <RegistrySummaryStrip items={summaryItems} />
       </View>
 
-      <View className="gap-5 web:xl:flex-row web:xl:items-start">
+      <View className="min-w-0 gap-5 xl:flex-row xl:items-start">
         <View className="min-w-0 flex-[1.35] gap-5">
           <RegistryWorkspaceSection
             title="Source document"
@@ -400,7 +400,7 @@ export default function CertificateUploadScreen() {
                 {isRequirementFlow && requirement ? (
                   <View className="rounded-[20px] border border-accent/25 bg-accent/10 p-4">
                     <View className="flex-row flex-wrap items-start justify-between gap-4">
-                      <View className="min-w-[220px] flex-1 gap-1">
+                      <View className="min-w-0 flex-1 gap-1">
                         <Text className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent/80">
                           Requirement target
                         </Text>
@@ -423,7 +423,7 @@ export default function CertificateUploadScreen() {
 
               <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
                 <View className="flex-row flex-wrap items-start justify-between gap-4">
-                  <View className="min-w-[220px] flex-1 gap-2">
+                  <View className="min-w-0 flex-1 gap-2">
                     <View className="flex-row items-center gap-2">
                       <View className="h-9 w-9 items-center justify-center rounded-[12px] border border-shellLine bg-shellCanvas">
                         <Ionicons
@@ -512,7 +512,7 @@ export default function CertificateUploadScreen() {
           </RegistryWorkspaceSection>
         </View>
 
-        <View className="min-w-0 flex-1 gap-5 web:xl:max-w-[400px]">
+        <View className="w-full min-w-0 gap-5 xl:w-[400px] xl:flex-none">
           <RegistryWorkspaceSection
             title="What happens next"
             subtitle="The lane stays aligned with compliance work. ARXIS never jumps straight from file to approved record."

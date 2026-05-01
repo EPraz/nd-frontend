@@ -182,7 +182,7 @@ export default function EditCrewScreen() {
 
   if (!canEditCrew) {
     return (
-      <View className="flex-1 p-4 web:p-6">
+      <View className="min-w-0 flex-1 overflow-hidden p-4 web:p-6">
         <View className="mx-auto w-full max-w-[960px] gap-5 rounded-[24px] border border-shellLine bg-shellPanel p-6">
           <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
@@ -210,12 +210,13 @@ export default function EditCrewScreen() {
   }
 
   return (
-    <View className="flex-1">
+    <View className="min-w-0 flex-1 overflow-hidden">
       <ScrollView
+        className="min-w-0 flex-1"
         contentContainerClassName="p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="mx-auto w-full max-w-[1480px] gap-5">
+        <View className="mx-auto w-full max-w-full gap-5 xl:max-w-[1480px]">
           <OperationalEditorHeader
             title={`Edit ${crew.fullName || "Crew Member"}`}
             description="Keep assignment, contract status, and portrait current so the operational crew baseline stays reliable."
@@ -285,7 +286,7 @@ export default function EditCrewScreen() {
             }
           />
 
-          <View className="gap-5 web:xl:flex-row web:xl:items-start">
+          <View className="gap-5 xl:flex-row xl:items-start">
             <View className="flex-1 gap-4">
               <CrewFormCard
                 fixedAssetId={null}
@@ -306,7 +307,7 @@ export default function EditCrewScreen() {
               />
             </View>
 
-            <View className="gap-4 web:xl:w-[430px]">
+            <View className="gap-4 xl:w-[430px]">
               <CrewEditorPreviewRail
                 values={{
                   ...values,

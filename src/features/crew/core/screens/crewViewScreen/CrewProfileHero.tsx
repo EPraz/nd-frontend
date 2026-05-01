@@ -48,13 +48,13 @@ export default function CrewProfileHero({
       </Pressable>
 
       <View className="gap-4">
-        <View className="flex-row flex-wrap items-start justify-between gap-4">
-          <View className="min-w-[280px] flex-1 gap-3">
+        <View className="gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <View className="min-w-0 flex-1 gap-3">
             <View className="gap-1">
               <Text className="text-[10px] font-semibold uppercase tracking-[0.24em] text-shellHighlight">
                 Operational profile
               </Text>
-              <Text className="text-[34px] leading-[1.05] font-semibold tracking-tight text-textMain">
+              <Text className="text-[32px] leading-[1.05] font-semibold tracking-tight text-textMain lg:text-[34px]">
                 {crew.fullName}
               </Text>
               <Text className="text-[13px] leading-6 text-muted">
@@ -68,8 +68,8 @@ export default function CrewProfileHero({
             </Text>
           </View>
 
-          <View className="min-w-[260px] items-end gap-2">
-            <View className="flex-row flex-wrap items-center justify-end gap-2">
+          <View className="w-full min-w-0 items-start gap-2 lg:w-auto lg:items-end">
+            <View className="flex-row flex-wrap items-center gap-2 lg:justify-end">
               <Button
                 variant="outline"
                 size="pillSm"
@@ -150,7 +150,7 @@ export default function CrewProfileHero({
           />
         </View>
 
-        <View className="grid gap-3 web:grid web:grid-cols-2 xl:grid-cols-4">
+        <View className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <CrewProfileFactTile
             label="Assigned vessel"
             value={

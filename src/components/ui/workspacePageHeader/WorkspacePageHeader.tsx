@@ -41,9 +41,9 @@ export function WorkspacePageHeader({
   metrics,
 }: Props) {
   return (
-    <View className="gap-4">
-      <View className="rounded-[22px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
-        <View className="gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <View className="min-w-0 max-w-full gap-4">
+      <View className="max-w-full rounded-[22px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
+        <View className="min-w-0 gap-4 lg:flex-row lg:items-start lg:justify-between">
           <View className="min-w-0 flex-1 gap-3">
             {eyebrow ? (
               <Text className="text-[11px] font-semibold tracking-[0.32em] uppercase text-accent">
@@ -72,7 +72,7 @@ export function WorkspacePageHeader({
           </View>
 
           {actions ? (
-            <View className="flex-row flex-wrap items-center gap-2 lg:max-w-[340px] lg:justify-end">
+            <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 lg:w-auto lg:max-w-[340px] lg:justify-end">
               {actions}
             </View>
           ) : null}

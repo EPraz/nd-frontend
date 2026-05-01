@@ -18,14 +18,14 @@ export function EntryPortalHeader({
   meta,
 }: EntryPortalHeaderProps) {
   return (
-    <View className="gap-4">
-      <View className="gap-3 web:flex-row web:items-start web:justify-between">
+    <View className="min-w-0 max-w-full gap-4">
+      <View className="min-w-0 gap-3 lg:flex-row lg:items-start lg:justify-between">
         <View className="min-w-0 flex-1 gap-2">
           <Text className="text-[11px] font-semibold uppercase tracking-[0.28em] text-shellHighlight">
             {eyebrow}
           </Text>
           <View className="gap-1.5">
-            <Text className="text-[30px] font-semibold leading-[34px] tracking-tight text-textMain web:text-[40px] web:leading-[44px]">
+            <Text className="text-[34px] font-semibold leading-[38px] tracking-tight text-textMain lg:text-[40px] lg:leading-[44px]">
               {title}
             </Text>
             <Text className="max-w-[680px] text-[14px] leading-6 text-muted">
@@ -35,7 +35,7 @@ export function EntryPortalHeader({
         </View>
 
         {actions ? (
-          <View className="flex-row flex-wrap items-center gap-2 self-start">
+          <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
             {actions}
           </View>
         ) : null}

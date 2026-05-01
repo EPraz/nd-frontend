@@ -46,12 +46,13 @@ export type DataTableProps<Row> = {
 
 export function DataTable<Row>(props: DataTableProps<Row>) {
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
+  const tableMinWidth = props.minWidth ?? 860;
+  const requiresHorizontalScroll = width < tableMinWidth;
 
   return (
-    <View className="flex gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-5 web:backdrop-blur-md">
-      <View className="gap-3">
-        <View className="gap-1">
+    <View className="min-w-0 max-w-full flex gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-4 web:backdrop-blur-md md:p-5">
+      <View className="min-w-0 gap-3 md:flex-row md:items-start md:justify-between">
+        <View className="min-w-0 flex-1 gap-1">
           <Text className="text-[18px] leading-[130%] font-semibold text-textMain">
             {props.title}
           </Text>
@@ -64,20 +65,26 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
         </View>
 
         {props.headerActions ? (
-          <View className="flex-row flex-wrap items-center justify-end gap-2">
+          <View className="w-full min-w-0 flex-row flex-wrap items-center gap-2 md:w-auto md:flex-1 md:justify-end">
             {props.headerActions}
           </View>
         ) : null}
       </View>
 
-      {props.toolbarContent ? <View>{props.toolbarContent}</View> : null}
+      {props.toolbarContent ? (
+        <View className="min-w-0 max-w-full">{props.toolbarContent}</View>
+      ) : null}
 
       <View className="overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft/75">
         <View className="flex-1">
           {props.isLoading ? (
-            isMobile ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={{ minWidth: props.minWidth ?? 860 }}>
+            requiresHorizontalScroll ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="max-w-full"
+              >
+                <View style={{ minWidth: tableMinWidth }}>
                   <TableLoadingState columns={props.columns} />
                 </View>
               </ScrollView>
@@ -101,9 +108,13 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
                 {props.emptyText ?? "No data found."}
               </Text>
             </View>
-          ) : isMobile ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ minWidth: props.minWidth ?? 860 }}>
+          ) : requiresHorizontalScroll ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="max-w-full"
+            >
+              <View style={{ minWidth: tableMinWidth }}>
                 <TableList {...props} />
               </View>
             </ScrollView>
@@ -171,14 +182,14 @@ export function TablePaginationControls({
   const end = Math.min(meta.totalItems, meta.page * meta.pageSize);
 
   return (
-    <View className="flex-row flex-wrap items-center justify-between gap-3 border-t border-shellLine pt-4">
+    <View className="gap-3 border-t border-shellLine pt-4 lg:flex-row lg:items-center lg:justify-between">
       <Text className="text-[12px] text-muted">
         Showing {start}-{end} of {meta.totalItems}
       </Text>
 
       <View className="flex-row flex-wrap items-center gap-2">
         {onPageSizeChange ? (
-          <View className="flex-row items-center gap-1">
+          <View className="flex-row flex-wrap items-center gap-1">
             {pageSizeOptions.map((option) => {
               const active = option === meta.pageSize;
 
@@ -207,7 +218,7 @@ export function TablePaginationControls({
           </View>
         ) : null}
 
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row flex-wrap items-center gap-2">
           <PaginationButton
             label="Previous"
             disabled={!meta.hasPreviousPage}

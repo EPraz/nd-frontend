@@ -520,7 +520,7 @@ export default function CertificateIngestionReviewScreen() {
         <RegistrySummaryStrip items={summaryItems} />
       </View>
 
-      <View className="gap-5 web:xl:flex-row web:xl:items-start">
+      <View className="min-w-0 gap-5 xl:flex-row xl:items-start">
         <View className="min-w-0 flex-[1.4] gap-5">
           <RegistryWorkspaceSection
             title="Extraction snapshot"
@@ -530,7 +530,7 @@ export default function CertificateIngestionReviewScreen() {
               {ingestion.sourceKind === "REQUIREMENT" ? (
                 <View className="rounded-[20px] border border-accent/25 bg-accent/10 p-4">
                   <View className="flex-row flex-wrap items-start justify-between gap-4">
-                    <View className="min-w-[220px] flex-1 gap-1">
+                    <View className="min-w-0 flex-1 gap-1">
                       <Text className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent/80">
                         Requirement-linked intake
                       </Text>
@@ -553,7 +553,7 @@ export default function CertificateIngestionReviewScreen() {
               <View className="rounded-[20px] border border-shellLine bg-shellPanelSoft p-4">
                 <View className="gap-4">
                   <View className="flex-row flex-wrap items-start justify-between gap-4">
-                    <View className="min-w-[220px] flex-1 gap-1">
+                    <View className="min-w-0 flex-1 gap-1">
                       <Text className="text-[18px] font-semibold text-textMain">
                         {ingestion.fileName}
                       </Text>
@@ -583,7 +583,7 @@ export default function CertificateIngestionReviewScreen() {
                     />
                   </View>
 
-                  <View className="grid gap-4 web:grid-cols-3">
+                  <View className="grid gap-4 md:grid-cols-3">
                     <ContextRow
                       label="Review status"
                       value={titleCaseToken(ingestion.status)}
@@ -704,7 +704,7 @@ export default function CertificateIngestionReviewScreen() {
         </RegistryWorkspaceSection>
         </View>
 
-        <View className="min-w-0 flex-1 gap-5 web:xl:max-w-[400px]">
+        <View className="w-full min-w-0 gap-5 xl:w-[400px] xl:flex-none">
           <RegistryWorkspaceSection
             title="Review flow"
             subtitle="This step keeps the certificate lane aligned with real compliance work instead of turning uploads directly into records."

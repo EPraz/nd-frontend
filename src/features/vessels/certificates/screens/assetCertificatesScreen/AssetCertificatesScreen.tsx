@@ -98,19 +98,10 @@ export default function AssetCertificatesScreen() {
     normalizeAssetCertificatesWorkspaceTab(tab),
   );
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
-  const [showWorkflowMenu, setShowWorkflowMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
 
   useEffect(() => {
     setActiveTab(normalizeAssetCertificatesWorkspaceTab(tab));
   }, [tab]);
-
-  useEffect(() => {
-    setShowStatusMenu(false);
-  }, [activeTab, isExpanded]);
 
   const handleGenerate = useCallback(async () => {
     try {
@@ -154,48 +145,33 @@ export default function AssetCertificatesScreen() {
       activeTab={activeTab}
       requirementFilter={requirementFilter}
       recordStatusFilter={recordStatusFilter}
-      showStatusMenu={showStatusMenu}
-      onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
       onRequirementFilterChange={(value) => {
         setRequirementFilter(value);
         setRequirementsPage(1);
-        setShowStatusMenu(false);
       }}
       onRecordStatusFilterChange={(value) => {
         setRecordStatusFilter(value);
         setRecordsPage(1);
-        setShowStatusMenu(false);
       }}
       categoryFilter={categoryFilter}
-      showCategoryMenu={showCategoryMenu}
-      onToggleCategoryMenu={() => setShowCategoryMenu((prev) => !prev)}
       onCategoryFilterChange={(value) => {
         setCategoryFilter(value);
         setRequirementsPage(1);
         setRecordsPage(1);
-        setShowCategoryMenu(false);
       }}
       workflowStatusFilter={workflowStatusFilter}
-      showWorkflowMenu={showWorkflowMenu}
-      onToggleWorkflowMenu={() => setShowWorkflowMenu((prev) => !prev)}
       onWorkflowStatusFilterChange={(value) => {
         setWorkflowStatusFilter(value);
         setRecordsPage(1);
-        setShowWorkflowMenu(false);
       }}
       dateWindow={dateWindow}
       dateFrom={dateFrom}
       dateTo={dateTo}
-      showDateWindowMenu={showDateWindowMenu}
-      onToggleDateWindowMenu={() => setShowDateWindowMenu((prev) => !prev)}
-      showDateRangeMenu={showDateRangeMenu}
-      onDateRangeOpenChange={setShowDateRangeMenu}
       onDateWindowChange={(value) => {
         setDateWindow(value);
         setDateFrom("");
         setDateTo("");
         setRecordsPage(1);
-        setShowDateWindowMenu(false);
       }}
       onDateFromChange={(value) => {
         setDateFrom(value);

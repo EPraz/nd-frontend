@@ -206,11 +206,11 @@ export function CommandCenterReviewLayout({
         </View>
       </View> */}
 
-      <View className="web:grid web:grid-cols-1 web:gap-4 web:xl:grid-cols-12">
+      <View className="grid min-w-0 gap-4 xl:grid-cols-12">
         <CommandPanel
           eyebrow="Key Metrics"
           title="Project snapshot"
-          className="web:xl:col-span-3"
+          className="xl:col-span-3"
         >
           <MetricMatrix
             items={[
@@ -264,7 +264,7 @@ export function CommandCenterReviewLayout({
         <CommandPanel
           eyebrow="Compliance"
           title="Certificate coverage"
-          className="web:xl:col-span-3"
+          className="xl:col-span-3"
         >
           {certificateModule ? (
             <View className="gap-4">
@@ -332,7 +332,7 @@ export function CommandCenterReviewLayout({
         <CommandPanel
           eyebrow="Risk Index"
           title="Operational posture"
-          className="web:xl:col-span-3"
+          className="xl:col-span-3"
         >
           {vesselModule ? (
             <View className="gap-4">
@@ -400,7 +400,7 @@ export function CommandCenterReviewLayout({
         <CommandPanel
           eyebrow="Alerts"
           title="Priority snapshot"
-          className="web:xl:col-span-3"
+          className="xl:col-span-3"
         >
           <View className="gap-4">
             <View className="flex-row flex-wrap gap-2">
@@ -446,16 +446,16 @@ export function CommandCenterReviewLayout({
         </CommandPanel>
       </View>
 
-      <View className="web:grid web:grid-cols-1 web:gap-4 web:xl:grid-cols-12">
+      <View className="grid min-w-0 gap-4 xl:grid-cols-12">
         <CommandPanel
           eyebrow="Status Overview"
           title="Fleet watchlist"
-          className="web:xl:col-span-8"
+          className="xl:col-span-8"
           bodyClassName="gap-3"
         >
           {vesselModule ? (
             <>
-              <View className="hidden flex-row items-center border-b border-shellLine px-3 pb-2 web:flex">
+              <View className="hidden flex-row items-center border-b border-shellLine px-3 pb-2 lg:flex">
                 <TableHeader className="flex-[1.8]">Vessel</TableHeader>
                 <TableHeader className="flex-1">Health</TableHeader>
                 <TableHeader className="flex-[0.8]">Crew</TableHeader>
@@ -477,7 +477,7 @@ export function CommandCenterReviewLayout({
                       }
                       className="rounded-[18px] border border-shellLine bg-shellPanelSoft px-3 py-3 web:hover:border-shellHighlight/35"
                     >
-                      <View className="gap-2 web:hidden">
+                      <View className="gap-2 lg:hidden">
                         <View className="flex-row items-start justify-between gap-3">
                           <View className="flex-1">
                             <Text className="text-sm font-semibold text-textMain">
@@ -509,7 +509,7 @@ export function CommandCenterReviewLayout({
                         </View>
                       </View>
 
-                      <View className="hidden flex-row items-center web:flex">
+                      <View className="hidden flex-row items-center lg:flex">
                         <View className="flex-[1.8] pr-3">
                           <Text className="text-sm font-semibold text-textMain">
                             {item.assetName}
@@ -564,7 +564,7 @@ export function CommandCenterReviewLayout({
         <CommandPanel
           eyebrow="Priority Queue"
           title="Alerts requiring attention"
-          className="web:xl:col-span-4"
+          className="xl:col-span-4"
           bodyClassName="gap-2"
         >
           {commandAlerts.length > 0 ? (
@@ -627,11 +627,11 @@ export function CommandCenterReviewLayout({
         </CommandPanel>
       </View>
 
-      <View className="web:grid web:grid-cols-1 web:gap-4 web:xl:grid-cols-12">
+      <View className="grid min-w-0 gap-4 xl:grid-cols-12">
         <CommandPanel
           eyebrow="Certificate Watch"
           title="Expiring and pending documents"
-          className="web:xl:col-span-4"
+          className="xl:col-span-4"
           bodyClassName="gap-2"
         >
           {certificateModule ? (
@@ -699,7 +699,7 @@ export function CommandCenterReviewLayout({
         <CommandPanel
           eyebrow="Maintenance Due"
           title="Upcoming work"
-          className="web:xl:col-span-4"
+          className="xl:col-span-4"
           bodyClassName="gap-2"
         >
           {maintenanceModule ? (
@@ -765,7 +765,7 @@ export function CommandCenterReviewLayout({
         <CommandPanel
           eyebrow="Crew Coverage"
           title="Operational readiness"
-          className="web:xl:col-span-4"
+          className="xl:col-span-4"
           bodyClassName="gap-3"
         >
           {crewModule ? (

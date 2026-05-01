@@ -204,7 +204,7 @@ export default function EditVesselScreen() {
 
   if (!canEditVessel) {
     return (
-      <View className="flex-1 p-4 web:p-6">
+      <View className="min-w-0 flex-1 overflow-hidden p-4 web:p-6">
         <View className="mx-auto w-full max-w-[960px] gap-5 rounded-[24px] border border-shellLine bg-shellPanel p-6">
           <View className="gap-2">
             <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
@@ -232,12 +232,13 @@ export default function EditVesselScreen() {
   }
 
   return (
-    <View className="flex-1">
+    <View className="min-w-0 flex-1 overflow-hidden">
       <ScrollView
+        className="min-w-0 flex-1"
         contentContainerClassName="p-4 pb-10 web:p-6"
         showsVerticalScrollIndicator={false}
       >
-        <View className="mx-auto w-full max-w-[1480px] gap-5">
+        <View className="mx-auto w-full max-w-full gap-5 xl:max-w-[1480px]">
           <VesselEditorHeader
             title={`Edit ${vesselState.vessel.name}`}
             description="Keep the operational profile current with the right contact, identifiers, image, and visible vessel facts."
@@ -307,7 +308,7 @@ export default function EditVesselScreen() {
             }
           />
 
-          <View className="gap-5 web:xl:flex-row web:xl:items-start">
+          <View className="gap-5 xl:flex-row xl:items-start">
             <View className="flex-1 gap-4">
               <VesselEditorIdentitySection
                 control={control}
@@ -341,7 +342,7 @@ export default function EditVesselScreen() {
               ) : null}
             </View>
 
-            <View className="web:xl:w-[430px]">
+            <View className="xl:w-[430px]">
               <VesselEditorPreviewRail
                 mode="edit"
                 values={values}

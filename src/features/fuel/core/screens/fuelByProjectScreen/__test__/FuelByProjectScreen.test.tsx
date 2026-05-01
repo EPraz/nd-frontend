@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import { useVessels } from "@/src/features/vessels/core";
 import FuelByProjectScreen from "../FuelByProjectScreen";
@@ -31,19 +31,6 @@ jest.mock("@/src/components/ui/text/Text", () => ({
   Text: ({ children }: { children: ReactNode }) => {
     const { Text } = mockReactNative;
     return <Text>{children}</Text>;
-  },
-}));
-
-jest.mock("@/src/components/ui/forms/ToolbarSelect", () => ({
-  ToolbarSelect: ({
-    renderLabel,
-    value,
-  }: {
-    renderLabel: (value: string) => string;
-    value: string;
-  }) => {
-    const { Text } = mockReactNative;
-    return <Text>{renderLabel(value)}</Text>;
   },
 }));
 
@@ -119,6 +106,7 @@ describe("FuelByProjectScreen", () => {
     expect(screen.getByText("Fuel")).toBeOnTheScreen();
     expect(screen.getByText("Project fuel registry")).toBeOnTheScreen();
     expect(screen.getByText("Fuel log")).toBeOnTheScreen();
+    fireEvent.press(screen.getByText("Filters"));
     expect(screen.getByText("All events")).toBeOnTheScreen();
     expect(screen.getByText("Latest first")).toBeOnTheScreen();
     expect(screen.queryByText("Add Fuel Log")).toBeNull();

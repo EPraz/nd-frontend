@@ -1,5 +1,4 @@
 import { ErrorState, Loading, Text } from "@/src/components";
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
   RegistryHeaderActionButton,
   RegistrySummaryStrip,
@@ -8,8 +7,10 @@ import {
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
 import {
-  TableDateRangeFilter,
-  TableFilterSearch,
+  TableFilterDateRange,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
@@ -108,7 +109,6 @@ export default function CrewCertificatesByCrewScreen() {
   const [certificateDateFrom, setCertificateDateFrom] = useState("");
   const [certificateDateTo, setCertificateDateTo] = useState("");
   const [certificatesSort, setCertificatesSort] = useState("EXPIRY_ASC");
-  const [openControl, setOpenControl] = useState<string | null>(null);
   const debouncedRequirementsSearch = useDebouncedValue(requirementsSearch, 180);
   const debouncedCertificatesSearch = useDebouncedValue(certificatesSearch, 180);
 
@@ -186,6 +186,16 @@ export default function CrewCertificatesByCrewScreen() {
   const statsLoading = requirementsLoading || certificatesLoading;
 
   const assignedVesselName = crew?.assetName ?? crew?.asset?.name ?? "Assigned vessel";
+  const requirementsActiveFilterCount =
+    (requirementsSearch ? 1 : 0) +
+    (requirementsStatusFilter !== "ALL" ? 1 : 0);
+  const certificatesActiveFilterCount =
+    (certificatesSearch ? 1 : 0) +
+    (certificatesStatusFilter !== "ALL" ? 1 : 0) +
+    (workflowStatusFilter !== "ALL" ? 1 : 0) +
+    (certificateDateWindow !== "ALL" || certificateDateFrom || certificateDateTo
+      ? 1
+      : 0);
 
   const summaryItems = useMemo<RegistrySummaryItem[]>(
     () => [
@@ -227,10 +237,6 @@ export default function CrewCertificatesByCrewScreen() {
       refreshCertificates(),
       refreshMsmc(),
     ]);
-  }
-
-  function toggleControl(controlId: string) {
-    setOpenControl((current) => (current === controlId ? null : controlId));
   }
 
   async function onGenerate() {
@@ -381,24 +387,27 @@ export default function CrewCertificatesByCrewScreen() {
         subtitleRight={`${requirementsPagination?.totalItems ?? requirements.length} rows in this crew lane`}
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={requirementsSearch}
               onChangeText={(value) => {
                 setRequirementsSearch(value);
                 setRequirementsPage(1);
               }}
               placeholder="Search requirements..."
-              open={openControl === "requirements-search"}
-              onOpenChange={(open) =>
-                setOpenControl(open ? "requirements-search" : null)
-              }
-              minWidth={300}
             />
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Crew requirements"
+              activeCount={requirementsActiveFilterCount}
+              onClear={() => {
+                setRequirementsSearch("");
+                setRequirementsStatusFilter("ALL");
+                setRequirementsPage(1);
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Requirement status"
               value={requirementsStatusFilter}
               options={[...REQUIREMENT_STATUS_OPTIONS]}
-              open={openControl === "requirements-status"}
-              onToggle={() => toggleControl("requirements-status")}
               onChange={(value) => {
                 setRequirementsStatusFilter(value);
                 setRequirementsPage(1);
@@ -406,9 +415,8 @@ export default function CrewCertificatesByCrewScreen() {
               renderLabel={(value) =>
                 value === "ALL" ? "All status" : humanizeTechnicalLabel(value)
               }
-              triggerIconName="filter-outline"
-              minWidth={170}
             />
+            </TableFilterMenu>
           </>
         }
         data={requirements}
@@ -437,24 +445,32 @@ export default function CrewCertificatesByCrewScreen() {
         subtitleRight={`${certificatesPagination?.totalItems ?? certificates.length} certificate records`}
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={certificatesSearch}
               onChangeText={(value) => {
                 setCertificatesSearch(value);
                 setCertificatesPage(1);
               }}
               placeholder="Search certificates..."
-              open={openControl === "certificates-search"}
-              onOpenChange={(open) =>
-                setOpenControl(open ? "certificates-search" : null)
-              }
-              minWidth={300}
             />
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Uploaded certificates"
+              activeCount={certificatesActiveFilterCount}
+              onClear={() => {
+                setCertificatesSearch("");
+                setCertificatesStatusFilter("ALL");
+                setWorkflowStatusFilter("ALL");
+                setCertificateDateWindow("ALL");
+                setCertificateDateFrom("");
+                setCertificateDateTo("");
+                setCertificatesSort("EXPIRY_ASC");
+                setCertificatesPage(1);
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Certificate status"
               value={certificatesStatusFilter}
               options={[...CERTIFICATE_STATUS_OPTIONS]}
-              open={openControl === "certificates-status"}
-              onToggle={() => toggleControl("certificates-status")}
               onChange={(value) => {
                 setCertificatesStatusFilter(value);
                 setCertificatesPage(1);
@@ -462,14 +478,11 @@ export default function CrewCertificatesByCrewScreen() {
               renderLabel={(value) =>
                 value === "ALL" ? "All status" : humanizeTechnicalLabel(value)
               }
-              triggerIconName="shield-checkmark-outline"
-              minWidth={170}
             />
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Workflow"
               value={workflowStatusFilter}
               options={[...WORKFLOW_STATUS_OPTIONS]}
-              open={openControl === "certificates-workflow"}
-              onToggle={() => toggleControl("certificates-workflow")}
               onChange={(value) => {
                 setWorkflowStatusFilter(value);
                 setCertificatesPage(1);
@@ -477,14 +490,11 @@ export default function CrewCertificatesByCrewScreen() {
               renderLabel={(value) =>
                 value === "ALL" ? "All workflow" : humanizeTechnicalLabel(value)
               }
-              triggerIconName="git-branch-outline"
-              minWidth={174}
             />
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Expiry preset"
               value={certificateDateWindow}
               options={[...CERTIFICATE_DATE_WINDOWS]}
-              open={openControl === "certificates-date-window"}
-              onToggle={() => toggleControl("certificates-date-window")}
               onChange={(value) => {
                 setCertificateDateWindow(value);
                 setCertificateDateFrom("");
@@ -494,16 +504,10 @@ export default function CrewCertificatesByCrewScreen() {
               renderLabel={(value) =>
                 value === "ALL" ? "All expiry" : humanizeTechnicalLabel(value)
               }
-              triggerIconName="calendar-outline"
-              minWidth={160}
             />
-            <TableDateRangeFilter
+            <TableFilterDateRange
               from={certificateDateFrom}
               to={certificateDateTo}
-              open={openControl === "certificates-date-range"}
-              onOpenChange={(open) =>
-                setOpenControl(open ? "certificates-date-range" : null)
-              }
               onFromChange={(value) => {
                 setCertificateDateFrom(value);
                 setCertificateDateWindow("ALL");
@@ -521,19 +525,17 @@ export default function CrewCertificatesByCrewScreen() {
               }}
               label="Custom expiry"
             />
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Sort"
               value={certificatesSort}
               options={[...CERTIFICATE_SORT_OPTIONS]}
-              open={openControl === "certificates-sort"}
-              onToggle={() => toggleControl("certificates-sort")}
               onChange={(value) => {
                 setCertificatesSort(value);
                 setCertificatesPage(1);
               }}
               renderLabel={renderCertificateSortLabel}
-              triggerIconName="swap-vertical-outline"
-              minWidth={160}
             />
+            </TableFilterMenu>
           </>
         }
         data={certificates}

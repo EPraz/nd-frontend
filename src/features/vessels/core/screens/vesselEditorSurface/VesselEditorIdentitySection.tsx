@@ -79,7 +79,7 @@ export function VesselEditorIdentitySection({
 
           return (
             <View className="gap-4 rounded-[22px] border border-shellLine bg-shellPanel p-4">
-              <View className="gap-4 web:flex-row web:items-center web:justify-between">
+            <View className="gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <View className="min-w-0 flex-1 gap-1">
                   <View className="flex-row items-center gap-2">
                     <Ionicons
@@ -132,7 +132,7 @@ export function VesselEditorIdentitySection({
                 </View>
               </View>
 
-              <View className="gap-4 web:flex-row ">
+                  <View className="gap-4 md:flex-row">
                 <View className="flex-1 ">
                   {useLicense ? (
                     <VesselEditorControlledField

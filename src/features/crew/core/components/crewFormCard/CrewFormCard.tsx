@@ -195,7 +195,7 @@ export default function CrewFormCard({
               surfaceTone="raised"
             />
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Rank"
@@ -227,7 +227,7 @@ export default function CrewFormCard({
               surfaceTone="raised"
             />
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Passport Number"
@@ -289,7 +289,7 @@ export default function CrewFormCard({
             title="3. Contract"
             description="Track the current embarkation cycle and the reason behind any inactive period."
           >
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <DateField
                   label="Date of Embarkation"
@@ -314,7 +314,7 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Port of Embarkation"
@@ -339,7 +339,7 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Operating Company"
@@ -437,7 +437,7 @@ export default function CrewFormCard({
             title="4. Experience"
             description="Keep enough operational context to support later compliance and assignment decisions."
           >
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Total Sea Experience (years)"
@@ -466,7 +466,7 @@ export default function CrewFormCard({
               </View>
             </View>
 
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Vessel Type Experience"
@@ -508,7 +508,7 @@ export default function CrewFormCard({
             title="5. Familiarization"
             description="Capture the onboarding and familiarization state without yet going into full document workflows."
           >
-            <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <DateField
                   label="Onboard Familiarization Date"

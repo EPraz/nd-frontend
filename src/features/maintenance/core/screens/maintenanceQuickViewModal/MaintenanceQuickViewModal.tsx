@@ -262,7 +262,7 @@ export default function MaintenanceQuickViewModal({
         </View>
       </View>
 
-      <View className="mt-1 flex-col gap-3 web:flex-row">
+          <View className="mt-1 flex-col gap-3 md:flex-row">
         <View className="flex-1 gap-1.5">
           <Text className="text-[14px] font-semibold text-textMain">
             Execution Snapshot

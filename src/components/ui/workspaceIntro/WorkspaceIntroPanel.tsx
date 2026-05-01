@@ -61,11 +61,11 @@ export function WorkspaceIntroPanel({
   const hasRail = Boolean(actions || aside);
 
   return (
-    <View className="overflow-hidden rounded-[26px] border border-shellLine bg-shellPanel p-5 web:p-6 web:backdrop-blur-md">
+    <View className="max-w-full overflow-hidden rounded-[26px] border border-shellLine bg-shellPanel p-5 web:p-6 web:backdrop-blur-md">
       <View className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-shellBadge" />
       <View className="absolute bottom-0 left-10 h-24 w-24 rounded-full bg-shellGlass" />
 
-      <View className="gap-5 web:flex-row web:items-start">
+      <View className="min-w-0 gap-5 lg:flex-row lg:items-start">
         <View className="min-w-0 flex-1 gap-5">
           <View className="min-w-0 gap-3">
             <View className="self-start rounded-full border border-shellBadgeBorder bg-shellBadge px-3 py-1">
@@ -75,10 +75,10 @@ export function WorkspaceIntroPanel({
             </View>
 
             <View className="min-w-0 gap-2">
-              <Text className="max-w-full text-[34px] font-semibold leading-[40px] tracking-tight text-textMain web:text-[40px] web:leading-[44px]">
+          <Text className="max-w-full text-[34px] font-semibold leading-[40px] tracking-tight text-textMain md:text-[40px] md:leading-[44px]">
                 {title}
               </Text>
-              <Text className="max-w-[720px] text-[14px] leading-6 text-muted web:text-[15px]">
+          <Text className="max-w-[720px] text-[14px] leading-6 text-muted md:text-[15px]">
                 {description}
               </Text>
             </View>
@@ -124,11 +124,11 @@ export function WorkspaceIntroPanel({
           <View
             className={cn(
               "gap-3",
-              aside ? "web:w-[288px]" : "web:w-auto web:self-start",
+              aside ? "lg:w-[288px]" : "lg:w-auto lg:self-start",
             )}
           >
             {actions ? (
-              <View className="flex-row flex-wrap items-center justify-start gap-2 web:justify-end">
+              <View className="flex-row flex-wrap items-center justify-start gap-2 lg:justify-end">
                 {actions}
               </View>
             ) : null}

@@ -173,6 +173,7 @@ describe("SuperAdminWorkspaceScreen", () => {
   it("GIVEN project search text WHEN the user searches SHOULD send the backend filter and show empty state", async () => {
     render(<SuperAdminWorkspaceScreen />);
 
+    fireEvent.press(screen.getByText("Filters"));
     fireEvent.changeText(
       screen.getByPlaceholderText("Search by project, status, kind, or user"),
       "Pacific",
@@ -195,6 +196,7 @@ describe("SuperAdminWorkspaceScreen", () => {
     render(<SuperAdminWorkspaceScreen />);
 
     fireEvent.press(screen.getAllByText("Users").at(-1)!);
+    fireEvent.press(screen.getByText("Filters"));
     fireEvent.press(screen.getByText("All roles"));
     fireEvent.press(screen.getAllByText("Viewer")[0]);
 

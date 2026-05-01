@@ -112,8 +112,8 @@ export function VesselOperationalProfileReviewLayout({
 
   return (
     <View className="gap-4">
-      <View className="web:grid web:grid-cols-1 web:gap-4 web:xl:grid-cols-12 web:xl:items-start">
-        <View className="gap-4 web:xl:col-span-8">
+      <View className="grid min-w-0 gap-4 xl:grid-cols-12 xl:items-start">
+        <View className="min-w-0 gap-4 xl:col-span-8">
           <Card className="gap-0 overflow-hidden p-0">
             <View className="overflow-hidden border-b border-shellLine">
               <View className="relative h-[230px] w-full overflow-hidden bg-shellPanelSoft">
@@ -162,7 +162,7 @@ export function VesselOperationalProfileReviewLayout({
             </View>
 
             <View className="gap-4 px-5 py-5">
-              <View className="grid gap-3 web:grid web:grid-cols-2 web:gap-3 xl:grid-cols-3">
+              <View className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {operationalFacts.map((fact) => (
                   <View
                     key={fact.label}
@@ -180,7 +180,7 @@ export function VesselOperationalProfileReviewLayout({
             </View>
           </Card>
 
-          <View className="grid gap-4 web:grid web:grid-cols-1 web:gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <View className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <OperationalPanel
               eyebrow="Crew"
               title="Readiness"
@@ -271,7 +271,7 @@ export function VesselOperationalProfileReviewLayout({
           </View>
         </View>
 
-        <View className="gap-4 self-start web:xl:col-span-4">
+        <View className="min-w-0 gap-4 self-start xl:col-span-4">
           <OperationalPanel
             eyebrow="Certificates"
             title="Compliance pulse"

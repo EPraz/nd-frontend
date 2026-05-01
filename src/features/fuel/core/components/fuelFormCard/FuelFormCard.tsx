@@ -42,7 +42,7 @@ export default function FuelFormCard({
 
       <CardContent className="px-6">
         <View className="gap-4">
-          <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
             <View className="flex-1">
               <Field
                 label="Date (YYYY-MM-DD) *"
@@ -110,7 +110,7 @@ export default function FuelFormCard({
           />
 
           {/* Future: price/currency/location */}
-          <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
             <View className="flex-1">
               <Field
                 label="Price (optional)"

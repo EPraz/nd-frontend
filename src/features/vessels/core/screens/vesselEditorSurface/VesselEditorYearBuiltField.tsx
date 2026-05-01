@@ -62,7 +62,7 @@ export function VesselEditorYearBuiltField({
       >
         <View className="flex-1 items-center justify-start bg-black/60 px-4 pt-24">
           <Pressable onPress={close} className="absolute inset-0" />
-          <View className="w-full rounded-3xl border border-shellLine bg-shellPanel p-4 web:w-[420px] web:backdrop-blur-md">
+          <View className="w-full max-w-[420px] rounded-3xl border border-shellLine bg-shellPanel p-4 web:backdrop-blur-md">
             <View className="flex-row items-center justify-between">
               <Text className="text-[16px] font-semibold text-textMain">
                 Select build year

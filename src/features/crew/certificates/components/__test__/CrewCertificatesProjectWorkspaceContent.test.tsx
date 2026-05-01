@@ -1,26 +1,11 @@
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { useRouter } from "expo-router";
 import { CrewCertificatesProjectWorkspaceContent } from "../CrewCertificatesProjectWorkspaceContent";
 import type { CrewCertificatesProjectWorkspaceState } from "../../hooks/useCrewCertificatesProjectWorkspace";
 import { fakeCrewCertificateRequirement } from "@/src/test/fakes/crewCertificates";
 
-const mockReactNative = jest.requireActual("react-native");
-
 jest.mock("expo-router", () => ({
   useRouter: jest.fn(),
-}));
-
-jest.mock("@/src/components/ui/forms/ToolbarSelect", () => ({
-  ToolbarSelect: ({
-    renderLabel,
-    value,
-  }: {
-    renderLabel: (value: string) => string;
-    value: string;
-  }) => {
-    const { Text } = mockReactNative;
-    return <Text>{renderLabel(value)}</Text>;
-  },
 }));
 
 function makeWorkspace(): CrewCertificatesProjectWorkspaceState {
@@ -88,6 +73,10 @@ describe("CrewCertificatesProjectWorkspaceContent", () => {
     );
 
     expect(screen.getByText("Crew certificate requirements")).toBeOnTheScreen();
+    expect(screen.getByText("Filters")).toBeOnTheScreen();
+
+    fireEvent.press(screen.getByText("Filters"));
+
     expect(screen.getByText("All status")).toBeOnTheScreen();
     expect(screen.getByText("Priority first")).toBeOnTheScreen();
     expect(screen.getByText("Fleet safe manning overview")).toBeOnTheScreen();

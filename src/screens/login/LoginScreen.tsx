@@ -20,7 +20,7 @@ type LoginFormValues = {
 export default function LoginScreen() {
   const { signIn, signingIn = false } = useSessionContext();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 1024;
+  const isDesktop = width >= 1100;
   const {
     control,
     handleSubmit,
@@ -47,25 +47,25 @@ export default function LoginScreen() {
     }
   });
 
-  const shellMaxWidth = isDesktop ? 1500 : 620;
+  const shellMaxWidth = isDesktop ? 1500 : 680;
 
   return (
-    <View className="relative flex-1 bg-authCanvas">
+    <View className="relative min-w-0 flex-1 overflow-hidden bg-authCanvas">
       <LoginBackground />
 
       <KeyboardAvoidingView
-        className="flex-1"
+        className="min-w-0 flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          className="flex-1"
+          className="min-w-0 flex-1"
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 px-4 py-6 web:px-10 web:py-10">
+          <View className="min-w-0 flex-1 px-4 py-5 web:px-10 web:py-10">
             <View
-              className="mx-auto flex-1 justify-center"
+              className="mx-auto min-w-0 flex-1 justify-center"
               style={{ width: "100%", maxWidth: shellMaxWidth }}
             >
               <View

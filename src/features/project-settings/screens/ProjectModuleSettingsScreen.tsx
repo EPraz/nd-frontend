@@ -427,7 +427,7 @@ export default function ProjectModuleSettingsScreen() {
             ) : null
           }
         >
-          <View className="gap-4 web:grid web:grid-cols-2 2xl:grid-cols-3">
+          <View className="gap-4 md:grid md:grid-cols-2 2xl:grid-cols-3">
             {draft.map((module) => (
               <ModuleSettingCard
                 key={module.key}

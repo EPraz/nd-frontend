@@ -10,7 +10,7 @@ export const Card = ({
     <TextClassContext.Provider value="text-textMain">
       <View
         className={cn(
-          "flex flex-col gap-6 rounded-xl border border-shellLine bg-shellPanel py-6 shadow-sm shadow-black/5 web:backdrop-blur-md web:shadow-black/20",
+          "flex min-w-0 max-w-full flex-col gap-6 rounded-xl border border-shellLine bg-shellPanel py-6 shadow-sm shadow-black/5 web:backdrop-blur-md web:shadow-black/20",
           className,
         )}
         {...props}
@@ -24,7 +24,7 @@ export const CardHeader = ({
   ...props
 }: ViewProps & React.RefAttributes<View>) => {
   return (
-    <View className={cn("flex flex-col gap-1.5 px-6", className)} {...props} />
+    <View className={cn("flex min-w-0 flex-col gap-1.5 px-6", className)} {...props} />
   );
 };
 
@@ -35,7 +35,7 @@ export const CardHeaderRow = ({
   return (
     <View
       className={cn(
-        "flex flex-row items-center justify-between gap-3 px-6",
+        "flex min-w-0 flex-row flex-wrap items-center justify-between gap-3 px-6",
         className,
       )}
       {...props}
@@ -68,7 +68,7 @@ export const CardContent = ({
   className,
   ...props
 }: ViewProps & React.RefAttributes<View>) => {
-  return <View className={cn("px-6", className)} {...props} />;
+  return <View className={cn("min-w-0 px-6", className)} {...props} />;
 };
 
 export const CardFooter = ({
@@ -77,7 +77,7 @@ export const CardFooter = ({
 }: ViewProps & React.RefAttributes<View>) => {
   return (
     <View
-      className={cn("flex flex-row items-center px-6", className)}
+      className={cn("flex min-w-0 flex-row flex-wrap items-center px-6", className)}
       {...props}
     />
   );

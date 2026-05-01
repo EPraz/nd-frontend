@@ -181,7 +181,7 @@ export function CrewCertificateFormCard({
           </Text>
         </View>
 
-        <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
           <View className="flex-1">
             <Field
               label="Number"
@@ -202,7 +202,7 @@ export function CrewCertificateFormCard({
           </View>
         </View>
 
-        <View className="gap-4 web:flex-row">
+          <View className="gap-4 md:flex-row">
           <View className="flex-1">
             <DateField
               label="Issue Date"

@@ -89,7 +89,7 @@ export function CreateProjectPanel({
       description="Create the workspace and choose the module baseline it should launch with."
     >
       <View className="gap-5 p-5">
-        <View className="gap-5 web:lg:flex-row web:lg:items-end">
+        <View className="gap-5 lg:flex-row lg:items-end">
           <View className="flex-1">
             <Controller
               control={control}
@@ -109,7 +109,7 @@ export function CreateProjectPanel({
             />
           </View>
 
-          <View className="gap-2 web:lg:w-[220px]">
+          <View className="gap-2 lg:w-[220px]">
             <Text className="text-sm font-medium text-muted">Project kind</Text>
             {PROJECT_KIND_OPTIONS.length === 1 ? (
               <View className="self-start rounded-full border border-accent/35 bg-accent/12 px-4 py-2.5">
@@ -212,7 +212,7 @@ export function CreateUserPanel({
       title="Create user"
       description="Create a client-facing identity and assign project access in one pass."
     >
-      <View className="gap-5 p-5 web:lg:flex-row web:lg:items-start">
+      <View className="gap-5 p-5 lg:flex-row lg:items-start">
         <View className="flex-1 gap-5">
           <Controller
             control={control}
@@ -342,7 +342,7 @@ function ModuleBaselinePicker({
 
   return (
     <View className="gap-4 rounded-[24px] border border-shellLine bg-shellCanvas p-4">
-      <View className="gap-3 web:flex-row web:items-start web:justify-between">
+            <View className="gap-3 md:flex-row md:items-start md:justify-between">
         <View className="gap-1">
           <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
             Module baseline
@@ -359,7 +359,7 @@ function ModuleBaselinePicker({
         </View>
       </View>
 
-      <View className="gap-2 web:grid web:grid-cols-2 2xl:grid-cols-5">
+      <View className="gap-2 md:grid md:grid-cols-2 2xl:grid-cols-5">
         {PROJECT_MODULE_CATALOG.map((module) => {
           const selected = enabledModuleKeys.includes(module.key);
 
@@ -421,7 +421,7 @@ function ProjectAccessPicker({
   }));
 
   return (
-    <View className="gap-4 rounded-[24px] border border-shellLine bg-shellCanvas p-4 web:lg:w-[430px]">
+    <View className="gap-4 rounded-[24px] border border-shellLine bg-shellCanvas p-4 lg:w-[430px]">
       <View className="gap-1">
         <Text className="text-[11px] font-semibold uppercase tracking-[0.22em] text-shellHighlight">
           Initial access

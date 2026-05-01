@@ -143,7 +143,7 @@ export default function CrewPreviewCard({
               Profile details
             </Text>
 
-            <View className="gap-3 web:grid web:grid-cols-2">
+            <View className="gap-3 md:grid md:grid-cols-2">
               <PreviewItem
                 label="Department"
                 value={department}

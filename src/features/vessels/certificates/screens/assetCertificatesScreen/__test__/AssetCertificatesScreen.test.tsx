@@ -40,19 +40,6 @@ jest.mock("@/src/components/ui/text/Text", () => ({
   },
 }));
 
-jest.mock("@/src/components/ui/forms/ToolbarSelect", () => ({
-  ToolbarSelect: ({
-    renderLabel,
-    value,
-  }: {
-    renderLabel: (value: string) => string;
-    value: string;
-  }) => {
-    const { Text } = mockReactNative;
-    return <Text>{renderLabel(value)}</Text>;
-  },
-}));
-
 jest.mock("../useAssetCertificatesWorkspace", () => ({
   useAssetCertificatesWorkspace: jest.fn(),
 }));

@@ -26,15 +26,15 @@ export function EntryPortalSummaryStrip({
   items: EntryPortalSummaryItem[];
 }) {
   return (
-    <View className="rounded-[24px] border border-shellLine bg-shellPanel px-4 py-4 web:px-5">
-      <View className="flex-row flex-wrap gap-x-6 gap-y-4">
+    <View className="max-w-full rounded-[24px] border border-shellLine bg-shellPanel px-4 py-4 web:px-5">
+      <View className="flex-row flex-wrap gap-x-4 gap-y-4 md:gap-x-6">
         {items.map((item) => {
           const tone = TONE_STYLES[item.tone];
 
           return (
             <View
               key={item.label}
-              className="min-w-[140px] flex-1 gap-1.5 px-1 py-1"
+              className="min-w-[128px] flex-1 gap-1.5 px-1 py-1 md:min-w-[140px]"
             >
               <Text className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
                 {item.label}

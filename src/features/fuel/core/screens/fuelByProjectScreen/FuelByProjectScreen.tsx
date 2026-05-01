@@ -1,7 +1,8 @@
-import { ToolbarSelect } from "@/src/components/ui/forms/ToolbarSelect";
 import {
-  TableDateRangeFilter,
-  TableFilterSearch,
+  TableFilterDateRange,
+  TableFilterMenu,
+  TableFilterOptionGroup,
+  TableToolbarSearch,
 } from "@/src/components/ui/table";
 import {
   RegistryHeaderActionButton,
@@ -52,7 +53,6 @@ export default function FuelByProjectScreen() {
     "DATE_DESC",
   );
   const [search, setSearch] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
   const [eventFilter, setEventFilter] =
     useState<"ALL" | FuelEventType>("ALL");
   const [assetFilter, setAssetFilter] = useState("ALL");
@@ -79,13 +79,13 @@ export default function FuelByProjectScreen() {
     hasCriticalGap: criticalFilter === "ALL" ? undefined : criticalFilter,
   });
   const [selectedFuel, setSelectedFuel] = useState<FuelDto | null>(null);
-  const [showEventMenu, setShowEventMenu] = useState(false);
-  const [showAssetMenu, setShowAssetMenu] = useState(false);
-  const [showFuelTypeMenu, setShowFuelTypeMenu] = useState(false);
-  const [showDateWindowMenu, setShowDateWindowMenu] = useState(false);
-  const [showDateRangeMenu, setShowDateRangeMenu] = useState(false);
-  const [showCriticalMenu, setShowCriticalMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const activeFilterCount =
+    (search ? 1 : 0) +
+    (eventFilter !== "ALL" ? 1 : 0) +
+    (assetFilter !== "ALL" ? 1 : 0) +
+    (fuelTypeFilter !== "ALL" ? 1 : 0) +
+    (dateWindow !== "ALL" || dateFrom || dateTo ? 1 : 0) +
+    (criticalFilter !== "ALL" ? 1 : 0);
 
   const summaryItems = [
     {
@@ -146,26 +146,38 @@ export default function FuelByProjectScreen() {
         subtitleRight={`${page.pagination?.totalItems ?? page.list.length} events currently visible`}
         headerActions={
           <>
-            <TableFilterSearch
+            <TableToolbarSearch
               value={search}
               onChangeText={(value) => {
                 setSearch(value);
                 setPageNumber(1);
               }}
               placeholder="Search fuel logs..."
-              open={showSearch}
-              onOpenChange={setShowSearch}
             />
 
-            <ToolbarSelect
+            <TableFilterMenu
+              title="Fuel logs"
+              activeCount={activeFilterCount}
+              onClear={() => {
+                setSearch("");
+                setEventFilter("ALL");
+                setAssetFilter("ALL");
+                setFuelTypeFilter("ALL");
+                setDateWindow("ALL");
+                setDateFrom("");
+                setDateTo("");
+                setCriticalFilter("ALL");
+                setSortBy("DATE_DESC");
+                setPageNumber(1);
+              }}
+            >
+            <TableFilterOptionGroup
+              label="Event type"
               value={eventFilter}
               options={[...EVENT_OPTIONS]}
-              open={showEventMenu}
-              onToggle={() => setShowEventMenu((prev) => !prev)}
               onChange={(value) => {
                 setEventFilter(value as "ALL" | FuelEventType);
                 setPageNumber(1);
-                setShowEventMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL"
@@ -174,54 +186,42 @@ export default function FuelByProjectScreen() {
                     ? "Adjustments"
                     : value.charAt(0) + value.slice(1).toLowerCase()
               }
-              triggerIconName="filter-outline"
-              minWidth={160}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Vessel"
               value={assetFilter}
               options={["ALL", ...vessels.map((vessel) => vessel.id)]}
-              open={showAssetMenu}
-              onToggle={() => setShowAssetMenu((prev) => !prev)}
               onChange={(value) => {
                 setAssetFilter(value);
                 setPageNumber(1);
-                setShowAssetMenu(false);
               }}
               renderLabel={(value) => {
                 if (value === "ALL") return "All vessels";
                 return vessels.find((vessel) => vessel.id === value)?.name ?? "Vessel";
               }}
-              triggerIconName="boat-outline"
-              minWidth={170}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Fuel type"
               value={fuelTypeFilter}
               options={[...FUEL_TYPE_OPTIONS]}
-              open={showFuelTypeMenu}
-              onToggle={() => setShowFuelTypeMenu((prev) => !prev)}
               onChange={(value) => {
                 setFuelTypeFilter(value as "ALL" | FuelType);
                 setPageNumber(1);
-                setShowFuelTypeMenu(false);
               }}
               renderLabel={(value) => (value === "ALL" ? "All fuel" : value)}
-              triggerIconName="water-outline"
-              minWidth={132}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Date preset"
               value={dateWindow}
               options={[...DATE_WINDOW_OPTIONS]}
-              open={showDateWindowMenu}
-              onToggle={() => setShowDateWindowMenu((prev) => !prev)}
               onChange={(value) => {
                 setDateWindow(value as "ALL" | DateWindowFilter);
                 setDateFrom("");
                 setDateTo("");
                 setPageNumber(1);
-                setShowDateWindowMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL"
@@ -234,15 +234,11 @@ export default function FuelByProjectScreen() {
                         ? "Next 30 days"
                         : "Next 90 days"
               }
-              triggerIconName="calendar-outline"
-              minWidth={144}
             />
 
-            <TableDateRangeFilter
+            <TableFilterDateRange
               from={dateFrom}
               to={dateTo}
-              open={showDateRangeMenu}
-              onOpenChange={setShowDateRangeMenu}
               onFromChange={(value) => {
                 setDateFrom(value);
                 setDateWindow("ALL");
@@ -260,32 +256,26 @@ export default function FuelByProjectScreen() {
               }}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Issue state"
               value={criticalFilter}
               options={[...CRITICAL_OPTIONS]}
-              open={showCriticalMenu}
-              onToggle={() => setShowCriticalMenu((prev) => !prev)}
               onChange={(value) => {
                 setCriticalFilter(value);
                 setPageNumber(1);
-                setShowCriticalMenu(false);
               }}
               renderLabel={(value) =>
                 value === "ALL" ? "All records" : "Critical gaps"
               }
-              triggerIconName="alert-circle-outline"
-              minWidth={152}
             />
 
-            <ToolbarSelect
+            <TableFilterOptionGroup
+              label="Sort"
               value={sortBy}
               options={[...SORT_OPTIONS]}
-              open={showSortMenu}
-              onToggle={() => setShowSortMenu((prev) => !prev)}
               onChange={(value) => {
-                setSortBy(value);
+                setSortBy(value as (typeof SORT_OPTIONS)[number]);
                 setPageNumber(1);
-                setShowSortMenu(false);
               }}
               renderLabel={(value) =>
                 value === "DATE_DESC"
@@ -294,9 +284,8 @@ export default function FuelByProjectScreen() {
                     ? "Oldest first"
                     : "Qty high-low"
               }
-              triggerIconName="swap-vertical-outline"
-              minWidth={152}
             />
+            </TableFilterMenu>
           </>
         }
         data={page.list}

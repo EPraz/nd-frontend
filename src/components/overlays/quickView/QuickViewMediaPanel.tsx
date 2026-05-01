@@ -11,7 +11,7 @@ export function QuickViewMediaPanel({ children, className }: Props) {
   return (
     <View
       className={cn(
-        "h-[190px] w-full overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft",
+        "h-[190px] w-full min-w-0 overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft",
         className,
       )}
     >

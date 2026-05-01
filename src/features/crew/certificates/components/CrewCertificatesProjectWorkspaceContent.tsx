@@ -52,11 +52,6 @@ export function CrewCertificatesProjectWorkspaceContent({
   const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
   const [localSortBy, setLocalSortBy] =
     useState<CrewCertificateSortOption>("PRIORITY");
-  const [showSearch, setShowSearch] = useState(false);
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [showAssetMenu, setShowAssetMenu] = useState(false);
-  const [showCrewStateMenu, setShowCrewStateMenu] = useState(false);
-  const [showSortMenu, setShowSortMenu] = useState(false);
   const sortBy = controlledSortBy ?? localSortBy;
 
   const summaryItems = useMemo(
@@ -102,41 +97,27 @@ export function CrewCertificatesProjectWorkspaceContent({
           <CrewCertificatesProjectTableActions
             search={search}
             onSearchChange={onSearchChange}
-            showSearch={showSearch}
-            onSearchOpenChange={setShowSearch}
             statusFilter={statusFilter}
             onStatusFilterChange={(value) => {
               onStatusFilterChange(value);
               onPageChange?.(1);
-              setShowStatusMenu(false);
             }}
-            showStatusMenu={showStatusMenu}
-            onToggleStatusMenu={() => setShowStatusMenu((prev) => !prev)}
             assetFilter={assetFilter}
             vessels={vessels}
             onAssetFilterChange={(value) => {
               onAssetFilterChange(value);
               onPageChange?.(1);
-              setShowAssetMenu(false);
             }}
-            showAssetMenu={showAssetMenu}
-            onToggleAssetMenu={() => setShowAssetMenu((prev) => !prev)}
             crewStateFilter={crewStateFilter}
             onCrewStateFilterChange={(value) => {
               onCrewStateFilterChange(value);
               onPageChange?.(1);
-              setShowCrewStateMenu(false);
             }}
-            showCrewStateMenu={showCrewStateMenu}
-            onToggleCrewStateMenu={() => setShowCrewStateMenu((prev) => !prev)}
             sortBy={sortBy}
             onSortChange={(value) => {
               if (onSortChange) onSortChange(value);
               else setLocalSortBy(value);
-              setShowSortMenu(false);
             }}
-            showSortMenu={showSortMenu}
-            onToggleSortMenu={() => setShowSortMenu((prev) => !prev)}
           />
         }
         data={workspace.requirements}

@@ -13,7 +13,7 @@ export function QuickViewSectionCard({ title, children, className }: Props) {
   return (
     <View
       className={cn(
-        "flex-1 rounded-[18px] border border-shellLine bg-shellPanelSoft p-2.5",
+        "min-w-0 flex-1 rounded-[18px] border border-shellLine bg-shellPanelSoft p-2.5",
         className,
       )}
     >

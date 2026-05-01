@@ -1,6 +1,6 @@
 import { cn } from "@/src/lib/utils";
 import React from "react";
-import { Platform, View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 
 type Props = {
   main: React.ReactNode;
@@ -15,21 +15,17 @@ export function QuickViewLeadSection({
   asideClassName,
   asideWidth = 300,
 }: Props) {
-  const isWeb = Platform.OS === "web";
+  const { width } = useWindowDimensions();
+  const useAsideRail = width >= 1024;
 
   return (
-    <View
-      className="gap-3"
-      style={
-        isWeb ? { flexDirection: "row", alignItems: "flex-start" } : undefined
-      }
-    >
+    <View className="min-w-0 gap-3 lg:flex-row lg:items-start">
       <View className="min-w-0 flex-1 gap-2">{main}</View>
 
       {aside ? (
         <View
-          className={cn("w-full", asideClassName)}
-          style={isWeb ? { width: asideWidth, flexShrink: 0 } : undefined}
+          className={cn("w-full min-w-0 lg:flex-none", asideClassName)}
+          style={useAsideRail ? { width: asideWidth, flexShrink: 0 } : undefined}
         >
           {aside}
         </View>
