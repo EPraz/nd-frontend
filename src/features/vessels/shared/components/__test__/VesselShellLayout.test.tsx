@@ -79,7 +79,7 @@ describe("VesselShellLayout", () => {
       projectName: "Atlantic Ops",
     });
     (useSessionContext as jest.Mock).mockReturnValue({
-      session: { role: "ADMIN" },
+      session: { role: "SUPER_ADMIN" },
     });
     (useProjectEntitlements as jest.Mock).mockReturnValue({
       isModuleEnabled: jest.fn(() => true),

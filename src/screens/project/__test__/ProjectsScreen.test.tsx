@@ -35,7 +35,7 @@ describe("ProjectsScreen", () => {
     (useSessionContext as jest.Mock).mockReturnValue({
       signOut,
       session: {
-        role: "ADMIN",
+        role: "SUPER_ADMIN",
         name: "Admin User",
         company: { id: "company-1", name: "Navigate Marine" },
       },

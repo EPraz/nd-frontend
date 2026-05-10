@@ -40,7 +40,7 @@ const entitlements: ProjectModuleEntitlementsDto = {
   ],
 };
 
-function mockAdminSession(role: "ADMIN" | "OPS" = "ADMIN") {
+function mockAdminSession(role: "SUPER_ADMIN" | "ADMIN" | "OPS" = "SUPER_ADMIN") {
   (useSessionContext as jest.Mock).mockReturnValue({
     session: {
       role,
@@ -74,8 +74,8 @@ describe("ProjectModuleSettingsScreen", () => {
     save.mockResolvedValue(undefined);
   });
 
-  it("GIVEN a non-admin user WHEN the settings screen renders SHOULD show restricted access", () => {
-    mockAdminSession("OPS");
+  it("GIVEN a project admin user WHEN the settings screen renders SHOULD show restricted access", () => {
+    mockAdminSession("ADMIN");
 
     render(<ProjectModuleSettingsScreen />);
 

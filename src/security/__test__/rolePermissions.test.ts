@@ -1,10 +1,21 @@
 import { canRole, canUser } from "../rolePermissions";
 
 describe("rolePermissions", () => {
-  it("GIVEN an admin role WHEN checking elevated actions SHOULD allow project configuration and certificate approval", () => {
-    expect(canRole("ADMIN", "PROJECT_CONFIGURE")).toBe(true);
-    expect(canRole("ADMIN", "USER_MANAGE")).toBe(true);
+  it("GIVEN a super admin role WHEN checking company control actions SHOULD allow them", () => {
+    expect(canRole("SUPER_ADMIN", "PROJECT_CONFIGURE")).toBe(true);
+    expect(canRole("SUPER_ADMIN", "USER_MANAGE")).toBe(true);
+    expect(canRole("SUPER_ADMIN", "CERTIFICATE_APPROVE")).toBe(true);
+  });
+
+  it("GIVEN an admin role WHEN checking operational elevated actions SHOULD allow approval and soft delete", () => {
     expect(canRole("ADMIN", "CERTIFICATE_APPROVE")).toBe(true);
+    expect(canRole("ADMIN", "OPERATIONAL_SOFT_DELETE")).toBe(true);
+    expect(canRole("ADMIN", "OPERATIONAL_WRITE")).toBe(true);
+  });
+
+  it("GIVEN an admin role WHEN checking company control actions SHOULD deny them", () => {
+    expect(canRole("ADMIN", "PROJECT_CONFIGURE")).toBe(false);
+    expect(canRole("ADMIN", "USER_MANAGE")).toBe(false);
   });
 
   it("GIVEN an ops role WHEN checking operational actions SHOULD allow writes and ingestion confirmation", () => {

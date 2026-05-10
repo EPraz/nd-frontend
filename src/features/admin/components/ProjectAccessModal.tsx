@@ -58,8 +58,8 @@ export function ProjectAccessModal({
                 {project?.name ?? "Project"}
               </CardTitle>
               <CardDescription>
-                Admin users still have company-wide visibility. Use explicit
-                assignments here for operational and client-facing users.
+                Super admins manage company-wide access here. Use explicit
+                assignments for project-scoped admin, ops, and viewer users.
               </CardDescription>
             </View>
 
@@ -77,7 +77,8 @@ export function ProjectAccessModal({
             <View className="rounded-[24px] border border-shellLine bg-shellPanelSoft p-4">
               <Text className="text-sm leading-6 text-muted">
                 Select which users should appear as explicitly assigned to this
-                project. This controls project visibility for non-admin users.
+                project. This controls project visibility for project-scoped
+                users.
               </Text>
             </View>
 

@@ -295,7 +295,7 @@ export default function ProjectModuleSettingsScreen() {
         <RegistryWorkspaceHeader
           title="Project settings"
           eyebrow="Project control surface"
-          subtitle={`Review which product areas are available inside ${projectName}. Only admins can change these decisions.`}
+          subtitle={`Review which product areas are available inside ${projectName}. Only super admins can change these decisions.`}
         />
 
         <RegistrySummaryStrip
@@ -304,7 +304,7 @@ export default function ProjectModuleSettingsScreen() {
             {
               label: "Access",
               value: "Restricted",
-              helper: "only admin users can change module availability",
+              helper: "only super admins can change module availability",
               tone: "danger",
             },
             {
@@ -324,12 +324,12 @@ export default function ProjectModuleSettingsScreen() {
 
         <RegistryWorkspaceSection
           title="Access restricted"
-          subtitle="Ask an admin user to manage which modules are visible for this project."
+          subtitle="Ask a super admin user to manage which modules are visible for this project."
         >
           <SettingsAlert
             tone="danger"
-            title="Admin permissions required"
-            body="This surface controls project-wide availability for the main product modules. It stays read-only until an admin opens it."
+            title="Super admin permissions required"
+            body="This surface controls project-wide availability for the main product modules. It stays read-only until a super admin opens it."
           />
         </RegistryWorkspaceSection>
       </View>

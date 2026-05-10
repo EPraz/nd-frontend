@@ -245,7 +245,7 @@ export function ProjectDirectoryTable({
                     <RegistryTablePill
                       key={`${project.id}-${user.id}`}
                       label={`${user.name} - ${ROLE_LABEL[user.role]}`}
-                      tone={user.role === "ADMIN" ? "warn" : "neutral"}
+                      tone={rolePillTone(user.role)}
                     />
                   ))
                 )}
@@ -425,13 +425,7 @@ export function UserDirectoryTable({
               <View className="flex-1 px-3 py-4">
                 <RegistryTablePill
                   label={ROLE_LABEL[user.role]}
-                  tone={
-                    user.role === "ADMIN"
-                      ? "warn"
-                      : user.role === "OPS"
-                        ? "info"
-                        : "neutral"
-                  }
+                  tone={rolePillTone(user.role)}
                 />
               </View>
 
@@ -572,4 +566,11 @@ function AdminTableMessage({ children }: { children: string }) {
 
 function formatCount(value: number, label: string) {
   return `${value} ${value === 1 ? label : `${label}s`}`;
+}
+
+function rolePillTone(role: UserRole) {
+  if (role === "SUPER_ADMIN") return "warn";
+  if (role === "ADMIN") return "accent";
+  if (role === "OPS") return "info";
+  return "neutral";
 }

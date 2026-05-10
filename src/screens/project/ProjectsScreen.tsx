@@ -72,7 +72,7 @@ export default function ProjectsScreen() {
       },
       {
         label: "Access",
-        value: canManageUsers ? "Admin" : "Workspace",
+        value: canManageUsers ? "Super admin" : "Workspace",
         helper: "current session role",
         tone: canManageUsers ? "warn" : "info",
       },

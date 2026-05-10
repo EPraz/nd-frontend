@@ -44,7 +44,7 @@ export default function SuperAdminWorkspaceScreen() {
   const router = useRouter();
   const { session } = useSessionContext();
   const { show } = useToast();
-  const isAdmin = canUser(session, "USER_MANAGE");
+  const isSuperAdmin = canUser(session, "USER_MANAGE");
   const {
     projects,
     users,
@@ -59,7 +59,7 @@ export default function SuperAdminWorkspaceScreen() {
     savingProjectModules,
     savingUser,
     savingAccess,
-  } = useAdminWorkspace(isAdmin);
+  } = useAdminWorkspace(isSuperAdmin);
 
   const [projectSearch, setProjectSearch] = useState("");
   const [userSearch, setUserSearch] = useState("");
@@ -84,7 +84,7 @@ export default function SuperAdminWorkspaceScreen() {
   );
   const debouncedProjectSearch = useDebouncedValue(projectSearch);
   const debouncedUserSearch = useDebouncedValue(userSearch);
-  const projectPageData = useAdminProjectPage(isAdmin, {
+  const projectPageData = useAdminProjectPage(isSuperAdmin, {
     page: projectPage,
     pageSize: projectPageSize,
     search: debouncedProjectSearch,
@@ -93,7 +93,7 @@ export default function SuperAdminWorkspaceScreen() {
     assignedUserId:
       projectAssignedUserFilter === "ALL" ? undefined : projectAssignedUserFilter,
   });
-  const userPageData = useAdminUserPage(isAdmin, {
+  const userPageData = useAdminUserPage(isSuperAdmin, {
     page: userPage,
     pageSize: userPageSize,
     search: debouncedUserSearch,
@@ -113,6 +113,7 @@ export default function SuperAdminWorkspaceScreen() {
       users: users.length,
       assignedUsers: users.filter((user) => user.assignedProjectIds.length > 0)
         .length,
+      superAdmins: users.filter((user) => user.role === "SUPER_ADMIN").length,
       admins: users.filter((user) => user.role === "ADMIN").length,
     }),
     [projects, users],
@@ -139,13 +140,25 @@ export default function SuperAdminWorkspaceScreen() {
         tone: "ok",
       },
       {
-        label: "Admins",
-        value: String(summary.admins),
+        label: "Super admins",
+        value: String(summary.superAdmins),
         helper: "company-wide control holders",
         tone: "warn",
       },
+      {
+        label: "Admins",
+        value: String(summary.admins),
+        helper: "project-scoped operators",
+        tone: "info",
+      },
     ],
-    [summary.admins, summary.assignedUsers, summary.projects, summary.users],
+    [
+      summary.admins,
+      summary.assignedUsers,
+      summary.projects,
+      summary.superAdmins,
+      summary.users,
+    ],
   );
 
   async function refreshAll() {
@@ -156,7 +169,7 @@ export default function SuperAdminWorkspaceScreen() {
     ]);
   }
 
-  if (!isAdmin) {
+  if (!isSuperAdmin) {
     return (
       <View className="relative flex-1 overflow-hidden bg-shellCanvas px-6 pt-10">
         <WorkspaceBackdrop />
@@ -166,7 +179,7 @@ export default function SuperAdminWorkspaceScreen() {
               Access restricted
             </Text>
             <Text className="text-muted">
-              Only admin users can access the super admin workspace.
+              Only super admin users can access the super admin workspace.
             </Text>
             <View className="pt-2">
               <Button
@@ -299,7 +312,7 @@ export default function SuperAdminWorkspaceScreen() {
         <View className="w-full max-w-full gap-6 web:max-w-[1480px]">
           <EntryPortalHeader
             eyebrow="Company control"
-            title="Admin workspace"
+            title="Super admin workspace"
             subtitle="Manage workspaces, user identities, and project access from the same calm control surface."
             actions={<SuperAdminHeaderActions onRefresh={refreshAll} />}
           />
@@ -315,7 +328,7 @@ export default function SuperAdminWorkspaceScreen() {
             <Card className="border-destructive/30 bg-destructive/5">
               <CardContent className="gap-2 py-5">
                 <Text className="font-semibold text-destructive">
-                  Admin data temporarily unavailable
+                  Super admin data temporarily unavailable
                 </Text>
                 <Text className="text-muted">{error}</Text>
               </CardContent>

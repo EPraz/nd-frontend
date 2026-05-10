@@ -15,10 +15,20 @@ export type SecurityAction =
   | "AUDIT_VIEW";
 
 const ROLE_PERMISSIONS: Record<UserRole, ReadonlySet<SecurityAction>> = {
-  ADMIN: new Set([
+  SUPER_ADMIN: new Set([
     "PROJECT_READ",
     "PROJECT_CONFIGURE",
     "USER_MANAGE",
+    "OPERATIONAL_WRITE",
+    "OPERATIONAL_SOFT_DELETE",
+    "DOCUMENT_UPLOAD",
+    "INGESTION_CONFIRM",
+    "CERTIFICATE_APPROVE",
+    "FILE_VIEW",
+    "AUDIT_VIEW",
+  ]),
+  ADMIN: new Set([
+    "PROJECT_READ",
     "OPERATIONAL_WRITE",
     "OPERATIONAL_SOFT_DELETE",
     "DOCUMENT_UPLOAD",

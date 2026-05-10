@@ -6,7 +6,7 @@ export type SessionResponse = {
   id: string;
   email: string;
   name: string;
-  role: "ADMIN" | "OPS" | "VIEWER";
+  role: "SUPER_ADMIN" | "ADMIN" | "OPS" | "VIEWER";
   company: { id: string; name: string };
 };
 

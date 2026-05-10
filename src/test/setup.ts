@@ -21,7 +21,7 @@ jest.mock("@/src/context/ThemeProvider", () => ({
 jest.mock("@/src/context/SessionProvider", () => ({
   SessionProvider: ({ children }: { children: ReactNode }) => children,
   useSessionContext: jest.fn(() => ({
-    session: { role: "ADMIN" },
+    session: { role: "SUPER_ADMIN" },
     loading: false,
     signingIn: false,
     status: "authenticated",

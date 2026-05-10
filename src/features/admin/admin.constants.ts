@@ -6,7 +6,12 @@ import type {
 
 export const PROJECT_KIND_OPTIONS: ProjectKind[] = ["MARITIME"];
 
-export const USER_ROLE_OPTIONS: UserRole[] = ["ADMIN", "OPS", "VIEWER"];
+export const USER_ROLE_OPTIONS: UserRole[] = [
+  "SUPER_ADMIN",
+  "ADMIN",
+  "OPS",
+  "VIEWER",
+];
 
 export const KIND_LABEL: Record<ProjectKind, string> = {
   MARITIME: "Maritime",
@@ -21,6 +26,7 @@ export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 };
 
 export const ROLE_LABEL: Record<UserRole, string> = {
+  SUPER_ADMIN: "Super admin",
   ADMIN: "Admin",
   OPS: "Ops",
   VIEWER: "Viewer",

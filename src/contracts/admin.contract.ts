@@ -1,7 +1,7 @@
 import { ProjectKind, ProjectStatus } from "./projects.contract";
 import type { PaginatedResponseDto } from "./pagination.contract";
 
-export type UserRole = "ADMIN" | "OPS" | "VIEWER";
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "OPS" | "VIEWER";
 
 export type AdminProjectAssignedUserDto = {
   id: string;
@@ -47,6 +47,7 @@ export type AdminUserDto = {
 
 export type AdminUserListStatsDto = {
   total: number;
+  superAdmins: number;
   admins: number;
   ops: number;
   viewers: number;

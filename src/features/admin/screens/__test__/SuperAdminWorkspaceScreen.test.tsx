@@ -56,7 +56,9 @@ const pageMeta = {
   hasNextPage: false,
 };
 
-function mockAdminSession(role: "ADMIN" | "OPS" | "VIEWER" = "ADMIN") {
+function mockAdminSession(
+  role: "SUPER_ADMIN" | "ADMIN" | "OPS" | "VIEWER" = "SUPER_ADMIN",
+) {
   (useSessionContext as jest.Mock).mockReturnValue({
     session: {
       role,
@@ -115,6 +117,7 @@ function mockAdminPages() {
     },
     stats: {
       total: 2,
+      superAdmins: 1,
       admins: 0,
       ops: 1,
       viewers: 1,
@@ -144,22 +147,22 @@ describe("SuperAdminWorkspaceScreen", () => {
     mockAdminPages();
   });
 
-  it("GIVEN a non-admin user WHEN the admin screen renders SHOULD show restricted access", () => {
-    mockAdminSession("OPS");
+  it("GIVEN a project admin user WHEN the admin screen renders SHOULD show restricted access", () => {
+    mockAdminSession("ADMIN");
     mockAdminWorkspace({ projects: [], users: [] });
 
     render(<SuperAdminWorkspaceScreen />);
 
     expect(screen.getByText("Access restricted")).toBeOnTheScreen();
     expect(
-      screen.getByText("Only admin users can access the super admin workspace."),
+      screen.getByText("Only super admin users can access the super admin workspace."),
     ).toBeOnTheScreen();
   });
 
   it("GIVEN admin data WHEN rendered SHOULD expose workspace directories and project actions", () => {
     render(<SuperAdminWorkspaceScreen />);
 
-    expect(screen.getByText("Admin workspace")).toBeOnTheScreen();
+    expect(screen.getByText("Super admin workspace")).toBeOnTheScreen();
     expect(screen.getAllByText("Atlantic Ops").length).toBeGreaterThan(0);
     expect(screen.getByText("1 project")).toBeOnTheScreen();
     expect(screen.getAllByText("Projects").length).toBeGreaterThan(0);
