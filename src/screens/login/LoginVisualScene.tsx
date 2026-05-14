@@ -15,7 +15,7 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
   const isVeryTightDesktop = !compact && height < 700;
   const horizontalPadding = compact ? 26 : isTightDesktop ? 44 : 56;
   const verticalPadding = compact ? 26 : isTightDesktop ? 36 : 52;
-  const dividerOffset = compact ? 24 : isVeryTightDesktop ? 42 : 70;
+  const dividerOffset = compact ? 24 : isVeryTightDesktop ? 34 : 64;
   const headlineSize = compact ? 18 : isTightDesktop ? 27 : 30;
   const headlineLineHeight = compact ? 28 : isTightDesktop ? 38 : 42;
 
@@ -35,12 +35,6 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
         end={{ x: 0.65, y: 1 }}
         style={{ position: "absolute", inset: 0 }}
       />
-      <View
-        className="absolute left-[-140px] top-[-110px] h-80 w-80 rounded-full"
-        style={{ backgroundColor: "rgba(47, 107, 255, 0.07)" }}
-      />
-
-      <LoginMaritimeArtwork compact={compact} />
 
       <View className="h-full justify-between">
         <View>
@@ -110,6 +104,8 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
               .
             </Text>
           </View>
+
+          {compact ? <LoginMaritimeArtwork compact /> : null}
         </View>
 
         <Text
@@ -123,6 +119,8 @@ export function LoginVisualScene({ compact = false }: LoginVisualSceneProps) {
           Secure. Intelligent. Maritime.
         </Text>
       </View>
+
+      {!compact ? <LoginMaritimeArtwork compact={false} /> : null}
     </View>
   );
 }

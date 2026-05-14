@@ -1,4 +1,5 @@
 import { AnchoredPopover } from "@/src/components/ui/popover";
+import { usePlaceholderColor } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -39,26 +40,21 @@ export function TableFilterMenu({
             className={[
               "min-h-11 shrink-0 flex-row items-center gap-3 rounded-full border px-4 py-2 web:backdrop-blur-md",
               activeCount > 0
-                ? "border-accent bg-softAccent"
+                ? "border-accent bg-shellGlass"
                 : "border-shellLine bg-shellGlass",
             ].join(" ")}
           >
             <Ionicons
               name="filter-outline"
               size={15}
-              color={activeCount > 0 ? "hsl(24 95% 60%)" : "rgba(231,237,247,0.95)"}
+              className={activeCount > 0 ? "text-accent" : "text-muted"}
             />
-            <Text
-              className={[
-                "text-[13px] font-semibold",
-                activeCount > 0 ? "text-accent" : "text-textMain",
-              ].join(" ")}
-            >
+            <Text className="text-[13px] font-semibold text-textMain">
               {triggerLabel}
             </Text>
             {activeCount > 0 ? (
               <View className="min-w-6 items-center rounded-full bg-accent px-2 py-0.5">
-                <Text className="text-[11px] font-semibold text-white">
+                <Text className="text-[11px] font-semibold text-textMain">
                   {activeCount}
                 </Text>
               </View>
@@ -66,7 +62,7 @@ export function TableFilterMenu({
             <Ionicons
               name={isOpen ? "chevron-up" : "chevron-down"}
               size={15}
-              color="rgba(221,230,237,0.82)"
+              className={activeCount > 0 ? "text-accent" : "text-muted"}
             />
           </Pressable>
         </View>
@@ -134,19 +130,21 @@ export function TableToolbarSearch({
   onChangeText: (value: string) => void;
   placeholder: string;
 }) {
+  const placeholderColor = usePlaceholderColor();
+
   return (
     <View className="w-full md:w-[300px] lg:w-[340px]">
       <View className="min-h-11 flex-row items-center gap-3 rounded-full border border-shellLine bg-shellGlass px-4 web:backdrop-blur-md">
         <Ionicons
           name="search-outline"
           size={17}
-          color="rgba(221,230,237,0.72)"
+          className="text-muted"
         />
         <TextInput
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="rgba(221,230,237,0.35)"
+          placeholderTextColor={placeholderColor}
           className="h-11 min-w-0 flex-1 text-textMain outline-none"
           autoCapitalize="none"
           autoCorrect={false}
@@ -156,7 +154,7 @@ export function TableToolbarSearch({
             onPress={() => onChangeText("")}
             className="h-8 w-8 items-center justify-center rounded-full bg-shellPanelSoft"
           >
-            <Ionicons name="close" size={15} color="rgba(221,230,237,0.75)" />
+            <Ionicons name="close" size={15} className="text-muted" />
           </Pressable>
         ) : null}
       </View>

@@ -10,7 +10,7 @@ import {
   CertificatePageDto,
 } from "@/src/features/certificates/shared/contracts/certificates.contract";
 
-type CertificateAssetPageOptions = PaginationRequest & {
+type CertificateAssetPageOptions = Partial<PaginationRequest> & {
   sort?: string;
   search?: string;
   status?: string;
@@ -19,6 +19,7 @@ type CertificateAssetPageOptions = PaginationRequest & {
   dateWindow?: string;
   dateFrom?: string;
   dateTo?: string;
+  enabled?: boolean;
 };
 
 export function useCertificatesByAsset(
@@ -29,6 +30,7 @@ export function useCertificatesByAsset(
   const page = options?.page;
   const pageSize = options?.pageSize;
   const sort = options?.sort;
+  const enabled = options?.enabled ?? true;
   const [certificates, setCertificates] = useState<CertificateDto[]>([]);
   const [pagination, setPagination] = useState<CertificatePageDto["meta"] | null>(
     null,
@@ -38,7 +40,15 @@ export function useCertificatesByAsset(
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!projectId || !assetId) return;
+    if (!enabled || !projectId || !assetId) {
+      setCertificates([]);
+      setPagination(null);
+      setStats(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -75,6 +85,7 @@ export function useCertificatesByAsset(
   }, [
     projectId,
     assetId,
+    enabled,
     page,
     pageSize,
     sort,

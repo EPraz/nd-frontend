@@ -1,4 +1,6 @@
-import { ColorValue, TextInput, TextInputProps, View } from "react-native";
+import { usePlaceholderColor } from "@/src/lib/utils";
+import type { ColorValue, TextInputProps } from "react-native";
+import { TextInput, View } from "react-native";
 import { Text } from "../text/Text";
 
 type FieldProps = {
@@ -32,6 +34,10 @@ export function Field({
   hint,
   surfaceTone = "default",
 }: FieldProps) {
+  const defaultPlaceholderColor = usePlaceholderColor();
+  const resolvedPlaceholderColor =
+    placeholderTextColor ?? defaultPlaceholderColor;
+
   return (
     <View className="gap-2">
       <Text className="text-sm font-medium text-muted">{label}</Text>
@@ -39,7 +45,7 @@ export function Field({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
+        placeholderTextColor={resolvedPlaceholderColor}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize ?? "none"}
         editable={editable}

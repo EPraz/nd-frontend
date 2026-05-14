@@ -46,13 +46,13 @@ function flowStepClasses(tone: FlowStepProps["tone"]) {
   switch (tone) {
     case "ok":
       return {
-        rail: "bg-emerald-300",
-        badge: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+        rail: "bg-success",
+        badge: "border-success/35 bg-success/12 text-success",
       };
     case "info":
       return {
-        rail: "bg-sky-300",
-        badge: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+        rail: "bg-info",
+        badge: "border-info/35 bg-info/12 text-info",
       };
     case "accent":
     default:

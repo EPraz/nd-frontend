@@ -18,7 +18,7 @@ export function VesselPill({ vessel }: { vessel: AssetDto }) {
 
   return (
     <View className="flex-row items-center gap-2 self-start rounded-full border border-shellLine bg-shellPanelSoft px-3 py-1.5">
-      <Ionicons name="boat-outline" size={14} color="rgba(221,230,237,0.85)" />
+      <Ionicons name="boat-outline" size={14} className="text-muted" />
       <Text className="text-[12px] text-textMain">
         Vessel:{" "}
         <Text className="text-textMain font-semibold">{vessel.name}</Text>

@@ -67,15 +67,15 @@ function candidateTileClasses(tone: CandidateTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/25 bg-emerald-400/10",
-        label: "text-emerald-100/80",
-        value: "text-emerald-50",
+        surface: "border-success/35 bg-success/12",
+        label: "text-success",
+        value: "text-success",
       };
     case "info":
       return {
-        surface: "border-sky-400/25 bg-sky-400/10",
-        label: "text-sky-100/80",
-        value: "text-sky-50",
+        surface: "border-info/35 bg-info/12",
+        label: "text-info",
+        value: "text-info",
       };
     case "neutral":
       return {
@@ -130,21 +130,21 @@ function snapshotTagClasses(tone: SnapshotTagTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/30 bg-emerald-400/12",
-        dot: "bg-emerald-300",
-        text: "text-emerald-100",
+        surface: "border-success/35 bg-success/12",
+        dot: "bg-success",
+        text: "text-success",
       };
     case "warn":
       return {
-        surface: "border-amber-300/30 bg-amber-300/12",
-        dot: "bg-amber-300",
-        text: "text-amber-100",
+        surface: "border-warning/35 bg-warning/12",
+        dot: "bg-warning",
+        text: "text-warning",
       };
     case "info":
       return {
-        surface: "border-sky-400/30 bg-sky-400/12",
-        dot: "bg-sky-300",
-        text: "text-sky-100",
+        surface: "border-info/35 bg-info/12",
+        dot: "bg-info",
+        text: "text-info",
       };
     case "accent":
     default:
@@ -191,13 +191,13 @@ function reviewStepClasses(tone: ReviewStepTone) {
   switch (tone) {
     case "ok":
       return {
-        dot: "bg-emerald-300",
-        badge: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+        dot: "bg-success",
+        badge: "border-success/35 bg-success/12 text-success",
       };
     case "info":
       return {
-        dot: "bg-sky-300",
-        badge: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+        dot: "bg-info",
+        badge: "border-info/35 bg-info/12 text-info",
       };
     case "accent":
     default:
@@ -606,10 +606,10 @@ export default function CrewCertificateIngestionReviewScreen() {
                     {ingestion.extractionWarnings.map((warning) => (
                       <View
                         key={warning}
-                        className="flex-row items-start gap-3 rounded-[18px] border border-amber-300/25 bg-amber-300/10 px-4 py-3"
+                        className="flex-row items-start gap-3 rounded-[18px] border border-warning/35 bg-warning/12 px-4 py-3"
                       >
-                        <View className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-300" />
-                        <Text className="flex-1 text-[12px] leading-[18px] text-amber-100">
+                        <View className="mt-1 h-2.5 w-2.5 rounded-full bg-warning" />
+                        <Text className="flex-1 text-[12px] leading-[18px] text-warning">
                           {warning}
                         </Text>
                       </View>
@@ -617,8 +617,8 @@ export default function CrewCertificateIngestionReviewScreen() {
                   </View>
                 </View>
               ) : (
-                <View className="rounded-[18px] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3">
-                  <Text className="text-[12px] leading-[18px] text-emerald-100">
+                <View className="rounded-[18px] border border-success/35 bg-success/12 px-4 py-3">
+                  <Text className="text-[12px] leading-[18px] text-success">
                     No extraction warnings were returned for this candidate.
                   </Text>
                 </View>
@@ -667,8 +667,8 @@ export default function CrewCertificateIngestionReviewScreen() {
                   />
                 </View>
               ) : (
-                <View className="rounded-[18px] border border-amber-300/25 bg-amber-300/10 px-4 py-3">
-                  <Text className="text-[12px] leading-[18px] text-amber-100">
+                <View className="rounded-[18px] border border-warning/35 bg-warning/12 px-4 py-3">
+                  <Text className="text-[12px] leading-[18px] text-warning">
                     The document was processed, but the extractor was not
                     confident enough to prefill the main certificate fields. Use
                     the source document to complete the metadata manually.

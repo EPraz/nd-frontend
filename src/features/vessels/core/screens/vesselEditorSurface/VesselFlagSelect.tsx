@@ -1,5 +1,6 @@
 import { Text } from "@/src/components";
 import { AnchoredPopover } from "@/src/components/ui/popover";
+import { usePlaceholderColor } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
@@ -18,6 +19,7 @@ type Props = {
 export function VesselFlagSelect({ value, onChange, disabled = false }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const placeholderColor = usePlaceholderColor();
 
   const selectedLabel = value ? getVesselFlagLabel(value) : "Select flag code";
 
@@ -99,7 +101,7 @@ export function VesselFlagSelect({ value, onChange, disabled = false }: Props) {
               value={query}
               onChangeText={setQuery}
               placeholder="Search by code or country..."
-              placeholderTextColor="rgba(221,230,237,0.35)"
+              placeholderTextColor={placeholderColor}
               className="h-11 flex-1 text-textMain"
               autoCapitalize="none"
               autoCorrect={false}

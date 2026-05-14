@@ -1,3 +1,4 @@
+import { useAuthenticatedImageSource } from "@/src/hooks/useAuthenticatedImageSource";
 import { cn } from "@/src/lib/utils";
 import { Image } from "expo-image";
 import { View } from "react-native";
@@ -23,6 +24,8 @@ export function VesselImageMedia({
   testID,
   accessibilityLabel,
 }: Props) {
+  const source = useAuthenticatedImageSource(uri);
+
   return (
     <View className={cn("h-full w-full", className)}>
       <View
@@ -32,15 +35,17 @@ export function VesselImageMedia({
           stageClassName,
         )}
       >
-        <Image
-          source={{ uri }}
-          contentFit={contentFit}
-          contentPosition="center"
-          style={{ width: "100%", height: "100%" }}
-          onError={onError ? () => onError() : undefined}
-          testID={testID}
-          accessibilityLabel={accessibilityLabel}
-        />
+        {source ? (
+          <Image
+            source={source}
+            contentFit={contentFit}
+            contentPosition="center"
+            style={{ width: "100%", height: "100%" }}
+            onError={onError ? () => onError() : undefined}
+            testID={testID}
+            accessibilityLabel={accessibilityLabel}
+          />
+        ) : null}
       </View>
     </View>
   );

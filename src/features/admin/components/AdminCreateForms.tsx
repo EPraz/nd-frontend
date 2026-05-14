@@ -102,7 +102,6 @@ export function CreateProjectPanel({
                   onChangeText={field.onChange}
                   placeholder="Example: Pacific Fleet Expansion"
                   autoCapitalize="words"
-                  placeholderTextColor="#9AA7B8"
                   surfaceTone="raised"
                 />
               )}
@@ -225,7 +224,6 @@ export function CreateUserPanel({
                 onChangeText={field.onChange}
                 placeholder="Example: Juan Perez"
                 autoCapitalize="words"
-                placeholderTextColor="#9AA7B8"
                 surfaceTone="raised"
               />
             )}
@@ -242,7 +240,6 @@ export function CreateUserPanel({
                 onChangeText={field.onChange}
                 placeholder="juan.perez@client.test"
                 keyboardType="email-address"
-                placeholderTextColor="#9AA7B8"
                 surfaceTone="raised"
               />
             )}
@@ -259,7 +256,6 @@ export function CreateUserPanel({
                 onChangeText={field.onChange}
                 placeholder="Use a clear but strong password"
                 secureTextEntry
-                placeholderTextColor="#9AA7B8"
                 surfaceTone="raised"
               />
             )}

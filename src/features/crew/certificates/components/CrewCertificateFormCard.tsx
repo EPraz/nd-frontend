@@ -35,15 +35,15 @@ function contextTileClasses(tone: ContextTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/25 bg-emerald-400/10",
-        label: "text-emerald-100/80",
-        value: "text-emerald-50",
+        surface: "border-success/35 bg-success/12",
+        label: "text-success",
+        value: "text-success",
       };
     case "info":
       return {
-        surface: "border-sky-400/25 bg-sky-400/10",
-        label: "text-sky-100/80",
-        value: "text-sky-50",
+        surface: "border-info/35 bg-info/12",
+        label: "text-info",
+        value: "text-info",
       };
     case "neutral":
       return {

@@ -97,15 +97,15 @@ function snapshotMetricClasses(tone: SnapshotMetricTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/25 bg-emerald-400/10",
-        label: "text-emerald-100/80",
-        value: "text-emerald-50",
+        surface: "border-success/35 bg-success/12",
+        label: "text-success",
+        value: "text-success",
       };
     case "warn":
       return {
-        surface: "border-amber-300/25 bg-amber-300/10",
-        label: "text-amber-100/80",
-        value: "text-amber-50",
+        surface: "border-warning/35 bg-warning/12",
+        label: "text-warning",
+        value: "text-warning",
       };
     case "accent":
     default:
@@ -154,17 +154,17 @@ function sessionMetaTagClasses(tone: SessionMetaTagTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/25 bg-emerald-400/10",
-        dot: "bg-emerald-300",
-        label: "text-emerald-100/80",
-        value: "text-emerald-50",
+        surface: "border-success/35 bg-success/12",
+        dot: "bg-success",
+        label: "text-success",
+        value: "text-success",
       };
     case "info":
       return {
-        surface: "border-sky-400/25 bg-sky-400/10",
-        dot: "bg-sky-300",
-        label: "text-sky-100/80",
-        value: "text-sky-50",
+        surface: "border-info/35 bg-info/12",
+        dot: "bg-info",
+        label: "text-info",
+        value: "text-info",
       };
     case "accent":
     default:

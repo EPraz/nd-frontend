@@ -10,8 +10,9 @@ import { Text } from "@/src/components/ui/text/Text";
 import { useSessionContext } from "@/src/context/SessionProvider";
 import { ProjectDto } from "@/src/contracts/projects.contract";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
-import { canUser } from "@/src/security/rolePermissions";
 import { useProjects } from "@/src/hooks/useProjects";
+import { usePlaceholderColor } from "@/src/lib/utils";
+import { canUser } from "@/src/security/rolePermissions";
 import { useRouter } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useMemo, useState } from "react";
@@ -20,15 +21,13 @@ import { ProjectsHeaderActions } from "./projectsScreen/ProjectsHeaderActions";
 import { ProjectsWorkspaceRow } from "./projectsScreen/ProjectsWorkspaceRow";
 import { isActiveStatus } from "./projectsScreen/projectsScreen.constants";
 
-const SEARCH_ICON_COLOR = "#9fb0c8";
-const PLACEHOLDER_COLOR = "#8d9ab0";
-
 export default function ProjectsScreen() {
   const router = useRouter();
   const { projects, loading, error, refresh } = useProjects();
   const { session } = useSessionContext();
   const canManageUsers = canUser(session, "USER_MANAGE");
   const [query, setQuery] = useState("");
+  const placeholderColor = usePlaceholderColor();
   const debouncedQuery = useDebouncedValue(query);
 
   const filteredProjects = useMemo(() => {
@@ -148,12 +147,12 @@ export default function ProjectsScreen() {
 
             <View className="lg:flex-row lg:items-center lg:justify-between lg:gap-4">
               <View className="min-w-0 flex-row items-center gap-3 rounded-full border border-shellLine bg-shellChrome px-4 py-3 lg:max-w-[560px] lg:flex-1 web:backdrop-blur-md">
-                <Search size={18} color={SEARCH_ICON_COLOR} />
+                <Search size={18} color={placeholderColor} />
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
                   placeholder="Search by workspace, vertical, or status..."
-                  placeholderTextColor={PLACEHOLDER_COLOR}
+                  placeholderTextColor={placeholderColor}
                   className="flex-1 text-textMain web:outline-none"
                   autoCapitalize="none"
                 />

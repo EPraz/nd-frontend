@@ -5,6 +5,7 @@ import { MiniPill } from "@/src/components/ui";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import type { AuditEventDto } from "@/src/contracts/audit.contract";
 import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
+import { useAuthenticatedImageSource } from "@/src/hooks/useAuthenticatedImageSource";
 import { cn } from "@/src/lib/utils";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -77,7 +78,8 @@ export function VesselOperationalProfileReviewLayout({
   isModuleEnabled,
 }: Props) {
   const router = useRouter();
-  const heroSource = vessel.imageUrl ? { uri: vessel.imageUrl } : vesselBanner;
+  const authenticatedHeroSource = useAuthenticatedImageSource(vessel.imageUrl);
+  const heroSource = vessel.imageUrl ? authenticatedHeroSource : vesselBanner;
   const certificatesAtRisk =
     summary.certificates.expired + summary.certificates.expiringSoon;
   const maintenanceAttention =
@@ -95,7 +97,6 @@ export function VesselOperationalProfileReviewLayout({
       label: "Type",
       value: humanizeTechnicalLabel(vessel.vessel?.vesselType) || "Pending",
     },
-    { label: "Ops email", value: vessel.vessel?.email ?? "Not set" },
     {
       label: "Home port",
       value: vessel.vessel?.homePort ?? "Not set",
@@ -104,6 +105,7 @@ export function VesselOperationalProfileReviewLayout({
       label: "Class",
       value: vessel.vessel?.classSociety ?? "Not set",
     },
+    { label: "Ops email", value: vessel.vessel?.email ?? "Not set" },
     {
       label: "Last summary",
       value: formatDate(summary.updatedAt),
@@ -117,11 +119,13 @@ export function VesselOperationalProfileReviewLayout({
           <Card className="gap-0 overflow-hidden p-0">
             <View className="overflow-hidden border-b border-shellLine">
               <View className="relative h-[230px] w-full overflow-hidden bg-shellPanelSoft">
-                <Image
-                  source={heroSource}
-                  contentFit="cover"
-                  style={{ width: "100%", height: "100%" }}
-                />
+                {heroSource ? (
+                  <Image
+                    source={heroSource}
+                    contentFit="cover"
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                ) : null}
                 <View className="absolute inset-0 bg-black/35" />
                 <View className="absolute inset-x-0 bottom-0 gap-3 px-5 py-5">
                   <View className="gap-1">
@@ -161,17 +165,22 @@ export function VesselOperationalProfileReviewLayout({
               </View>
             </View>
 
-            <View className="gap-4 px-5 py-5">
-              <View className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <View className="px-5 py-4">
+              <View className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {operationalFacts.map((fact) => (
                   <View
                     key={fact.label}
-                    className="rounded-[18px] border border-shellLine bg-shellPanelSoft px-4 py-3"
+                    className="min-w-0 flex-row items-center gap-2 rounded-full border border-shellLine bg-shellPanelSoft px-3.5 py-2"
                   >
-                    <Text className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+                    <View className="h-1.5 w-1.5 rounded-full bg-shellHighlight" />
+                    <Text className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
                       {fact.label}
                     </Text>
-                    <Text className="mt-2 text-[14px] font-semibold text-textMain">
+                    <View className="h-3 w-px shrink-0 bg-shellLine" />
+                    <Text
+                      className="min-w-0 flex-1 text-[14px] font-semibold leading-5 text-textMain"
+                      numberOfLines={1}
+                    >
                       {fact.value}
                     </Text>
                   </View>
@@ -180,7 +189,40 @@ export function VesselOperationalProfileReviewLayout({
             </View>
           </Card>
 
-          <View className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <View className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+            <OperationalPanel
+              eyebrow="Certificates"
+              title="Compliance pulse"
+              description="Certificate pressure and next compliance move."
+            >
+              <MetricRow
+                label="Provided"
+                value={String(summary.certificates.valid)}
+              />
+              <MetricRow
+                label="Under review"
+                value={String(summary.certificates.pending)}
+              />
+              <MetricRow
+                label="At risk"
+                value={String(certificatesAtRisk)}
+                emphasis={certificatesAtRisk > 0 ? "fail" : "ok"}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full self-start"
+                onPress={() =>
+                  router.push(
+                    `/projects/${projectId}/vessels/${assetId}/certificates`,
+                  )
+                }
+                disabled={!isModuleEnabled("certificates")}
+              >
+                Open certificates
+              </Button>
+            </OperationalPanel>
+
             <OperationalPanel
               eyebrow="Crew"
               title="Readiness"
@@ -273,39 +315,6 @@ export function VesselOperationalProfileReviewLayout({
 
         <View className="min-w-0 gap-4 self-start xl:col-span-4">
           <OperationalPanel
-            eyebrow="Certificates"
-            title="Compliance pulse"
-            description="Current certificate pressure and next compliance move for this vessel."
-          >
-            <MetricRow
-              label="Provided"
-              value={String(summary.certificates.valid)}
-            />
-            <MetricRow
-              label="Under review"
-              value={String(summary.certificates.pending)}
-            />
-            <MetricRow
-              label="At risk"
-              value={String(certificatesAtRisk)}
-              emphasis={certificatesAtRisk > 0 ? "fail" : "ok"}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full self-start"
-              onPress={() =>
-                router.push(
-                  `/projects/${projectId}/vessels/${assetId}/certificates`,
-                )
-              }
-              disabled={!isModuleEnabled("certificates")}
-            >
-              Open certificates
-            </Button>
-          </OperationalPanel>
-
-          <OperationalPanel
             eyebrow="Attention queue"
             title="Alerts"
             description="Certificate and maintenance items that currently need attention."
@@ -324,19 +333,19 @@ export function VesselOperationalProfileReviewLayout({
               }
             />
           </OperationalPanel>
+
+          <RecentActivityPanel
+            title="Recent Activity"
+            description="Latest changes tied to this vessel and enabled modules."
+            events={auditState.events}
+            isLoading={auditState.loading}
+            error={auditState.error}
+            onRetry={auditState.refresh}
+            isModuleEnabled={isModuleEnabled}
+            maxItems={4}
+          />
         </View>
       </View>
-
-      <RecentActivityPanel
-        title="Recent Activity"
-        description="Latest changes tied to this vessel, filtered from the project-wide audit foundation."
-        events={auditState.events}
-        isLoading={auditState.loading}
-        error={auditState.error}
-        onRetry={auditState.refresh}
-        isModuleEnabled={isModuleEnabled}
-        maxItems={5}
-      />
     </View>
   );
 }
@@ -392,18 +401,27 @@ function MetricRow(props: {
 function StatusChip(props: { label: string; tone: "ok" | "warn" | "fail" }) {
   const ui =
     props.tone === "fail"
-      ? { dot: "#fb7185", text: "text-rose-100" }
+      ? {
+          dot: "bg-destructive",
+          text: "text-destructive",
+          surface: "border-destructive/35 bg-destructive/12",
+        }
       : props.tone === "warn"
-        ? { dot: "#fbbf24", text: "text-amber-100" }
-        : { dot: "#34d399", text: "text-emerald-100" };
+        ? {
+            dot: "bg-warning",
+            text: "text-warning",
+            surface: "border-warning/35 bg-warning/12",
+          }
+        : {
+            dot: "bg-success",
+            text: "text-success",
+            surface: "border-success/35 bg-success/12",
+          };
 
   return (
-    <MiniPill className="border border-white/15 bg-black/25">
+    <MiniPill className={cn("border", ui.surface)}>
       <View className="flex-row items-center gap-2">
-        <View
-          className="h-2 w-2 rounded-full"
-          style={{ backgroundColor: ui.dot }}
-        />
+        <View className={cn("h-2 w-2 rounded-full", ui.dot)} />
         <Text
           className={cn(
             "text-[10px] font-semibold uppercase tracking-[0.08em]",

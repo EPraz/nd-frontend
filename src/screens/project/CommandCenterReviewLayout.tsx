@@ -26,37 +26,37 @@ type CommandTone = "ok" | "warn" | "fail" | "info";
 function toneClasses(tone: CommandTone) {
   if (tone === "fail") {
     return {
-      border: "border-rose-400/25",
-      badge: "border-rose-400/30 bg-rose-500/12",
-      text: "text-rose-200",
-      dot: "bg-rose-400",
-      rail: "bg-rose-400",
+      border: "border-destructive/35",
+      badge: "border-destructive/35 bg-destructive/12",
+      text: "text-destructive",
+      dot: "bg-destructive",
+      rail: "bg-destructive",
     };
   }
   if (tone === "warn") {
     return {
-      border: "border-amber-300/25",
-      badge: "border-amber-300/25 bg-amber-400/10",
-      text: "text-amber-100",
-      dot: "bg-amber-300",
-      rail: "bg-amber-300",
+      border: "border-warning/35",
+      badge: "border-warning/35 bg-warning/12",
+      text: "text-warning",
+      dot: "bg-warning",
+      rail: "bg-warning",
     };
   }
   if (tone === "ok") {
     return {
-      border: "border-emerald-400/25",
-      badge: "border-emerald-400/25 bg-emerald-400/10",
-      text: "text-emerald-100",
-      dot: "bg-emerald-400",
-      rail: "bg-emerald-400",
+      border: "border-success/35",
+      badge: "border-success/35 bg-success/12",
+      text: "text-success",
+      dot: "bg-success",
+      rail: "bg-success",
     };
   }
   return {
-    border: "border-sky-400/20",
-    badge: "border-sky-400/20 bg-sky-400/10",
-    text: "text-sky-100",
-    dot: "bg-sky-400",
-    rail: "bg-sky-400",
+    border: "border-info/35",
+    badge: "border-info/35 bg-info/12",
+    text: "text-info",
+    dot: "bg-info",
+    rail: "bg-info",
   };
 }
 

@@ -68,8 +68,8 @@ function alertClasses(tone: "danger" | "info") {
   }
 
   return {
-    surface: "border-sky-400/25 bg-sky-400/10",
-    title: "text-sky-100",
+    surface: "border-info/35 bg-info/12",
+    title: "text-info",
   };
 }
 

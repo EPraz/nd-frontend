@@ -5,20 +5,20 @@ import {
 } from "@react-navigation/native";
 
 const LIGHT_COLORS = {
-  background: "hsl(var(--background))",
-  text: "hsl(var(--foreground))",
-  card: "hsl(var(--card))",
+  background: "hsl(var(--bg-base))",
+  text: "hsl(var(--text-main))",
+  card: "hsl(var(--bg-surface))",
   border: "hsl(var(--border))",
-  primary: "hsl(var(--primary))",
+  primary: "hsl(var(--accent))",
   notification: "hsl(var(--destructive))",
 };
 
 const DARK_COLORS = {
-  background: "hsl(var(--background))",
-  text: "hsl(var(--foreground))",
-  card: "hsl(var(--card))",
+  background: "hsl(var(--bg-base))",
+  text: "hsl(var(--text-main))",
+  card: "hsl(var(--bg-surface))",
   border: "hsl(var(--border))",
-  primary: "hsl(var(--primary))",
+  primary: "hsl(var(--accent))",
   notification: "hsl(var(--destructive))",
 };
 

@@ -9,13 +9,9 @@ export function cn(...inputs: ClassValue[]) {
 export function usePlaceholderColor() {
   const { colorScheme } = useColorScheme();
 
-  // En dark → texto claro con opacidad
   if (colorScheme === "dark") {
     return "rgba(243,244,246,0.45)";
-    // F3F4F6 es tu text-main aproximado
   }
 
-  // En light → texto oscuro con opacidad
-  return "rgba(17,45,78,0.45)";
-  // 112D4E es tu text-main light
+  return "rgba(16,35,64,0.56)";
 }

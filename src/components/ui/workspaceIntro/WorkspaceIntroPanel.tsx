@@ -24,23 +24,23 @@ type WorkspaceIntroPanelProps = {
 function toneClass(tone: WorkspaceIntroMetricTone = "neutral") {
   if (tone === "ok") {
     return {
-      border: "border-emerald-400/20",
-      badge: "bg-emerald-400/10",
-      text: "text-emerald-100",
+      border: "border-success/35",
+      badge: "bg-success/12",
+      text: "text-success",
     };
   }
   if (tone === "warn") {
     return {
-      border: "border-amber-300/20",
-      badge: "bg-amber-300/10",
-      text: "text-amber-100",
+      border: "border-warning/35",
+      badge: "bg-warning/12",
+      text: "text-warning",
     };
   }
   if (tone === "fail") {
     return {
-      border: "border-rose-400/20",
-      badge: "bg-rose-400/10",
-      text: "text-rose-100",
+      border: "border-destructive/35",
+      badge: "bg-destructive/12",
+      text: "text-destructive",
     };
   }
   return {

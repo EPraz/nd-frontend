@@ -10,7 +10,7 @@ import {
   MaintenancePageDto,
 } from "../../shared/contracts";
 
-type MaintenanceAssetPageOptions = PaginationRequest & {
+type MaintenanceAssetPageOptions = Partial<PaginationRequest> & {
   sort?: string;
   search?: string;
   status?: string;
@@ -18,6 +18,7 @@ type MaintenanceAssetPageOptions = PaginationRequest & {
   dateWindow?: string;
   dateFrom?: string;
   dateTo?: string;
+  enabled?: boolean;
 };
 
 export function useMaintenanceByAsset(
@@ -28,6 +29,7 @@ export function useMaintenanceByAsset(
   const page = options?.page;
   const pageSize = options?.pageSize;
   const sort = options?.sort;
+  const enabled = options?.enabled ?? true;
   const [maintenance, setMaintenance] = useState<MaintenanceDto[]>([]);
   const [pagination, setPagination] = useState<MaintenancePageDto["meta"] | null>(
     null,
@@ -37,7 +39,15 @@ export function useMaintenanceByAsset(
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!projectId || !assetId) return;
+    if (!enabled || !projectId || !assetId) {
+      setMaintenance([]);
+      setPagination(null);
+      setStats(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -72,6 +82,7 @@ export function useMaintenanceByAsset(
   }, [
     projectId,
     assetId,
+    enabled,
     page,
     pageSize,
     sort,

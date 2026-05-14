@@ -14,18 +14,18 @@ function pillToneClasses(tone: RegistryTablePillTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/25 bg-emerald-400/10",
-        text: "text-emerald-100",
+        surface: "border-success/35 bg-success/12",
+        text: "text-success",
       };
     case "warn":
       return {
-        surface: "border-amber-300/25 bg-amber-300/10",
-        text: "text-amber-100",
+        surface: "border-warning/35 bg-warning/12",
+        text: "text-warning",
       };
     case "danger":
       return {
-        surface: "border-rose-400/25 bg-rose-400/10",
-        text: "text-rose-100",
+        surface: "border-destructive/35 bg-destructive/12",
+        text: "text-destructive",
       };
     case "accent":
       return {
@@ -34,14 +34,14 @@ function pillToneClasses(tone: RegistryTablePillTone) {
       };
     case "neutral":
       return {
-        surface: "border-slate-300/15 bg-slate-300/8",
-        text: "text-slate-200",
+        surface: "border-shellLine bg-shellPanelSoft",
+        text: "text-muted",
       };
     case "info":
     default:
       return {
-        surface: "border-shellLine bg-shellPanelSoft",
-        text: "text-muted",
+        surface: "border-info/30 bg-info/12",
+        text: "text-info",
       };
   }
 }

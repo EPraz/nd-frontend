@@ -1,5 +1,6 @@
 import { useProjectContext } from "@/src/context/ProjectProvider";
 import { useSessionContext } from "@/src/context/SessionProvider";
+import { useTheme } from "@/src/context/ThemeProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import { humanizeTechnicalLabel } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,6 +43,7 @@ export default function Header({
   const showProfileName = isDesktop && width >= 1380;
   const { projectName, projectStatus, projectKind } = useProjectContext();
   const { session, loading, signOut, refresh } = useSessionContext();
+  const { theme, toggleTheme } = useTheme();
   const { show } = useToast();
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -60,6 +62,12 @@ export default function Header({
   async function handleRefreshSession() {
     await refresh();
     show("Session refreshed.", "success");
+  }
+
+  function handleToggleTheme() {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    toggleTheme();
+    show(`${nextTheme === "dark" ? "Dark" : "Light"} mode enabled.`, "success");
   }
 
   async function handleSignOut() {
@@ -234,6 +242,24 @@ export default function Header({
                 }
               >
                 <Text className="flex-1 text-left">Refresh session</Text>
+              </Button>
+
+              <Button
+                variant="soft"
+                size="sm"
+                className="justify-between rounded-[16px] border-shellLine bg-shellPanelSoft px-4"
+                onPress={handleToggleTheme}
+                rightIcon={
+                  <Ionicons
+                    name={theme === "dark" ? "sunny-outline" : "moon-outline"}
+                    size={12}
+                    className="text-textMain"
+                  />
+                }
+              >
+                <Text className="flex-1 text-left">
+                  {theme === "dark" ? "Light mode" : "Dark mode"}
+                </Text>
               </Button>
 
               <Button

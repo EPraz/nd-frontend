@@ -3,77 +3,67 @@
 @tailwind utilities;
 
 /*
-  Navigate Marine — Semantic Tokens (shadcn style)
-  Dark-first: la app corre en .dark por defecto.
+  ARXIS token palette contract.
+  :root is arxis-day. .dark is arxis-night.
+  Tailwind reads these through hsl(var(--token)), so color values stay in HSL.
 */
 
-/* ---------- Light (Cold Winter — 70/20/10) ---------- */
+/* ---------- arxis-day / bright harbor ---------- */
 :root {
-  /* Test */
-  /* LIGHT THEME (70-20-10) */
-  --bg-base: #f9f7f7; /* 70% */
-  --bg-surface: #dbe2ef; /* 20% */
-  --accent: #3f72af; /* 10% */
-  --text-main: #112d4e; /* Contraste alto */
+  --radius: 1rem;
 
-  --success: 145 63% 47%;
-  --warning: 38 92% 50%;
-  --info: 206 100% 53%;
-  --destructive: 0 72% 51%;
-  --muted: 214 25% 45%;
+  --bg-base: 204 72% 98%;
+  --bg-surface: 204 52% 93%;
+  --accent: 23 98% 52%;
+  --text-main: 216 54% 12%;
 
-  --border: 214 32% 85%;
-  --input: 214 32% 85%;
+  --success: 154 70% 36%;
+  --warning: 38 92% 40%;
+  --info: 205 88% 45%;
+  --destructive: 354 74% 47%;
+  --muted: 215 28% 34%;
 
-  --popover: 0 0% 100%;
-  --ring: 214 46% 46%; /* tono medio del accent */
+  --border: 210 38% 72%;
+  --input: 210 38% 72%;
 
-  --auth-canvas: 216 50% 97%;
-  --auth-shell: 214 48% 95% / 0.9;
-  --auth-panel: 214 42% 92%;
-  --auth-panel-soft: 214 36% 90% / 0.84;
-  --auth-field: 0 0% 100% / 0.94;
-  --auth-line: 214 28% 78%;
-  --auth-copy: 215 40% 16%;
-  --auth-copy-muted: 215 24% 34%;
-  --auth-copy-subtle: 214 18% 46%;
-  --auth-highlight: 24 92% 56%;
-  --auth-badge: 24 92% 90% / 0.92;
-  --auth-badge-border: 24 92% 56% / 0.28;
-  --auth-glow: 192 74% 48%;
-  --auth-soft: 199 44% 84%;
+  --popover: 204 72% 99%;
+  --ring: 23 98% 52%;
 
-  --shell-canvas: 216 44% 95%;
-  --shell-panel: 214 42% 92% / 0.86;
-  --shell-panel-soft: 214 36% 90% / 0.78;
-  --shell-glass: 216 42% 96% / 0.72;
-  --shell-line: 214 28% 78% / 0.78;
-  --shell-soft: 210 34% 88%;
-  --shell-chrome: 216 42% 96% / 0.8;
-  --shell-chrome-soft: 214 40% 92% / 0.78;
-  --shell-card-hover: 214 38% 89% / 0.88;
-  --shell-badge: 24 92% 90% / 0.92;
-  --shell-badge-border: 24 92% 56% / 0.28;
-  --shell-highlight: 24 92% 56%;
+  --auth-canvas: 204 72% 98%;
+  --auth-shell: 204 62% 97% / 0.95;
+  --auth-panel: 204 52% 94%;
+  --auth-panel-soft: 204 48% 92% / 0.92;
+  --auth-field: 0 0% 100% / 0.96;
+  --auth-line: 210 38% 72%;
+  --auth-copy: 216 44% 14%;
+  --auth-copy-muted: 215 28% 31%;
+  --auth-copy-subtle: 214 22% 39%;
+  --auth-highlight: 23 98% 52%;
+  --auth-badge: 24 100% 90% / 0.92;
+  --auth-badge-border: 23 98% 52% / 0.34;
+  --auth-glow: 205 88% 45%;
+  --auth-soft: 190 58% 86%;
+
+  --shell-canvas: 204 72% 98%;
+  --shell-panel: 204 54% 94% / 0.94;
+  --shell-panel-soft: 204 48% 91% / 0.92;
+  --shell-glass: 204 76% 98% / 0.88;
+  --shell-line: 210 38% 72% / 0.84;
+  --shell-soft: 199 48% 88%;
+  --shell-chrome: 204 66% 97% / 0.95;
+  --shell-chrome-soft: 204 52% 94% / 0.92;
+  --shell-card-hover: 204 48% 89% / 0.94;
+  --shell-badge: 24 100% 90% / 0.92;
+  --shell-badge-border: 23 98% 52% / 0.34;
+  --shell-highlight: 23 98% 52%;
 }
 
-/* ---------- Dark (default) ---------- */
+/* ---------- arxis-night / operational navy ---------- */
 .dark {
-  /* Test */
-  /* DARK MODE (70-20-10) */
-  /* #27374d */ /* 70 */
-  /* --bg-base: 214 32% 23%; */
-  /* #526d82 */ /* 20 */
-  /* --bg-surface: 207 22% 42%; */
-  /* #9db2bf */ /* 10 */
-  /* --accent: 202 21% 68%; */
-  /* #dde6ed */
-  /* --text-main: 206 32% 90%; */
-
-  --bg-base: 223 38% 14%; /* slightly lighter workspace canvas */
-  --bg-surface: 221 30% 20%; /* clearer shared surface tone */
-  --accent: 24 95% 60%; /* ~#FF8A3D  (accent) */
-  --text-main: 210 40% 96%; /* ~#F3F4F6  (text) */
+  --bg-base: 223 38% 14%;
+  --bg-surface: 221 30% 20%;
+  --accent: 24 95% 60%;
+  --text-main: 210 40% 96%;
 
   --success: 145 63% 47%;
   --warning: 38 92% 50%;
@@ -85,7 +75,7 @@
   --input: 219 24% 34%;
 
   --popover: 221 30% 21%;
-  --ring: 24 95% 60%; /* mismo accent */
+  --ring: 24 95% 60%;
 
   --auth-canvas: 223 42% 11%;
   --auth-shell: 222 29% 17% / 0.88;
@@ -129,9 +119,8 @@
   * {
     border-color: hsl(var(--border));
   }
+
   body {
-    /* background-color: hsl(var(--background)); */
-    /* color: hsl(var(--foreground)); */
     background-color: hsl(var(--bg-base));
     color: hsl(var(--text-main));
   }

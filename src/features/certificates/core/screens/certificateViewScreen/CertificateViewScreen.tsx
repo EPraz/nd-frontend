@@ -33,11 +33,11 @@ type DetailTagTone = "accent" | "info" | "ok" | "warn";
 function detailTagClasses(tone: DetailTagTone) {
   switch (tone) {
     case "ok":
-      return "border-emerald-400/25 bg-emerald-400/10 text-emerald-100";
+      return "border-success/35 bg-success/12 text-success";
     case "warn":
-      return "border-amber-300/30 bg-amber-300/12 text-amber-100";
+      return "border-warning/35 bg-warning/12 text-warning";
     case "info":
-      return "border-sky-400/25 bg-sky-400/10 text-sky-100";
+      return "border-info/35 bg-info/12 text-info";
     case "accent":
     default:
       return "border-accent/35 bg-accent/14 text-accent";

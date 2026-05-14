@@ -9,7 +9,10 @@ export default function VesselOverviewScreen() {
   const { projectName } = useProjectContext();
   const { isModuleEnabled } = useProjectEntitlements();
   const { projectId, assetId, vessel, summary } = useVesselShell();
-  const alertsState = useVesselAlertsFeedData(projectId, assetId);
+  const alertsState = useVesselAlertsFeedData(projectId, assetId, {
+    certificatesEnabled: isModuleEnabled("certificates"),
+    maintenanceEnabled: isModuleEnabled("maintenance"),
+  });
   const auditState = useAssetAuditEvents(projectId, assetId, { limit: 6 });
 
   if (!vessel) return null;

@@ -35,27 +35,27 @@ function timelineToneClasses(tone: TimelineTone) {
   switch (tone) {
     case "ok":
       return {
-        dot: "bg-emerald-300",
-        chipSurface: "border-emerald-400/25 bg-emerald-400/10",
-        chipText: "text-emerald-100",
+        dot: "bg-success",
+        chipSurface: "border-success/35 bg-success/12",
+        chipText: "text-success",
       };
     case "warn":
       return {
-        dot: "bg-amber-300",
-        chipSurface: "border-amber-300/25 bg-amber-300/10",
-        chipText: "text-amber-100",
+        dot: "bg-warning",
+        chipSurface: "border-warning/35 bg-warning/12",
+        chipText: "text-warning",
       };
     case "danger":
       return {
-        dot: "bg-rose-300",
-        chipSurface: "border-rose-400/25 bg-rose-400/10",
-        chipText: "text-rose-100",
+        dot: "bg-destructive",
+        chipSurface: "border-destructive/35 bg-destructive/12",
+        chipText: "text-destructive",
       };
     case "info":
       return {
-        dot: "bg-sky-300",
-        chipSurface: "border-sky-400/25 bg-sky-400/10",
-        chipText: "text-sky-100",
+        dot: "bg-info",
+        chipSurface: "border-info/35 bg-info/12",
+        chipText: "text-info",
       };
     case "accent":
     default:

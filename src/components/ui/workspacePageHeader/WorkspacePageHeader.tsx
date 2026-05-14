@@ -22,11 +22,11 @@ type Props = {
 function metricToneClasses(tone: WorkspacePageMetric["tone"]) {
   switch (tone) {
     case "ok":
-      return "border-emerald-400/18 bg-emerald-400/6";
+      return "border-success/30 bg-success/8";
     case "warn":
-      return "border-amber-300/18 bg-amber-300/6";
+      return "border-warning/30 bg-warning/8";
     case "accent":
-      return "border-accent/20 bg-accent/8";
+      return "border-accent/30 bg-accent/8";
     default:
       return "border-shellLine bg-shellPanelSoft";
   }

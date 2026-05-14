@@ -75,7 +75,7 @@ export function DataTable<Row>(props: DataTableProps<Row>) {
         <View className="min-w-0 max-w-full">{props.toolbarContent}</View>
       ) : null}
 
-      <View className="overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft/75">
+      <View className="overflow-hidden rounded-[18px] border border-shellLine bg-shellPanelSoft">
         <View className="flex-1">
           {props.isLoading ? (
             requiresHorizontalScroll ? (
@@ -277,11 +277,10 @@ function TableList<Row>(props: DataTableProps<Row>) {
       keyExtractor={(row) => props.getRowId(row)}
       ListHeaderComponent={<Header columns={props.columns} />}
       stickyHeaderIndices={[0]}
-      renderItem={({ item, index }) => (
+      renderItem={({ item }) => (
         <RowItem
           row={item}
           rowId={props.getRowId(item)}
-          index={index}
           columns={props.columns}
           onRowPress={props.onRowPress}
           selected={props.selectedRowId === props.getRowId(item)}
@@ -295,7 +294,7 @@ function TableList<Row>(props: DataTableProps<Row>) {
 function Header<Row>(props: { columns: Column<Row>[] }) {
   return (
     <TextClassContext.Provider value="text-muted text-[11px] tracking-[0.24em] uppercase">
-      <View className="flex-row items-center w-full h-[48px] border-b border-shellLine bg-shellChromeSoft/75">
+      <View className="flex-row items-center w-full h-[48px] border-b border-shellLine bg-shellChromeSoft">
         {props.columns.map((c) => (
           <Text key={c.key} className="px-4 py-2" style={{ flex: c.flex }}>
             {c.header}
@@ -311,15 +310,13 @@ type PressState = { pressed: boolean } & { hovered?: boolean };
 function RowItem<Row>(props: {
   row: Row;
   rowId: string;
-  index: number;
   columns: Column<Row>[];
   onRowPress?: (row: Row) => void;
   selected: boolean;
 }) {
   const clickable = Boolean(props.onRowPress);
 
-  const zebraBg =
-    props.index % 2 === 0 ? "bg-transparent" : "bg-shellPanelSoft/30";
+  const zebraBg = "bg-transparent";
 
   const renderRow = (state?: PressState) => {
     const hovered = Boolean(state?.hovered);
@@ -337,7 +334,7 @@ function RowItem<Row>(props: {
           className={[
             "relative flex-row items-center w-full min-h-[68px] border-b border-shellLine transition-colors",
             zebraBg,
-            hovered ? "bg-shellCardHover/90" : "",
+            hovered ? "bg-shellCardHover" : "",
             hovered ? "web:z-[300]" : "web:z-[1]",
             pressed ? "opacity-95" : "",
             props.selected

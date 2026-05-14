@@ -49,13 +49,13 @@ function flowStepClasses(tone: FlowStepProps["tone"]) {
   switch (tone) {
     case "ok":
       return {
-        rail: "bg-emerald-300",
-        badge: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+        rail: "bg-success",
+        badge: "border-success/35 bg-success/12 text-success",
       };
     case "info":
       return {
-        rail: "bg-sky-300",
-        badge: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+        rail: "bg-info",
+        badge: "border-info/35 bg-info/12 text-info",
       };
     case "accent":
     default:
@@ -482,12 +482,12 @@ export default function CrewCertificateUploadScreen() {
               />
               <View className="relative pl-8">
                 <View className="absolute left-[7px] top-[8px] h-4 w-4 items-center justify-center rounded-full border border-shellLine bg-shellPanel">
-                  <View className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+                  <View className="h-2.5 w-2.5 rounded-full bg-success" />
                 </View>
 
                 <View className="gap-2">
-                  <View className="self-start rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1">
-                    <Text className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-100">
+                  <View className="self-start rounded-full border border-success/35 bg-success/12 px-2.5 py-1">
+                    <Text className="text-[10px] font-semibold uppercase tracking-[0.14em] text-success">
                       Step 3
                     </Text>
                   </View>

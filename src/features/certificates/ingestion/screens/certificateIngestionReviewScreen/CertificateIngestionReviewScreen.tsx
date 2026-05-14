@@ -46,15 +46,15 @@ function candidateTileClasses(tone: CandidateTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/25 bg-emerald-400/10",
-        label: "text-emerald-100/80",
-        value: "text-emerald-50",
+        surface: "border-success/35 bg-success/12",
+        label: "text-success",
+        value: "text-success",
       };
     case "info":
       return {
-        surface: "border-sky-400/25 bg-sky-400/10",
-        label: "text-sky-100/80",
-        value: "text-sky-50",
+        surface: "border-info/35 bg-info/12",
+        label: "text-info",
+        value: "text-info",
       };
     case "neutral":
       return {
@@ -109,21 +109,21 @@ function snapshotTagClasses(tone: SnapshotTagTone) {
   switch (tone) {
     case "ok":
       return {
-        surface: "border-emerald-400/30 bg-emerald-400/12",
-        dot: "bg-emerald-300",
-        text: "text-emerald-100",
+        surface: "border-success/35 bg-success/12",
+        dot: "bg-success",
+        text: "text-success",
       };
     case "warn":
       return {
-        surface: "border-amber-300/30 bg-amber-300/12",
-        dot: "bg-amber-300",
-        text: "text-amber-100",
+        surface: "border-warning/35 bg-warning/12",
+        dot: "bg-warning",
+        text: "text-warning",
       };
     case "info":
       return {
-        surface: "border-sky-400/30 bg-sky-400/12",
-        dot: "bg-sky-300",
-        text: "text-sky-100",
+        surface: "border-info/35 bg-info/12",
+        dot: "bg-info",
+        text: "text-info",
       };
     case "accent":
     default:
@@ -192,13 +192,13 @@ function reviewStepClasses(tone: ReviewStepTone) {
   switch (tone) {
     case "ok":
       return {
-        dot: "bg-emerald-300",
-        badge: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+        dot: "bg-success",
+        badge: "border-success/35 bg-success/12 text-success",
       };
     case "info":
       return {
-        dot: "bg-sky-300",
-        badge: "border-sky-400/25 bg-sky-400/10 text-sky-100",
+        dot: "bg-info",
+        badge: "border-info/35 bg-info/12 text-info",
       };
     case "accent":
     default:
@@ -611,9 +611,9 @@ export default function CertificateIngestionReviewScreen() {
                   {ingestion.extractionWarnings.map((warning) => (
                     <View
                       key={warning}
-                      className="rounded-[18px] border border-amber-300/30 bg-amber-300/12 px-4 py-3"
+                      className="rounded-[18px] border border-warning/35 bg-warning/12 px-4 py-3"
                     >
-                      <Text className="text-[12px] leading-[18px] text-amber-100">
+                      <Text className="text-[12px] leading-[18px] text-warning">
                         {warning}
                       </Text>
                     </View>
@@ -664,7 +664,7 @@ export default function CertificateIngestionReviewScreen() {
               </View>
 
               {!hasStructuredCandidate ? (
-                <Text className="text-[12px] leading-[18px] text-amber-100">
+                <Text className="text-[12px] leading-[18px] text-warning">
                   This document uploaded correctly, but ARXIS could not confidently prefill the main certificate metadata. Complete the structured record manually below.
                 </Text>
               ) : null}

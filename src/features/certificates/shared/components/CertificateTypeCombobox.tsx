@@ -1,6 +1,7 @@
 import { Text } from "@/src/components";
 import { AnchoredPopover } from "@/src/components/ui/popover";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
+import { usePlaceholderColor } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -38,6 +39,7 @@ export function CertificateTypeCombobox({
 }: Props) {
   const [typeQuery, setTypeQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const placeholderColor = usePlaceholderColor();
   const debouncedOpenQuery = useDebouncedValue(typeQuery);
   const debouncedTypeQuery = isDropdownOpen ? debouncedOpenQuery : typeQuery;
 
@@ -147,7 +149,7 @@ export function CertificateTypeCombobox({
                 <Ionicons
                   name="search"
                   size={16}
-                  color="rgba(221,230,237,0.65)"
+                  className="text-muted"
                 />
                 <Text
                   numberOfLines={1}
@@ -161,7 +163,7 @@ export function CertificateTypeCombobox({
                 <Ionicons
                   name={isOpen ? "chevron-up" : "chevron-down"}
                   size={16}
-                  color="rgba(221,230,237,0.75)"
+                  className="text-muted"
                 />
               </Pressable>
             </View>
@@ -172,13 +174,13 @@ export function CertificateTypeCombobox({
               <Ionicons
                 name="search"
                 size={16}
-                color="rgba(221,230,237,0.65)"
+                className="text-muted"
               />
               <TextInput
                 value={typeQuery}
                 onChangeText={handleTypeQueryChange}
                 placeholder="Search by name, code, or alias"
-                placeholderTextColor="rgba(221,230,237,0.45)"
+                placeholderTextColor={placeholderColor}
                 className="h-12 flex-1 text-textMain web:outline-none"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -194,7 +196,7 @@ export function CertificateTypeCombobox({
                   <Ionicons
                     name="close-circle"
                     size={16}
-                    color="rgba(221,230,237,0.55)"
+                    className="text-muted"
                   />
                 </Pressable>
               ) : null}
@@ -202,7 +204,7 @@ export function CertificateTypeCombobox({
                 <Ionicons
                   name="close"
                   size={18}
-                  color="rgba(221,230,237,0.85)"
+                  className="text-textMain"
                 />
               </Pressable>
             </View>

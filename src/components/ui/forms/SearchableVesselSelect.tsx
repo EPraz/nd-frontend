@@ -1,5 +1,6 @@
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { AnchoredPopover } from "@/src/components/ui/popover";
+import { usePlaceholderColor } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
@@ -65,6 +66,7 @@ export function SearchableVesselSelect({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const placeholderColor = usePlaceholderColor();
 
   const filtered = useMemo(() => {
     const query = q.trim();
@@ -122,7 +124,7 @@ export function SearchableVesselSelect({
               <Ionicons
                 name="chevron-down"
                 size={18}
-                color="rgba(221,230,237,0.9)"
+                className="text-muted"
               />
             </Pressable>
           </View>
@@ -137,7 +139,7 @@ export function SearchableVesselSelect({
               <Ionicons
                 name="close"
                 size={20}
-                color="rgba(221,230,237,0.9)"
+                className="text-textMain"
               />
             </Pressable>
           </View>
@@ -146,13 +148,13 @@ export function SearchableVesselSelect({
             <Ionicons
               name="search"
               size={16}
-              color="rgba(221,230,237,0.65)"
+              className="text-muted"
             />
             <TextInput
               value={q}
               onChangeText={setQ}
               placeholder="Search by name, IMO, license, flag..."
-              placeholderTextColor="rgba(221,230,237,0.35)"
+              placeholderTextColor={placeholderColor}
               className="h-11 flex-1 text-textMain"
               autoCapitalize="none"
               autoCorrect={false}
@@ -211,7 +213,7 @@ export function SearchableVesselSelect({
                           <Ionicons
                             name="chevron-forward"
                             size={16}
-                            color="rgba(221,230,237,0.55)"
+                            className="text-muted"
                           />
                         )}
                       </View>
