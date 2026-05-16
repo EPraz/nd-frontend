@@ -5,13 +5,20 @@ import {
 } from "@/src/components/ui/table/DataTable";
 import { TableActionIcon } from "@/src/components/ui/table/TableActionIcon";
 import { TableLink } from "@/src/components/ui/table/TableLink";
+import { RegistryTablePill } from "@/src/components/ui/table/RegistryTablePill";
 import { Text } from "@/src/components/ui/text/Text";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { View } from "react-native";
-import type { CertificateRequirementDto } from "@/src/features/certificates/shared";
+import {
+  documentKindLabel,
+  sourceReferenceLabel,
+  type CertificateRequirementDto,
+} from "@/src/features/certificates/shared";
 import {
   DocumentStatePill,
+  DocumentKindPill,
+  ExpiryRequirementPill,
   RequirementStatusPill,
 } from "@/src/features/certificates/core/components/certificateTable/certificates.ui";
 
@@ -26,6 +33,7 @@ type Props = {
   onRetry: () => void;
   onUpload: (row: CertificateRequirementDto) => void;
   canUpload?: boolean;
+  returnTo?: "vessel-certificates";
   pagination?: DataTableProps<CertificateRequirementDto>["pagination"];
 };
 
@@ -43,6 +51,7 @@ export function CertificateRequirementsTable(props: Props) {
     onRetry,
     onUpload,
     canUpload = true,
+    returnTo,
     pagination,
   } = props;
 
@@ -76,10 +85,28 @@ export function CertificateRequirementsTable(props: Props) {
         header: "Requirement",
         flex: 2,
         render: (row) => (
-          <ViewText
-            primary={row.certificateName}
-            secondary={`${row.certificateCode}${row.notes ? " - rule active" : ""}`}
-          />
+          <View className="gap-2">
+            <ViewText
+              primary={row.certificateName}
+              secondary={`${row.certificateCode} - ${sourceReferenceLabel({
+                convention: row.certificateConvention,
+                sourceReference: row.certificateSourceReference,
+                variantFlag: row.certificateVariantFlag,
+              })}`}
+            />
+            <View className="flex-row flex-wrap gap-1.5">
+              <DocumentKindPill kind={row.certificateDocumentKind} />
+              <ExpiryRequirementPill
+                requiresExpiry={row.certificateRequiresExpiry}
+              />
+              {row.certificateParentTypeName ? (
+                <RegistryTablePill
+                  label={`Child of ${row.certificateParentTypeCode}`}
+                  tone="info"
+                />
+              ) : null}
+            </View>
+          </View>
         ),
       },
       {
@@ -102,6 +129,21 @@ export function CertificateRequirementsTable(props: Props) {
         render: (row) => <RequirementStatusPill status={row.status} />,
       },
       {
+        key: "kind",
+        header: "Document",
+        flex: 1,
+        render: (row) => (
+          <ViewText
+            primary={documentKindLabel(row.certificateDocumentKind)}
+            secondary={
+              row.certificateRequiresExpiry
+                ? "Expiry required"
+                : "No expiry required"
+            }
+          />
+        ),
+      },
+      {
         key: "structured",
         header: "Document State",
         flex: 1,
@@ -112,6 +154,19 @@ export function CertificateRequirementsTable(props: Props) {
           if (!row.hasStructuredCertificate) {
             return <DocumentStatePill state="MISSING" />;
           }
+          if (row.structuredCertificateBlockingReason) {
+            return (
+              <View className="min-w-0 gap-1.5">
+                <DocumentStatePill state="PARENT_BLOCKED" />
+                <Text
+                  className="text-[11px] leading-[15px] text-muted"
+                  numberOfLines={2}
+                >
+                  {row.structuredCertificateBlockingReason}
+                </Text>
+              </View>
+            );
+          }
           if (row.structuredCertificateWorkflowStatus === "APPROVED") {
             return <DocumentStatePill state="APPROVED" />;
           }
@@ -119,7 +174,19 @@ export function CertificateRequirementsTable(props: Props) {
             return <DocumentStatePill state="SUBMITTED" />;
           }
           if (row.structuredCertificateWorkflowStatus === "REJECTED") {
-            return <DocumentStatePill state="REJECTED" />;
+            return (
+              <View className="min-w-0 gap-1.5">
+                <DocumentStatePill state="REJECTED" />
+                <Text
+                  className="text-[11px] leading-[15px] text-muted"
+                  numberOfLines={2}
+                >
+                  {row.structuredCertificateRejectionReason
+                    ? `Correction: ${row.structuredCertificateRejectionReason}`
+                    : "Correction needed"}
+                </Text>
+              </View>
+            );
           }
           if (row.structuredCertificateWorkflowStatus === "ARCHIVED") {
             return <DocumentStatePill state="ARCHIVED" />;
@@ -147,6 +214,7 @@ export function CertificateRequirementsTable(props: Props) {
                       projectId,
                       assetId: row.assetId,
                       ingestionId: row.pendingIngestionId,
+                      ...(returnTo ? { returnTo } : {}),
                     },
                   })
                 }
@@ -154,7 +222,7 @@ export function CertificateRequirementsTable(props: Props) {
             ) : row.structuredCertificateId ? (
               <TableActionIcon
                 icon="document-text-outline"
-                tooltip="Open certificate record"
+                tooltip="Open document record"
                 onPress={() =>
                   router.push(
                     `/projects/${projectId}/vessels/${row.assetId}/certificates/${row.structuredCertificateId}`,
@@ -163,11 +231,11 @@ export function CertificateRequirementsTable(props: Props) {
               />
             ) : null}
 
-            {canUpload ? (
+            {canUpload && !row.pendingIngestionId ? (
               <TableActionIcon
                 icon="cloud-upload-outline"
                 tone="accent"
-                tooltip="Upload certificate document"
+                tooltip="Upload document evidence"
                 onPress={() => onUpload(row)}
               />
             ) : null}
@@ -175,7 +243,7 @@ export function CertificateRequirementsTable(props: Props) {
         ),
       },
     ];
-  }, [canUpload, onUpload, projectId, router]);
+  }, [canUpload, onUpload, projectId, returnTo, router]);
 
   return (
     <DataTable<CertificateRequirementDto>
@@ -188,7 +256,7 @@ export function CertificateRequirementsTable(props: Props) {
       error={error}
       onRetry={onRetry}
       columns={columns}
-      minWidth={980}
+      minWidth={1120}
       getRowId={(row) => row.id}
       emptyText="No certificate requirements found."
       pagination={pagination}

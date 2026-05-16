@@ -1,5 +1,6 @@
 import { Text } from "@/src/components";
 import { AnchoredPopover } from "@/src/components/ui/popover";
+import { RegistryTablePill } from "@/src/components/ui/table/RegistryTablePill";
 import { useDebouncedValue } from "@/src/hooks/useDebouncedValue";
 import { usePlaceholderColor } from "@/src/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,6 +12,11 @@ import {
   View,
 } from "react-native";
 import type { CertificateTypeDto } from "../contracts";
+import {
+  documentKindLabel,
+  documentKindTone,
+  sourceReferenceLabel,
+} from "../helpers";
 
 const MAX_VISIBLE_TYPES = 6;
 const DESKTOP_POPOVER_MIN_WIDTH = 440;
@@ -53,17 +59,28 @@ export function CertificateTypeCombobox({
     if (!query) return certificateTypes.slice(0, MAX_VISIBLE_TYPES);
 
     return certificateTypes
-      .filter((type) =>
-        `${type.name} ${type.code} ${type.aliases.join(" ")}`
-          .toLowerCase()
-          .includes(query),
-      )
+      .filter((type) => {
+        const searchableText = [
+          type.name,
+          type.code,
+          type.documentKind,
+          type.convention,
+          type.sourceReference,
+          type.variantFlag,
+          ...type.aliases,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(query);
+      })
       .slice(0, MAX_VISIBLE_TYPES);
   }, [certificateTypes, debouncedTypeQuery]);
 
   const matchLabel = debouncedTypeQuery.trim()
     ? `Top ${filteredTypes.length} match${filteredTypes.length === 1 ? "" : "es"}`
-    : "Suggested certificate types";
+    : "Suggested document types";
 
   function closeDropdown() {
     setIsDropdownOpen(false);
@@ -109,10 +126,10 @@ export function CertificateTypeCombobox({
     <View className="gap-3">
       <View className="gap-1">
         <Text className="text-textMain font-semibold text-[13px]">
-          Certificate Type *
+          Document Type *
         </Text>
         <Text className="text-muted text-[12px]">
-          Search by name, code, or alias and choose one type.
+          Search by name, code, alias, or source reference and choose one type.
         </Text>
       </View>
 
@@ -122,7 +139,7 @@ export function CertificateTypeCombobox({
 
       {certificateTypesLoading ? (
         <Text className="text-muted text-[12px]">
-          Loading certificate types...
+          Loading document types...
         </Text>
       ) : null}
 
@@ -141,6 +158,7 @@ export function CertificateTypeCombobox({
               <Pressable
                 onPress={openPopover}
                 disabled={disabled}
+                accessibilityLabel="Open document type selector"
                 className={[
                   "h-12 flex-row items-center gap-3 rounded-2xl border border-shellLine bg-shellCanvas px-4",
                   disabled ? "opacity-60" : "",
@@ -179,7 +197,7 @@ export function CertificateTypeCombobox({
               <TextInput
                 value={typeQuery}
                 onChangeText={handleTypeQueryChange}
-                placeholder="Search by name, code, or alias"
+                placeholder="Search by name, code, alias, or source"
                 placeholderTextColor={placeholderColor}
                 className="h-12 flex-1 text-textMain web:outline-none"
                 autoCapitalize="none"
@@ -223,7 +241,7 @@ export function CertificateTypeCombobox({
                   {filteredTypes.length === 0 ? (
                     <View className="px-3 py-4">
                       <Text className="text-muted text-[12px]">
-                        No certificate types match that search.
+                        No document types match that search.
                       </Text>
                     </View>
                   ) : (
@@ -245,7 +263,7 @@ export function CertificateTypeCombobox({
 
         {!selectedType ? (
           <Text className="text-muted text-[12px]">
-            Open the selector to search certificate types.
+            Open the selector to search document types.
           </Text>
         ) : null}
       </View>
@@ -257,7 +275,6 @@ export function CertificateTypeCombobox({
           onClear={onClear}
         />
       ) : null}
-
     </View>
   );
 }
@@ -292,11 +309,31 @@ function CertificateTypeOption({
           {type.name}
         </Text>
         <Text className="text-muted text-[11px]">
-          {type.code} - {type.category}
+          {type.code} - {documentKindLabel(type.documentKind)}
         </Text>
-        {type.authority ? (
-          <Text className="text-muted text-[11px]">{type.authority}</Text>
-        ) : null}
+        <View className="mt-1 flex-row flex-wrap gap-1.5">
+          <RegistryTablePill
+            label={documentKindLabel(type.documentKind)}
+            tone={documentKindTone(type.documentKind)}
+          />
+          <RegistryTablePill
+            label={type.requiresExpiry ? "Expiry tracked" : "No expiry"}
+            tone={type.requiresExpiry ? "warn" : "neutral"}
+          />
+          {type.parentCode ? (
+            <RegistryTablePill
+              label={`Child of ${type.parentCode}`}
+              tone="info"
+            />
+          ) : null}
+        </View>
+        <Text className="text-muted text-[11px]">
+          {sourceReferenceLabel({
+            convention: type.convention,
+            sourceReference: type.sourceReference,
+            variantFlag: type.variantFlag,
+          })}
+        </Text>
       </View>
     </Pressable>
   );
@@ -321,7 +358,7 @@ function SelectedCertificateTypeCard({
             {type.name}
           </Text>
           <Text className="text-muted text-[12px]">
-            {type.code} - {type.category}
+            {type.code} - {documentKindLabel(type.documentKind)}
           </Text>
         </View>
 
@@ -341,6 +378,13 @@ function SelectedCertificateTypeCard({
       ) : null}
 
       <View className="flex-row flex-wrap gap-2">
+        <RegistryTablePill
+          label={type.requiresExpiry ? "Expiry tracked" : "No expiry required"}
+          tone={type.requiresExpiry ? "warn" : "neutral"}
+        />
+        {type.parentName ? (
+          <RegistryTablePill label={`Child of ${type.parentName}`} tone="info" />
+        ) : null}
         {type.authority ? (
           <Text className="text-[11px] text-muted">
             Authority: {type.authority}
@@ -352,6 +396,14 @@ function SelectedCertificateTypeCard({
           </Text>
         ) : null}
       </View>
+      <Text className="text-[11px] text-muted">
+        Source:{" "}
+        {sourceReferenceLabel({
+          convention: type.convention,
+          sourceReference: type.sourceReference,
+          variantFlag: type.variantFlag,
+        })}
+      </Text>
     </View>
   );
 }

@@ -5,8 +5,15 @@ import {
   deleteCertificate,
   deleteCertificateAttachment,
   rejectCertificate,
+  resubmitCertificate,
+  updateCertificate,
 } from "@/src/features/certificates/shared/api/certificates.api";
-import { CertificateDto, CertificateIngestionDto } from "@/src/features/certificates/shared";
+import {
+  CertificateDto,
+  CertificateIngestionDto,
+  RejectCertificateInput,
+  UpdateCertificateInput,
+} from "@/src/features/certificates/shared";
 
 export function useCertificateWorkflowActions(
   projectId: string,
@@ -31,12 +38,40 @@ export function useCertificateWorkflowActions(
     }
   }
 
-  async function reject(): Promise<CertificateDto> {
+  async function reject(input: RejectCertificateInput): Promise<CertificateDto> {
     if (!certificateId) throw new Error("Missing certificate id");
     setLoading(true);
     setError(null);
     try {
-      return await rejectCertificate(projectId, assetId, certificateId);
+      return await rejectCertificate(projectId, assetId, certificateId, input);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveMetadata(input: UpdateCertificateInput): Promise<CertificateDto> {
+    if (!certificateId) throw new Error("Missing certificate id");
+    setLoading(true);
+    setError(null);
+    try {
+      return await updateCertificate(projectId, assetId, certificateId, input);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resubmit(): Promise<CertificateDto> {
+    if (!certificateId) throw new Error("Missing certificate id");
+    setLoading(true);
+    setError(null);
+    try {
+      return await resubmitCertificate(projectId, assetId, certificateId);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
       throw e;
@@ -95,6 +130,8 @@ export function useCertificateWorkflowActions(
   return {
     approve,
     reject,
+    saveMetadata,
+    resubmit,
     cancelIngestion,
     removeAttachment,
     removeCertificate,

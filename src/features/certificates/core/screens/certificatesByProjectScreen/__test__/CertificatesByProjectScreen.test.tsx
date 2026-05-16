@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useToast } from "@/src/context/ToastProvider";
@@ -64,17 +64,26 @@ jest.mock("@/src/features/certificates/requirements/components/certificateRequir
     title,
     subtitleRight,
     headerActions,
+    data,
+    onUpload,
   }: {
     title: string;
     subtitleRight?: string;
     headerActions?: ReactNode;
+    data?: { id: string; assetId: string }[];
+    onUpload?: (row: { id: string; assetId: string }) => void;
   }) => {
-    const { Text, View } = mockReactNative;
+    const { Pressable, Text, View } = mockReactNative;
     return (
       <View>
         <Text>{title}</Text>
         {subtitleRight ? <Text>{subtitleRight}</Text> : null}
         {headerActions}
+        {data?.[0] && onUpload ? (
+          <Pressable onPress={() => onUpload(data[0])}>
+            <Text>Open project requirement upload</Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   },
@@ -103,6 +112,8 @@ jest.mock("@/src/features/certificates/core/components/certificateTable/Certific
 
 describe("CertificatesByProjectScreen", () => {
   const push = jest.fn();
+  const showToast = jest.fn();
+  const generateProject = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -110,9 +121,7 @@ describe("CertificatesByProjectScreen", () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({
       projectId: "project-atlantic",
     });
-    (useToast as jest.Mock).mockReturnValue({
-      show: jest.fn(),
-    });
+    (useToast as jest.Mock).mockReturnValue({ show: showToast });
     (useCertificateRequirementsByProject as jest.Mock).mockReturnValue({
       requirements: [
         {
@@ -130,6 +139,14 @@ describe("CertificatesByProjectScreen", () => {
       ],
       loading: false,
       error: null,
+      stats: {
+        total: 2,
+        missing: 1,
+        underReview: 0,
+        provided: 1,
+        expired: 0,
+        exempt: 0,
+      },
       refresh: jest.fn(),
     });
     (useCertificatesByProject as jest.Mock).mockReturnValue({
@@ -137,15 +154,28 @@ describe("CertificatesByProjectScreen", () => {
         {
           id: "cert-1",
           status: "VALID",
+          workflowStatus: "APPROVED",
           assetName: "MV Navigate One",
         },
       ],
       loading: false,
       error: null,
+      stats: {
+        total: 1,
+        valid: 1,
+        expiringSoon: 0,
+        expired: 0,
+        pending: 0,
+        draft: 0,
+        submitted: 0,
+        approved: 1,
+        rejected: 0,
+      },
       refresh: jest.fn(),
     });
+    generateProject.mockResolvedValue({ processedAssets: 1 });
     (useGenerateCertificateRequirements as jest.Mock).mockReturnValue({
-      generateProject: jest.fn(),
+      generateProject,
       loading: false,
       error: null,
     });
@@ -162,7 +192,7 @@ describe("CertificatesByProjectScreen", () => {
     });
   });
 
-  it("GIVEN the certificates workspace opens WHEN rendered SHOULD default to project certificate records", () => {
+  it("GIVEN the certificates workspace opens WHEN rendered SHOULD default to project records overview", () => {
     render(<CertificatesByProjectScreen />);
 
     expect(screen.getByText("Certificates")).toBeOnTheScreen();
@@ -179,6 +209,85 @@ describe("CertificatesByProjectScreen", () => {
     fireEvent.press(screen.getAllByText("Requirements")[0]);
 
     expect(screen.getByText("Vessel Requirements")).toBeOnTheScreen();
+  });
+
+  it("GIVEN a project requirement row WHEN upload is triggered SHOULD route without vessel return context", () => {
+    render(<CertificatesByProjectScreen />);
+
+    fireEvent.press(screen.getAllByText("Requirements")[0]);
+    fireEvent.press(screen.getByText("Open project requirement upload"));
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/projects/[projectId]/certificates/upload",
+      params: {
+        projectId: "project-atlantic",
+        assetId: "asset-1",
+        requirementId: "req-1",
+      },
+    });
+  });
+
+  it("GIVEN project certificates extra upload WHEN pressed SHOULD route to project intake", () => {
+    render(<CertificatesByProjectScreen />);
+
+    fireEvent.press(screen.getByText("Add Certificate"));
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/projects/[projectId]/certificates/upload",
+      params: {
+        projectId: "project-atlantic",
+      },
+    });
+  });
+
+  it("GIVEN requirement refresh fails WHEN backend returns reason SHOULD show backend reason", async () => {
+    generateProject.mockRejectedValueOnce(
+      new Error("Certificate catalog is not available for this project."),
+    );
+
+    render(<CertificatesByProjectScreen />);
+
+    fireEvent.press(screen.getByText("Refresh"));
+
+    await waitFor(() => {
+      expect(showToast).toHaveBeenCalledWith(
+        "Certificate catalog is not available for this project.",
+        "error",
+      );
+    });
+  });
+
+  it("GIVEN rejected records exist WHEN rendered SHOULD show a correction-needed summary separate from missing", () => {
+    (useCertificatesByProject as jest.Mock).mockReturnValue({
+      certificates: [
+        {
+          id: "cert-1",
+          status: "PENDING",
+          workflowStatus: "REJECTED",
+          assetName: "MV Navigate One",
+        },
+      ],
+      loading: false,
+      error: null,
+      stats: {
+        total: 1,
+        valid: 0,
+        expiringSoon: 0,
+        expired: 0,
+        pending: 1,
+        draft: 0,
+        submitted: 0,
+        approved: 0,
+        rejected: 1,
+      },
+      refresh: jest.fn(),
+    });
+
+    render(<CertificatesByProjectScreen />);
+
+    expect(screen.getByText("Correction needed")).toBeOnTheScreen();
+    expect(screen.getByText("records sent back")).toBeOnTheScreen();
+    expect(screen.getByText("open requirement gaps")).toBeOnTheScreen();
   });
 });
 

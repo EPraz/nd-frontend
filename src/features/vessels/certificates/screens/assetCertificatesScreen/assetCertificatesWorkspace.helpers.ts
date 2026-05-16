@@ -11,6 +11,7 @@ export type AssetCertificatesWorkspaceStats = {
   expired: number;
   underReview: number;
   provided: number;
+  correctionNeeded: number;
 };
 
 export function getAssetCertificatesWorkspaceStats(
@@ -21,6 +22,7 @@ export function getAssetCertificatesWorkspaceStats(
   let expired = 0;
   let underReview = 0;
   let provided = 0;
+  let correctionNeeded = 0;
 
   for (const row of requirements) {
     switch (row.status) {
@@ -39,6 +41,10 @@ export function getAssetCertificatesWorkspaceStats(
     }
   }
 
+  for (const certificate of certificates) {
+    if (certificate.workflowStatus === "REJECTED") correctionNeeded += 1;
+  }
+
   return {
     totalRequirements: requirements.length,
     records: certificates.length,
@@ -46,6 +52,7 @@ export function getAssetCertificatesWorkspaceStats(
     expired,
     underReview,
     provided,
+    correctionNeeded,
   };
 }
 
@@ -62,8 +69,14 @@ export function getAssetCertificatesSummaryItems(
     {
       label: "Missing",
       value: String(stats.missing),
-      helper: "need fresh evidence",
+      helper: "open requirement gaps",
       tone: stats.missing > 0 ? "danger" : "ok",
+    },
+    {
+      label: "Correction needed",
+      value: String(stats.correctionNeeded),
+      helper: "records sent back",
+      tone: stats.correctionNeeded > 0 ? "warn" : "ok",
     },
     {
       label: "Under review",

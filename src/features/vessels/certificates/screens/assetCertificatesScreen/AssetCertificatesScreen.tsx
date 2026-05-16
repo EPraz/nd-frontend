@@ -17,6 +17,7 @@ import type {
   CertificateWorkflowStatus,
   RequirementStatus,
 } from "@/src/features/certificates/shared";
+import { certificateActionErrorMessage } from "@/src/features/certificates/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -111,8 +112,14 @@ export default function AssetCertificatesScreen() {
         `Requirements refreshed for ${result.processedAssets} vessel${result.processedAssets === 1 ? "" : "s"}.`,
         "success",
       );
-    } catch {
-      show("Failed to refresh certificate requirements", "error");
+    } catch (error) {
+      show(
+        certificateActionErrorMessage(
+          error,
+          "Failed to refresh certificate requirements",
+        ),
+        "error",
+      );
     }
   }, [aid, show, workspace]);
 
@@ -124,6 +131,7 @@ export default function AssetCertificatesScreen() {
           projectId: pid,
           assetId: aid,
           requirementId,
+          returnTo: "vessel-certificates",
         },
       });
     },
@@ -136,6 +144,7 @@ export default function AssetCertificatesScreen() {
       params: {
         projectId: pid,
         assetId: aid,
+        returnTo: "vessel-certificates",
       },
     });
   }, [aid, pid, router]);

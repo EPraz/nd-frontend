@@ -36,6 +36,7 @@ export function AssetCertificateRequirementsWorkspaceSection({
       onRetry={onRetry}
       onUpload={onUpload}
       canUpload={canUpload}
+      returnTo="vessel-certificates"
       pagination={pagination}
     />
   );

@@ -12,6 +12,8 @@ import {
   ConfirmCertificateIngestionResultDto,
   CreateCertificateIngestionInput,
   GenerateRequirementsResult,
+  RejectCertificateInput,
+  UpdateCertificateInput,
 } from "@/src/features/certificates/shared";
 
 type CertificateTableQuery = PaginationRequest & {
@@ -75,6 +77,18 @@ export async function fetchCertificatesById(
 ): Promise<CertificateDto> {
   return apiClient.get<CertificateDto>(
     `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}`,
+  );
+}
+
+export async function updateCertificate(
+  projectId: string,
+  assetId: string,
+  certificateId: string,
+  input: UpdateCertificateInput,
+): Promise<CertificateDto> {
+  return apiClient.patch<CertificateDto>(
+    `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}`,
+    input,
   );
 }
 
@@ -147,6 +161,12 @@ function appendUploadFile(formData: FormData, input: CreateCertificateIngestionI
   if (input.notes?.trim()) formData.append("notes", input.notes.trim());
   if (input.certificateTypeId?.trim()) {
     formData.append("certificateTypeId", input.certificateTypeId.trim());
+  }
+  if (input.replacementCertificateId?.trim()) {
+    formData.append(
+      "replacementCertificateId",
+      input.replacementCertificateId.trim(),
+    );
   }
 }
 
@@ -225,9 +245,21 @@ export async function rejectCertificate(
   projectId: string,
   assetId: string,
   certificateId: string,
+  input: RejectCertificateInput,
 ): Promise<CertificateDto> {
   return apiClient.post<CertificateDto>(
     `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}/reject`,
+    input,
+  );
+}
+
+export async function resubmitCertificate(
+  projectId: string,
+  assetId: string,
+  certificateId: string,
+): Promise<CertificateDto> {
+  return apiClient.post<CertificateDto>(
+    `/projects/${projectId}/assets/${assetId}/certificates/${certificateId}/resubmit`,
   );
 }
 

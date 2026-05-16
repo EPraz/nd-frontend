@@ -17,7 +17,8 @@ import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { CertificateRequirementsTable } from "@/src/features/certificates/requirements/components/certificateRequirementsTable/CertificateRequirementsTable";
 import { CertificatesTable } from "@/src/features/certificates/core/components/certificateTable/CertificatesTable";
-import {
+import { certificateActionErrorMessage } from "@/src/features/certificates/shared";
+import type {
   CertificateCategory,
   CertificateRequirementDto,
   CertificateStatus,
@@ -142,8 +143,12 @@ export default function CertificatesByProjectScreen() {
       expired: baseStats.expired,
       exempt: baseStats.exempt,
       uploaded: recordsStats?.total ?? certificates.length,
+      rejected:
+        recordsStats?.rejected ??
+        certificates.filter((certificate) => certificate.workflowStatus === "REJECTED")
+          .length,
     };
-  }, [certificates.length, recordsStats, requirements, requirementsStats]);
+  }, [certificates, recordsStats, requirements, requirementsStats]);
 
   async function refreshAll() {
     await Promise.all([refresh(), refreshRecords()]);
@@ -157,8 +162,14 @@ export default function CertificatesByProjectScreen() {
         `Requirements refreshed for ${result.processedAssets} vessel${result.processedAssets === 1 ? "" : "s"}.`,
         "success",
       );
-    } catch {
-      show("Failed to refresh certificate requirements", "error");
+    } catch (error) {
+      show(
+        certificateActionErrorMessage(
+          error,
+          "Failed to refresh certificate requirements",
+        ),
+        "error",
+      );
     }
   }
 
@@ -192,8 +203,14 @@ export default function CertificatesByProjectScreen() {
     {
       label: "Missing",
       value: String(stats.missing),
-      helper: "need a document upload",
+      helper: "open requirement gaps",
       tone: stats.missing > 0 ? ("danger" as const) : ("ok" as const),
+    },
+    {
+      label: "Correction needed",
+      value: String(stats.rejected),
+      helper: "records sent back",
+      tone: stats.rejected > 0 ? ("warn" as const) : ("ok" as const),
     },
     {
       label: "Under review",

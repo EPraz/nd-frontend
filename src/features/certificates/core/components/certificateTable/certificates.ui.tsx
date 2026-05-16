@@ -1,10 +1,16 @@
 import { RegistryTablePill } from "@/src/components/ui/table/RegistryTablePill";
 import { humanizeTechnicalLabel } from "@/src/helpers";
 import type {
+  CertificateDocumentKind,
   CertificateStatus,
   CertificateWorkflowStatus,
   RequirementStatus,
 } from "@/src/features/certificates/shared/contracts/certificates.contract";
+import {
+  documentKindLabel,
+  documentKindTone,
+  requirementStatusTone,
+} from "@/src/features/certificates/shared";
 
 export function CertificateStatusPill(props: { status: CertificateStatus }) {
   const s = props.status;
@@ -46,23 +52,28 @@ export function RequirementStatusPill(props: {
     return <RegistryTablePill label="N/A" tone="info" />;
   }
 
-  const tone: Record<
-    RequirementStatus,
-    "warn" | "danger" | "accent" | "ok" | "neutral"
-  > = {
-    REQUIRED: "warn",
-    MISSING: "danger",
-    UNDER_REVIEW: "accent",
-    PROVIDED: "ok",
-    EXPIRED: "danger",
-    EXEMPT: "neutral",
-  };
-
   return (
     <RegistryTablePill
       label={humanizeTechnicalLabel(props.status)}
-      tone={tone[props.status]}
+      tone={requirementStatusTone(props.status)}
     />
+  );
+}
+
+export function DocumentKindPill(props: { kind: CertificateDocumentKind }) {
+  return (
+    <RegistryTablePill
+      label={documentKindLabel(props.kind)}
+      tone={documentKindTone(props.kind)}
+    />
+  );
+}
+
+export function ExpiryRequirementPill(props: { requiresExpiry: boolean }) {
+  return props.requiresExpiry ? (
+    <RegistryTablePill label="Expiry tracked" tone="warn" />
+  ) : (
+    <RegistryTablePill label="No expiry required" tone="neutral" />
   );
 }
 
@@ -73,6 +84,7 @@ export function DocumentStatePill(props: {
     | "APPROVED"
     | "SUBMITTED"
     | "REJECTED"
+    | "PARENT_BLOCKED"
     | "ARCHIVED"
     | "DRAFT";
 }) {
@@ -85,6 +97,7 @@ export function DocumentStatePill(props: {
     APPROVED: "ok",
     SUBMITTED: "accent",
     REJECTED: "danger",
+    PARENT_BLOCKED: "danger",
     ARCHIVED: "neutral",
     DRAFT: "info",
   };

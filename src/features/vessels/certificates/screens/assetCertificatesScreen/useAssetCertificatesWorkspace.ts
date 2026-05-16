@@ -61,6 +61,8 @@ export function useAssetCertificatesWorkspace(
       underReview:
         requirementsQuery.stats?.underReview ?? computed.underReview,
       provided: requirementsQuery.stats?.provided ?? computed.provided,
+      correctionNeeded:
+        certificatesQuery.stats?.rejected ?? computed.correctionNeeded,
     };
   }, [
     certificatesQuery.certificates,

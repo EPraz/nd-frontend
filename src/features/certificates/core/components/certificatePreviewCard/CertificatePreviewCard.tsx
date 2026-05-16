@@ -50,7 +50,7 @@ export default function CertificatePreviewCard({
 
         <View className="mt-4 rounded-[18px] border border-shellLine bg-shellPanelSoft p-4">
           <Text className="text-muted text-[12px] leading-[16px]">
-            Tip: choose the certificate type first so compliance rules and
+            Tip: choose the document type first so compliance rules and
             requirements map correctly.
           </Text>
         </View>

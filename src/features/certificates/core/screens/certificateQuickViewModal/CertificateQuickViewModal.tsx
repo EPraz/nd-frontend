@@ -11,15 +11,17 @@ import {
   RegistrySummaryStrip,
   type RegistrySummaryItem,
 } from "@/src/components/ui/registryWorkspace";
-import { formatDate } from "@/src/helpers";
+import { formatDate, humanizeTechnicalLabel } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
 import {
+  parentCertificateBlockingReason,
+  parentCertificateStatusSummary,
+  requirementStatusTone,
   type CertificateDto,
   type CertificateStatus,
   type CertificateWorkflowStatus,
-  type RequirementStatus,
 } from "../../../shared";
 
 type Props = {
@@ -36,15 +38,6 @@ function daysUntil(iso: string | null) {
   const now = new Date();
   const ms = date.getTime() - now.getTime();
   return Math.ceil(ms / (1000 * 60 * 60 * 24));
-}
-
-function humanize(value: string | null | undefined, fallback = "-") {
-  if (!value) return fallback;
-  return value
-    .toLowerCase()
-    .split("_")
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(" ");
 }
 
 function certificateTone(
@@ -81,32 +74,14 @@ function workflowTone(
   }
 }
 
-function requirementTone(
-  status?: RequirementStatus | null,
-): "warn" | "danger" | "accent" | "ok" | "neutral" | "info" {
-  switch (status) {
-    case "REQUIRED":
-      return "warn";
-    case "MISSING":
-    case "EXPIRED":
-      return "danger";
-    case "UNDER_REVIEW":
-      return "accent";
-    case "PROVIDED":
-      return "ok";
-    case "EXEMPT":
-      return "neutral";
-    default:
-      return "info";
-  }
-}
-
 export default function CertificateQuickViewModal({
   certificate,
   projectId,
   onClose,
 }: Props) {
   const router = useRouter();
+  const parentBlockingReason = parentCertificateBlockingReason(certificate);
+  const parentStatusSummary = parentCertificateStatusSummary(certificate);
 
   const expiryMeta = (() => {
     const days = daysUntil(certificate.expiryDate);
@@ -117,7 +92,7 @@ export default function CertificateQuickViewModal({
 
   const profileSummaryItems: RegistrySummaryItem[] = [
     {
-      label: "Certificate code",
+      label: "Document code",
       value: certificate.certificateCode,
       helper: "Registry key",
       tone: "info",
@@ -166,22 +141,43 @@ export default function CertificateQuickViewModal({
   const workflowSummaryItems: RegistrySummaryItem[] = [
     {
       label: "Status",
-      value: humanize(certificate.status),
-      helper: "Certificate state",
+      value: humanizeTechnicalLabel(certificate.status),
+      helper: "Document state",
       tone: certificateTone(certificate.status),
     },
     {
       label: "Workflow",
-      value: humanize(certificate.workflowStatus),
+      value: humanizeTechnicalLabel(certificate.workflowStatus),
       helper: "Approval lane",
       tone: workflowTone(certificate.workflowStatus),
     },
     {
       label: "Requirement",
-      value: humanize(certificate.requirementStatus, "N/A"),
+      value: certificate.requirementStatus
+        ? humanizeTechnicalLabel(certificate.requirementStatus)
+        : "N/A",
       helper: "Requirement linkage",
-      tone: requirementTone(certificate.requirementStatus),
+      tone: requirementStatusTone(certificate.requirementStatus),
     },
+    ...(parentBlockingReason
+      ? [
+          {
+            label: "Parent",
+            value: "Blocked",
+            helper: parentBlockingReason,
+            tone: "danger" as const,
+          },
+        ]
+      : parentStatusSummary
+        ? [
+            {
+              label: "Parent",
+              value: parentStatusSummary,
+              helper: "Principal document",
+              tone: "info" as const,
+            },
+          ]
+        : []),
   ];
 
   const handleOpenVesselCertificates = () => {
@@ -199,8 +195,8 @@ export default function CertificateQuickViewModal({
       portalName={certificate.certificateName}
       open
       onClose={onClose}
-      title="Certificate record"
-      subtitle="Validity, workflow, and requirement snapshot for the active certificate."
+      title="Document record"
+      subtitle="Validity, workflow, and requirement snapshot for the active document."
       headerActions={
         <QuickViewHeaderActions onClose={onClose} />
       }
@@ -241,17 +237,27 @@ export default function CertificateQuickViewModal({
 
                 <View className="flex-row flex-wrap items-center gap-1.5">
                   <QuickViewSummaryBadge
-                    label={`Status: ${humanize(certificate.status)}`}
+                    label={`Status: ${humanizeTechnicalLabel(certificate.status)}`}
                     tone={certificateTone(certificate.status)}
                   />
                   <QuickViewSummaryBadge
-                    label={`Workflow: ${humanize(certificate.workflowStatus)}`}
+                    label={`Workflow: ${humanizeTechnicalLabel(certificate.workflowStatus)}`}
                     tone={workflowTone(certificate.workflowStatus)}
                   />
                   <QuickViewSummaryBadge
-                    label={`Requirement: ${humanize(certificate.requirementStatus, "N/A")}`}
-                    tone={requirementTone(certificate.requirementStatus)}
+                    label={`Requirement: ${
+                      certificate.requirementStatus
+                        ? humanizeTechnicalLabel(certificate.requirementStatus)
+                        : "N/A"
+                    }`}
+                    tone={requirementStatusTone(certificate.requirementStatus)}
                   />
+                  {parentBlockingReason ? (
+                    <QuickViewSummaryBadge
+                      label="Parent: Blocked"
+                      tone="danger"
+                    />
+                  ) : null}
                 </View>
               </View>
 
@@ -321,7 +327,7 @@ export default function CertificateQuickViewModal({
           <RegistrySummaryStrip
             items={workflowSummaryItems}
             size="compact"
-            columns={3}
+            columns={parentBlockingReason || parentStatusSummary ? 4 : 3}
           />
         </View>
       </View>

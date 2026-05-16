@@ -21,11 +21,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 import { useCertificateRequirementsByAsset } from "@/src/features/certificates/requirements/hooks/useCertificateRequirementsByAsset";
+import {
+  certificateActionErrorMessage,
+  documentKindLabel,
+  sourceReferenceLabel,
+} from "@/src/features/certificates/shared";
 import { canUser } from "@/src/security/rolePermissions";
 import {
   documentStateTone,
   requirementStatusLabel,
-  requirementTone,
+  requirementSummaryTone,
 } from "../certificateTask.helpers";
 import { useCreateExtraCertificateIngestion } from "../../hooks/useCreateExtraCertificateIngestion";
 import { useCreateRequirementIngestion } from "../../hooks/useCreateRequirementIngestion";
@@ -94,16 +99,44 @@ export default function CertificateUploadScreen() {
   const router = useRouter();
   const { show } = useToast();
   const { session } = useSessionContext();
-  const { projectId, assetId, requirementId } = useLocalSearchParams<{
+  const {
+    projectId,
+    assetId,
+    requirementId,
+    returnTo,
+    replacementCertificateId,
+    correctionMode,
+  } = useLocalSearchParams<{
     projectId: string;
     assetId?: string;
     requirementId?: string;
+    returnTo?: string;
+    replacementCertificateId?: string;
+    correctionMode?: string;
   }>();
 
   const pid = String(projectId);
   const fixedAssetId = assetId ? String(assetId) : null;
   const rid = requirementId ? String(requirementId) : null;
+  const returnToValue =
+    returnTo && String(returnTo) === "vessel-certificates"
+      ? "vessel-certificates"
+      : null;
+  const replacementContext =
+    correctionMode &&
+    String(correctionMode) === "replace-evidence" &&
+    replacementCertificateId
+      ? {
+          replacementCertificateId: String(replacementCertificateId),
+          correctionMode: "replace-evidence",
+        }
+      : null;
   const isRequirementFlow = Boolean(fixedAssetId && rid);
+  const returnToVesselCertificates =
+    returnToValue === "vessel-certificates" && Boolean(fixedAssetId);
+  const certificateComplianceHref = returnToVesselCertificates
+    ? `/projects/${pid}/vessels/${fixedAssetId}/certificates`
+    : `/projects/${pid}/certificates`;
   const canUploadDocuments = canUser(session, "DOCUMENT_UPLOAD");
 
   const {
@@ -175,21 +208,29 @@ export default function CertificateUploadScreen() {
         label: "Intake",
         value: isRequirementFlow ? "Requirement document" : "Supporting document",
         helper: isRequirementFlow
-          ? "linked to an active certificate requirement"
+          ? "linked to an active document requirement"
           : "reviewed before creating a structured record",
         tone: isRequirementFlow ? "accent" : "info",
       },
       {
         label: "Vessel",
         value: selectedVessel?.name ?? "Pending",
-        helper: selectedVessel ? "current certificate context" : "select the vessel before upload",
+        helper: selectedVessel ? "current document context" : "select the vessel before upload",
         tone: selectedVessel ? "ok" : "neutral",
       },
       {
         label: "Target",
-        value: requirement?.certificateName ?? "Reviewer decides",
-        helper: requirement?.certificateCode ?? "final certificate type is confirmed after review",
-        tone: requirement ? requirementTone(requirement.status) : "info",
+        value: requirement
+          ? documentKindLabel(requirement.certificateDocumentKind)
+          : "Reviewer decides",
+        helper: requirement
+          ? `${requirement.certificateCode} - ${sourceReferenceLabel({
+              convention: requirement.certificateConvention,
+              sourceReference: requirement.certificateSourceReference,
+              variantFlag: requirement.certificateVariantFlag,
+            })}`
+          : "final document type is confirmed after review",
+        tone: requirement ? requirementSummaryTone(requirement.status) : "info",
       },
       {
         label: "Document",
@@ -202,7 +243,7 @@ export default function CertificateUploadScreen() {
   );
 
   function goBack() {
-    router.replace(`/projects/${pid}/certificates`);
+    router.replace(certificateComplianceHref);
   }
 
   function openVessel() {
@@ -252,22 +293,39 @@ export default function CertificateUploadScreen() {
         : await extraUpload.submit({
             file,
             notes: notes.trim() || undefined,
+            replacementCertificateId:
+              replacementContext?.replacementCertificateId,
           });
 
       show(
         "Document uploaded. Review the extracted candidate next.",
         "success",
       );
+      const reviewParams: {
+        projectId: string;
+        assetId: string;
+        ingestionId: string;
+        returnTo?: string;
+        replacementCertificateId?: string;
+        correctionMode?: string;
+      } = {
+        projectId: pid,
+        assetId: effectiveAssetId,
+        ingestionId: ingestion.id,
+      };
+      if (returnToValue) reviewParams.returnTo = returnToValue;
+      if (replacementContext) {
+        reviewParams.replacementCertificateId =
+          replacementContext.replacementCertificateId;
+        reviewParams.correctionMode = replacementContext.correctionMode;
+      }
+
       router.replace({
         pathname: "/projects/[projectId]/certificates/review",
-        params: {
-          projectId: pid,
-          assetId: effectiveAssetId,
-          ingestionId: ingestion.id,
-        },
+        params: reviewParams,
       });
-    } catch {
-      show("Upload failed", "error");
+    } catch (error) {
+      show(certificateActionErrorMessage(error, "Upload failed"), "error");
     }
   }
 
@@ -282,7 +340,7 @@ export default function CertificateUploadScreen() {
         <RegistryWorkspaceHeader
           title="Certificate intake"
           eyebrow="Permission required"
-          subtitle="Your role can review certificate information, but cannot upload new certificate evidence."
+          subtitle="Your role can review document information, but cannot upload new document evidence."
           actions={
             <RegistryHeaderActionButton
               variant="soft"
@@ -308,6 +366,53 @@ export default function CertificateUploadScreen() {
     );
   }
 
+  if (isRequirementFlow && requirementsLoading) return <Loading fullScreen />;
+
+  if (isRequirementFlow && !requirement) {
+    return (
+      <ScrollView
+        contentContainerClassName="gap-5 p-4 pb-10 web:p-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <RegistryWorkspaceHeader
+          title="Certificate intake"
+          eyebrow="Requirement unavailable"
+          subtitle="The upload link points to a requirement that is no longer active or could not be loaded."
+          actions={
+            <RegistryHeaderActionButton
+              variant="soft"
+              iconName="chevron-back-outline"
+              iconSide="left"
+              onPress={goBack}
+            >
+              Certificate compliance
+            </RegistryHeaderActionButton>
+          }
+        />
+
+        <RegistryWorkspaceSection
+          title="Requirement not found"
+          subtitle="Return to the certificate compliance workspace and start from the current requirements table."
+        >
+          <View className="gap-3">
+            <Text className="text-[13px] leading-6 text-muted">
+              The source requirement may have been satisfied, exempted, deleted,
+              or refreshed since this link was created.
+            </Text>
+            <Button
+              variant="outline"
+              size="pillSm"
+              className="self-start rounded-full"
+              onPress={goBack}
+            >
+              Certificate compliance
+            </Button>
+          </View>
+        </RegistryWorkspaceSection>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView
       contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
@@ -317,11 +422,11 @@ export default function CertificateUploadScreen() {
         <RegistryWorkspaceHeader
           title={
             isRequirementFlow
-              ? "Upload certificate evidence"
-              : "Add supporting certificate"
+              ? "Upload document evidence"
+              : "Add supporting document"
           }
           eyebrow="Certificate intake task"
-          subtitle="Upload the source document first so ARXIS can create a review candidate. The structured certificate record appears only after that review is confirmed."
+          subtitle="Upload the source document first so ARXIS can create a review candidate. The structured document record appears only after that review is confirmed."
           actions={
             <>
               <RegistryHeaderActionButton
@@ -354,7 +459,7 @@ export default function CertificateUploadScreen() {
         <View className="min-w-0 flex-[1.35] gap-5">
           <RegistryWorkspaceSection
             title="Source document"
-            subtitle="Use one PDF or image as the source of truth for this intake. Upload creates the review candidate, not the final certificate record."
+            subtitle="Use one PDF or image as the source of truth for this intake. Upload creates the review candidate, not the final document record."
           >
             <View className="gap-5">
               <View className="gap-3">
@@ -408,13 +513,54 @@ export default function CertificateUploadScreen() {
                           {requirement.certificateName} ({requirement.certificateCode})
                         </Text>
                         <Text className="text-[12px] leading-[18px] text-muted">
-                          This upload can satisfy the active vessel certificate requirement after review.
+                          {sourceReferenceLabel({
+                            convention: requirement.certificateConvention,
+                            sourceReference: requirement.certificateSourceReference,
+                            variantFlag: requirement.certificateVariantFlag,
+                          })}{" "}
+                          -{" "}
+                          {requirement.certificateRequiresExpiry
+                            ? "expiry is tracked for this requirement"
+                            : "no expiry is required for this document"}
                         </Text>
+                        {requirement.certificateParentTypeCode ? (
+                          <Text className="text-[12px] leading-[18px] text-muted">
+                            Link this document to the principal{" "}
+                            {requirement.certificateParentTypeCode} record
+                            during review.
+                          </Text>
+                        ) : null}
+                        <View className="mt-2 flex-row flex-wrap gap-1.5">
+                          <RegistryTablePill
+                            label={documentKindLabel(
+                              requirement.certificateDocumentKind,
+                            )}
+                            tone="info"
+                          />
+                          <RegistryTablePill
+                            label={
+                              requirement.certificateRequiresExpiry
+                                ? "Expiry tracked"
+                                : "No expiry required"
+                            }
+                            tone={
+                              requirement.certificateRequiresExpiry
+                                ? "warn"
+                                : "neutral"
+                            }
+                          />
+                          {requirement.certificateParentTypeCode ? (
+                            <RegistryTablePill
+                              label={`Child of ${requirement.certificateParentTypeCode}`}
+                              tone="info"
+                            />
+                          ) : null}
+                        </View>
                       </View>
 
                       <RegistryTablePill
                           label={requirementStatusLabel(requirement.status)}
-                          tone={requirementTone(requirement.status)}
+                          tone={requirementSummaryTone(requirement.status)}
                         />
                     </View>
                   </View>
@@ -499,7 +645,7 @@ export default function CertificateUploadScreen() {
                 }
                 multiline
                 surfaceTone="raised"
-                hint="Keep notes operational. The reviewer sees this context before confirming the structured certificate."
+                hint="Keep notes operational. The reviewer sees this context before confirming the structured document record."
               />
 
               {localError ? (
@@ -527,13 +673,13 @@ export default function CertificateUploadScreen() {
               <FlowStep
                 step="02"
                 title="Review the extracted candidate"
-                description="Confirm certificate type, dates, issuer, and notes against the source document."
+                description="Confirm document type, dates, issuer, and notes against the source document."
                 tone="info"
               />
               <FlowStep
                 step="03"
                 title="Create the submitted record"
-                description="Only the reviewed candidate becomes the structured certificate inside the registry."
+                description="Only the reviewed candidate becomes the structured document record inside the registry."
                 tone="ok"
               />
             </View>

@@ -20,8 +20,8 @@ export function TableActionIcon({
   return (
     <Pressable
       onPress={(e) => {
-        const event = e as { stopPropagation?: () => void };
-        event.stopPropagation?.();
+        const event = e as { stopPropagation?: () => void } | undefined;
+        event?.stopPropagation?.();
         onPress();
       }}
       accessibilityLabel={tooltip}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useToast } from "@/src/context/ToastProvider";
@@ -63,14 +63,23 @@ jest.mock("../AssetCertificatesOverviewWorkspaceSection", () => ({
 jest.mock("../AssetCertificateRequirementsWorkspaceSection", () => ({
   AssetCertificateRequirementsWorkspaceSection: ({
     headerActions,
+    data,
+    onUpload,
   }: {
     headerActions?: ReactNode;
+    data?: { id: string }[];
+    onUpload?: (row: { id: string }) => void;
   }) => {
-    const { Text, View } = mockReactNative;
+    const { Pressable, Text, View } = mockReactNative;
     return (
       <View>
         <Text>Vessel Requirements</Text>
         {headerActions}
+        {data?.[0] && onUpload ? (
+          <Pressable onPress={() => onUpload(data[0])}>
+            <Text>Open vessel requirement upload</Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   },
@@ -78,6 +87,8 @@ jest.mock("../AssetCertificateRequirementsWorkspaceSection", () => ({
 
 describe("AssetCertificatesScreen", () => {
   const push = jest.fn();
+  const showToast = jest.fn();
+  const generateAsset = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -86,9 +97,8 @@ describe("AssetCertificatesScreen", () => {
       projectId: "project-atlantic",
       assetId: "asset-1",
     });
-    (useToast as jest.Mock).mockReturnValue({
-      show: jest.fn(),
-    });
+    (useToast as jest.Mock).mockReturnValue({ show: showToast });
+    generateAsset.mockResolvedValue({ processedAssets: 1 });
     (useAssetCertificatesWorkspace as jest.Mock).mockReturnValue({
       requirements: [
         { id: "req-1", status: "MISSING" },
@@ -101,7 +111,7 @@ describe("AssetCertificatesScreen", () => {
       recordsLoading: false,
       recordsError: null,
       refreshRecords: jest.fn(),
-      generateAsset: jest.fn(),
+      generateAsset,
       generating: false,
       generationError: null,
       stats: {
@@ -124,7 +134,7 @@ describe("AssetCertificatesScreen", () => {
     });
   });
 
-  it("GIVEN the vessel certificates lane opens WHEN rendered SHOULD default to certificate records", () => {
+  it("GIVEN the vessel certificates lane opens WHEN rendered SHOULD default to vessel records overview", () => {
     render(<AssetCertificatesScreen />);
 
     expect(screen.getByText("Certificates")).toBeOnTheScreen();
@@ -170,5 +180,54 @@ describe("AssetCertificatesScreen", () => {
     fireEvent.press(screen.getAllByText("Requirements")[0]);
 
     expect(screen.getByText("Vessel Requirements")).toBeOnTheScreen();
+  });
+
+  it("GIVEN a vessel requirement row WHEN upload is triggered SHOULD route with vessel return context", () => {
+    render(<AssetCertificatesScreen />);
+
+    fireEvent.press(screen.getAllByText("Requirements")[0]);
+    fireEvent.press(screen.getByText("Open vessel requirement upload"));
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/projects/[projectId]/certificates/upload",
+      params: {
+        projectId: "project-atlantic",
+        assetId: "asset-1",
+        requirementId: "req-1",
+        returnTo: "vessel-certificates",
+      },
+    });
+  });
+
+  it("GIVEN vessel certificates extra upload WHEN pressed SHOULD route with vessel return context", () => {
+    render(<AssetCertificatesScreen />);
+
+    fireEvent.press(screen.getByText("Add Certificate"));
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/projects/[projectId]/certificates/upload",
+      params: {
+        projectId: "project-atlantic",
+        assetId: "asset-1",
+        returnTo: "vessel-certificates",
+      },
+    });
+  });
+
+  it("GIVEN vessel requirement refresh fails WHEN backend returns reason SHOULD show backend reason", async () => {
+    generateAsset.mockRejectedValueOnce(
+      new Error("Certificate rules are not configured for this vessel."),
+    );
+
+    render(<AssetCertificatesScreen />);
+
+    fireEvent.press(screen.getByText("Refresh"));
+
+    await waitFor(() => {
+      expect(showToast).toHaveBeenCalledWith(
+        "Certificate rules are not configured for this vessel.",
+        "error",
+      );
+    });
   });
 });

@@ -13,12 +13,19 @@ import { Text } from "@/src/components/ui/text/Text";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import {
   CertificateTypeCombobox,
+  type CertificateDto,
   type CertificateTypeDto,
+  type CertificateFormValues,
+  documentKindLabel,
+  hasIneligibleParentCertificateCandidates,
+  isParentTypeConfigurationMissing,
+  parentCertificateOptionsForType,
+  requiresParentCertificate,
 } from "@/src/features/certificates/shared";
 import { Ionicons } from "@expo/vector-icons";
-import type { ReactNode } from "react";
 import { View } from "react-native";
-import { CertificateFormValues } from "@/src/features/certificates/shared";
+import { CertificateFormSection } from "./CertificateFormSection";
+import { ParentCertificateSelector } from "./ParentCertificateSelector";
 
 type Props = {
   fixedAssetId?: string | null;
@@ -30,6 +37,8 @@ type Props = {
   certificateTypes: CertificateTypeDto[];
   certificateTypesLoading: boolean;
   certificateTypesError: string | null;
+  parentCertificateOptions?: CertificateDto[];
+  parentCertificatesLoading?: boolean;
   values: CertificateFormValues;
   onChange: (patch: Partial<CertificateFormValues>) => void;
   localError?: string | null;
@@ -37,28 +46,6 @@ type Props = {
   disabled?: boolean;
   showFilesNextHint?: boolean;
 };
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <View className="gap-4 rounded-[24px] border border-shellLine bg-shellPanel p-5">
-      <View className="gap-1">
-        <Text className="text-[14px] font-semibold text-textMain">{title}</Text>
-        <Text className="text-[12px] leading-[18px] text-muted">
-          {description}
-        </Text>
-      </View>
-      {children}
-    </View>
-  );
-}
 
 export default function CertificateFormCard({
   fixedAssetId,
@@ -70,6 +57,8 @@ export default function CertificateFormCard({
   certificateTypes,
   certificateTypesLoading,
   certificateTypesError,
+  parentCertificateOptions = [],
+  parentCertificatesLoading = false,
   values,
   onChange,
   localError,
@@ -77,6 +66,23 @@ export default function CertificateFormCard({
   disabled = false,
   showFilesNextHint = true,
 }: Props) {
+  const selectedType = values.selectedCertificateType;
+  const shouldSelectParent = requiresParentCertificate(selectedType);
+  const parentConfigurationMissing =
+    isParentTypeConfigurationMissing(selectedType);
+  const parentOptions = parentCertificateOptionsForType(
+    parentCertificateOptions,
+    selectedType,
+  );
+  const hasIneligibleParentCandidates = hasIneligibleParentCertificateCandidates(
+    parentCertificateOptions,
+    selectedType,
+  );
+  const selectedParent =
+    parentOptions.find(
+      (certificate) => certificate.id === values.parentCertificateId,
+    ) ?? null;
+
   return (
     <Card className="overflow-hidden rounded-[28px] bg-shellPanel shadow-sm shadow-black/10 web:shadow-black/30">
       <CardHeaderRow className="items-start border-b border-shellLine px-5 py-4">
@@ -85,10 +91,10 @@ export default function CertificateFormCard({
             Record Intake
           </Text>
           <CardTitle className="text-[18px] text-textMain">
-            Certificate Record
+            Document record
           </CardTitle>
           <Text className="text-muted text-[13px] leading-[19px]">
-            Capture the structured certificate baseline the compliance
+            Capture the structured document baseline the compliance
             workspace, quick view, and approval flow will read.
           </Text>
         </View>
@@ -96,11 +102,10 @@ export default function CertificateFormCard({
 
       <CardContent className="px-5 py-5">
         <View className="gap-5">
-          <Section
+          <CertificateFormSection
             title="1. Assign the record"
-            description="Choose the vessel and certificate type first. That assignment is what anchors this record to compliance."
+            description="Choose the vessel and document type first. That assignment is what anchors this record to compliance."
           >
-
             {fixedAssetId ? (
               currentVessel ? (
                 <VesselPill vessel={currentVessel} />
@@ -149,24 +154,48 @@ export default function CertificateFormCard({
                 onChange({
                   certificateTypeId: type.id,
                   selectedCertificateType: type,
+                  parentCertificateId: null,
+                  expiryDate:
+                    type.requiresExpiry === false ? "" : values.expiryDate,
                 })
               }
               onClear={() =>
                 onChange({
                   certificateTypeId: null,
                   selectedCertificateType: null,
+                  parentCertificateId: null,
                 })
               }
               disabled={disabled}
             />
-          </Section>
 
-          <Section
+            {shouldSelectParent ? (
+              <ParentCertificateSelector
+                options={parentOptions}
+                selectedParent={selectedParent}
+                selectedTypeName={selectedType?.name ?? "this document"}
+                selectedDocumentKind={
+                  selectedType
+                    ? documentKindLabel(selectedType.documentKind)
+                    : "Document"
+                }
+                configurationMissing={parentConfigurationMissing}
+                hasIneligibleCandidates={hasIneligibleParentCandidates}
+                loading={parentCertificatesLoading}
+                disabled={disabled}
+                onSelect={(certificate) =>
+                  onChange({ parentCertificateId: certificate.id })
+                }
+                onClear={() => onChange({ parentCertificateId: null })}
+              />
+            ) : null}
+          </CertificateFormSection>
+
+          <CertificateFormSection
             title="2. Add record details"
-            description="Capture certificate number, issuer, and validity dates. Notes stay optional and operational."
+            description="Capture document number, issuer, and validity dates. Notes stay optional and operational."
           >
-
-          <View className="gap-4 md:flex-row">
+            <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <Field
                   label="Number"
@@ -189,7 +218,7 @@ export default function CertificateFormCard({
               </View>
             </View>
 
-          <View className="gap-4 md:flex-row">
+            <View className="gap-4 md:flex-row">
               <View className="flex-1">
                 <DateField
                   label="Issue Date"
@@ -202,13 +231,27 @@ export default function CertificateFormCard({
               </View>
               <View className="flex-1">
                 <DateField
-                  label="Expiry Date"
-                  placeholder="Select expiry date"
+                  label={
+                    selectedType?.requiresExpiry === false
+                      ? "Expiry Date (optional)"
+                      : "Expiry Date"
+                  }
+                  placeholder={
+                    selectedType?.requiresExpiry === false
+                      ? "Leave blank when not required"
+                      : "Select expiry date"
+                  }
                   value={values.expiryDate}
                   onChange={(value) => onChange({ expiryDate: value })}
                   disabled={disabled}
                   surfaceTone="raised"
                 />
+                {selectedType?.requiresExpiry === false ? (
+                  <Text className="mt-2 text-[11px] leading-[16px] text-muted">
+                    This document type does not require expiry. Keep this blank
+                    unless the source document carries a specific validity date.
+                  </Text>
+                ) : null}
               </View>
             </View>
 
@@ -221,7 +264,7 @@ export default function CertificateFormCard({
               multiline
               surfaceTone="raised"
             />
-          </Section>
+          </CertificateFormSection>
 
           {showFilesNextHint ? (
             <View className="rounded-[20px] border border-dashed border-shellLine bg-shellCanvas p-4 gap-2">
@@ -236,7 +279,7 @@ export default function CertificateFormCard({
                 </Text>
               </View>
               <Text className="text-muted text-[12px] leading-[18px]">
-                This fallback flow creates the certificate record without a
+                This fallback flow creates the document record without a
                 document upload. Use the requirement upload flow whenever
                 possible.
               </Text>

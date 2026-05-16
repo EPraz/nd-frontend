@@ -6,6 +6,7 @@ export type CertificateFormValues = {
   selectedVessel: AssetDto | null;
   certificateTypeId: string | null;
   selectedCertificateType: CertificateTypeDto | null;
+  parentCertificateId: string | null;
   number: string;
   issuer: string;
   issueDate: string;
@@ -19,6 +20,7 @@ export function emptyCertificateFormValues(): CertificateFormValues {
     selectedVessel: null,
     certificateTypeId: null,
     selectedCertificateType: null,
+    parentCertificateId: null,
     number: "",
     issuer: "",
     issueDate: "",

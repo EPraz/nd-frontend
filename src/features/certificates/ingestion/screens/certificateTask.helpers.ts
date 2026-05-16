@@ -1,9 +1,10 @@
 import type { RegistrySummaryTone } from "@/src/components/ui/registryWorkspace";
-import type {
-  CertificateExtractionConfidence,
-  CertificateExtractionMethod,
-  CertificateIngestionSource,
-  RequirementStatus,
+import {
+  requirementStatusTone,
+  type CertificateExtractionConfidence,
+  type CertificateExtractionMethod,
+  type CertificateIngestionSource,
+  type RequirementStatus,
 } from "@/src/features/certificates/shared";
 
 export function titleCaseToken(value: string): string {
@@ -72,24 +73,10 @@ export function requirementStatusLabel(
   return status ? titleCaseToken(status) : "Unknown";
 }
 
-export function requirementTone(
+export function requirementSummaryTone(
   status?: RequirementStatus | null,
 ): RegistrySummaryTone {
-  switch (status) {
-    case "MISSING":
-      return "warn";
-    case "UNDER_REVIEW":
-      return "accent";
-    case "PROVIDED":
-      return "ok";
-    case "EXPIRED":
-      return "danger";
-    case "EXEMPT":
-      return "neutral";
-    case "REQUIRED":
-    default:
-      return "info";
-  }
+  return requirementStatusTone(status);
 }
 
 export function documentStateTone(hasDocument: boolean): RegistrySummaryTone {

@@ -28,6 +28,18 @@ export type CertificateCategory =
   | "COMPANY"
   | "OTHER";
 
+export type CertificateDocumentKind =
+  | "CERTIFICATE"
+  | "PLAN"
+  | "RECORD_BOOK"
+  | "BOOKLET"
+  | "PERMIT_LICENSE"
+  | "DECLARATION"
+  | "SUPPLEMENT"
+  | "ENDORSEMENT"
+  | "TECHNICAL_FILE"
+  | "OTHER";
+
 export type CertificateDto = {
   id: string;
   assetId: string;
@@ -35,6 +47,22 @@ export type CertificateDto = {
   certificateTypeId: string;
   certificateCode: string;
   certificateName: string;
+  certificateDocumentKind: CertificateDocumentKind;
+  certificateRequiresExpiry: boolean;
+  certificateParentTypeId: string | null;
+  certificateParentTypeCode: string | null;
+  certificateParentTypeName: string | null;
+  certificateVariantFlag: string | null;
+  certificateConvention: string | null;
+  certificateSourceReference: string | null;
+  parentCertificateId: string | null;
+  parentCertificateCode: string | null;
+  parentCertificateName: string | null;
+  parentCertificateNumber: string | null;
+  parentCertificateStatus: CertificateStatus | null;
+  parentCertificateWorkflowStatus: CertificateWorkflowStatus | null;
+  parentCertificateIsDeleted: boolean | null;
+  childCertificateCount: number;
   number: string | null;
   issuer: string | null;
   issueDate: string | null;
@@ -44,6 +72,10 @@ export type CertificateDto = {
   approvedAt: string | null;
   approvedByUserId: string | null;
   approvedByUserName: string | null;
+  rejectedAt: string | null;
+  rejectedByUserId: string | null;
+  rejectedByUserName: string | null;
+  rejectionReason: string | null;
   isDeleted: boolean;
   deletedAt: string | null;
   deletedByUserId: string | null;
@@ -51,6 +83,7 @@ export type CertificateDto = {
   notes: string | null;
   attachmentCount: number;
   attachments: CertificateAttachmentDto[];
+  pendingReplacementIngestionId: string | null;
   requirementStatus?: RequirementStatus | null;
   createdAt: string;
   updatedAt: string;
@@ -65,6 +98,7 @@ export type CertificateListStatsDto = {
   draft: number;
   submitted: number;
   approved: number;
+  rejected: number;
 };
 
 export type CertificatePageDto = PaginatedResponseDto<CertificateDto> & {
@@ -77,8 +111,16 @@ export type CertificateTypeDto = {
   name: string;
   description: string | null;
   category: CertificateCategory;
+  documentKind: CertificateDocumentKind;
   authority: string | null;
   typicalValidityMonths: number | null;
+  requiresExpiry: boolean;
+  parentTypeId: string | null;
+  parentCode: string | null;
+  parentName: string | null;
+  variantFlag: string | null;
+  convention: string | null;
+  sourceReference: string | null;
   aliases: string[];
   scope: "GLOBAL" | "COMPANY";
   companyId: string | null;
@@ -91,12 +133,22 @@ export type CertificateRequirementDto = {
   certificateTypeId: string;
   certificateCode: string;
   certificateName: string;
+  certificateDocumentKind: CertificateDocumentKind;
+  certificateRequiresExpiry: boolean;
+  certificateParentTypeId: string | null;
+  certificateParentTypeCode: string | null;
+  certificateParentTypeName: string | null;
+  certificateVariantFlag: string | null;
+  certificateConvention: string | null;
+  certificateSourceReference: string | null;
   status: RequirementStatus;
   exemptedReason: string | null;
   notes: string | null;
   hasStructuredCertificate: boolean;
   structuredCertificateId: string | null;
   structuredCertificateWorkflowStatus: CertificateWorkflowStatus | null;
+  structuredCertificateRejectionReason: string | null;
+  structuredCertificateBlockingReason: string | null;
   pendingIngestionId: string | null;
   pendingIngestionStatus: CertificateIngestionStatus | null;
   lastEvaluatedAt: string | null;
@@ -129,7 +181,7 @@ export type CertificateAttachmentDto = {
   uploadedAt: string;
 };
 
-export type CertificateExtractionMethod = "PDF_TEXT" | "MANUAL_REVIEW";
+export type CertificateExtractionMethod = "PDF_TEXT" | "OCR_TEXT" | "MANUAL_REVIEW";
 export type CertificateExtractionConfidence = "HIGH" | "MEDIUM" | "LOW";
 export type CertificateIngestionSource = "REQUIREMENT" | "EXTRA";
 export type CertificateIngestionStatus =
@@ -175,6 +227,7 @@ export type CreateCertificateIngestionInput = {
   file: UploadableDocument;
   notes?: string;
   certificateTypeId?: string;
+  replacementCertificateId?: string;
 };
 
 export type CertificateIngestionDto = {
@@ -210,11 +263,25 @@ export type CertificateIngestionDto = {
 
 export type ConfirmCertificateIngestionInput = {
   certificateTypeId: string;
+  parentCertificateId?: string | null;
   number?: string | null;
   issuer?: string | null;
   issueDate?: string | null;
   expiryDate?: string | null;
   notes?: string | null;
+  acknowledgeRequirementMismatch?: boolean;
+};
+
+export type UpdateCertificateInput = {
+  number?: string | null;
+  issuer?: string | null;
+  issueDate?: string | null;
+  expiryDate?: string | null;
+  notes?: string | null;
+};
+
+export type RejectCertificateInput = {
+  reason: string;
 };
 
 export type ConfirmCertificateIngestionResultDto = {

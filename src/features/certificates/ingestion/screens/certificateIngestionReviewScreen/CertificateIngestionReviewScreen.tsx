@@ -1,5 +1,5 @@
 import { getBaseUrl } from "@/src/api/baseUrl";
-import { Button, ErrorState, Loading, Text } from "@/src/components";
+import { Button, ConfirmModal, ErrorState, Loading, Text } from "@/src/components";
 import {
   RegistryHeaderActionButton,
   RegistrySummaryStrip,
@@ -12,6 +12,7 @@ import { useSessionContext } from "@/src/context/SessionProvider";
 import { useToast } from "@/src/context/ToastProvider";
 import type { AssetDto } from "@/src/contracts/assets.contract";
 import { useCertificateTypes } from "@/src/features/certificates/core/hooks/useCertificateTypes";
+import { useCertificatesByAsset } from "@/src/features/certificates/core/hooks/useCertificatesByAsset";
 import { useVessels } from "@/src/features/vessels/core";
 import { isIsoDateOnly } from "@/src/helpers";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,10 +23,15 @@ import { Linking, ScrollView, View } from "react-native";
 import { canUser } from "@/src/security/rolePermissions";
 import CertificateFormCard from "@/src/features/certificates/core/components/certificateFormCard/CertificateFormCard";
 import {
+  certificateActionErrorMessage,
   CertificateFormValues,
   emptyCertificateFormValues,
   applyCertificateFormPatch,
   certificateFormFromIngestion,
+  hasIneligibleParentCertificateCandidates,
+  isParentTypeConfigurationMissing,
+  parentCertificateOptionsForType,
+  requiresParentCertificate,
   toConfirmCertificateIngestionInput,
 } from "@/src/features/certificates/shared";
 import {
@@ -255,15 +261,36 @@ export default function CertificateIngestionReviewScreen() {
   const router = useRouter();
   const { show } = useToast();
   const { session } = useSessionContext();
-  const { projectId, assetId, ingestionId } = useLocalSearchParams<{
+  const {
+    projectId,
+    assetId,
+    ingestionId,
+    returnTo,
+    replacementCertificateId,
+    correctionMode,
+  } = useLocalSearchParams<{
     projectId: string;
     assetId: string;
     ingestionId: string;
+    returnTo?: string;
+    replacementCertificateId?: string;
+    correctionMode?: string;
   }>();
 
   const pid = String(projectId);
   const aid = String(assetId);
   const iid = String(ingestionId);
+  const returnToValue =
+    returnTo && String(returnTo) === "vessel-certificates"
+      ? "vessel-certificates"
+      : null;
+  const hasReplacementCorrectionRouteContext =
+    String(correctionMode) === "replace-evidence" &&
+    Boolean(replacementCertificateId);
+  const certificateComplianceHref =
+    returnToValue === "vessel-certificates"
+      ? `/projects/${pid}/vessels/${aid}/certificates`
+      : `/projects/${pid}/certificates`;
   const canCancelUpload = canUser(session, "DOCUMENT_UPLOAD");
   const canConfirmIngestion = canUser(session, "INGESTION_CONFIRM");
 
@@ -272,6 +299,9 @@ export default function CertificateIngestionReviewScreen() {
     aid,
     iid,
   );
+  const isReplacementCorrection =
+    hasReplacementCorrectionRouteContext ||
+    Boolean(ingestion?.linkedVesselCertificateId);
   const {
     submit,
     loading: confirming,
@@ -291,6 +321,11 @@ export default function CertificateIngestionReviewScreen() {
     loading: certificateTypesLoading,
     error: certificateTypesError,
   } = useCertificateTypes(pid);
+  const {
+    certificates: parentCertificateOptions,
+    loading: parentCertificatesLoading,
+    error: parentCertificatesError,
+  } = useCertificatesByAsset(pid, aid, { enabled: Boolean(ingestion) });
 
   const {
     formState: { isDirty },
@@ -302,6 +337,42 @@ export default function CertificateIngestionReviewScreen() {
   });
   const values = watch();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [
+    requirementMismatchModalVisible,
+    setRequirementMismatchModalVisible,
+  ] = useState(false);
+  const selectedType = values.selectedCertificateType;
+  const parentSelectionRequired = requiresParentCertificate(selectedType);
+  const parentConfigurationMissing =
+    isParentTypeConfigurationMissing(selectedType);
+  const selectedCertificateTypeResolved =
+    !values.certificateTypeId || Boolean(selectedType);
+  const requirementTargetTypeId =
+    ingestion?.sourceKind === "REQUIREMENT" ? ingestion.certificateTypeId : null;
+  const hasRequirementTypeMismatch = Boolean(
+    requirementTargetTypeId &&
+      values.certificateTypeId &&
+      values.certificateTypeId !== requirementTargetTypeId,
+  );
+  const matchingParentOptions = useMemo(
+    () => parentCertificateOptionsForType(parentCertificateOptions, selectedType),
+    [parentCertificateOptions, selectedType],
+  );
+  const hasIneligibleParentCandidates = useMemo(
+    () =>
+      hasIneligibleParentCertificateCandidates(parentCertificateOptions, selectedType),
+    [parentCertificateOptions, selectedType],
+  );
+  const confirmDisabled =
+    !values.certificateTypeId ||
+    certificateTypesLoading ||
+    Boolean(certificateTypesError) ||
+    !selectedCertificateTypeResolved ||
+    confirming ||
+    workflowLoading ||
+    parentConfigurationMissing ||
+    (parentSelectionRequired &&
+      (parentCertificatesLoading || !values.parentCertificateId));
 
   useEffect(() => {
     if (!ingestion || isDirty) return;
@@ -311,6 +382,27 @@ export default function CertificateIngestionReviewScreen() {
       selectedVessel: vessels.find((vessel) => vessel.id === aid) ?? null,
     });
   }, [aid, certificateTypes, ingestion, isDirty, reset, vessels]);
+
+  useEffect(() => {
+    if (!parentSelectionRequired || !values.parentCertificateId) return;
+    if (
+      matchingParentOptions.some(
+        (certificate) => certificate.id === values.parentCertificateId,
+      )
+    ) {
+      return;
+    }
+
+    setValue("parentCertificateId", null, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  }, [
+    matchingParentOptions,
+    parentSelectionRequired,
+    setValue,
+    values.parentCertificateId,
+  ]);
 
   const currentVessel = useMemo<AssetDto | null>(() => {
     return vessels.find((vessel) => vessel.id === aid) ?? null;
@@ -372,7 +464,7 @@ export default function CertificateIngestionReviewScreen() {
   }
 
   function goBack() {
-    router.replace(`/projects/${pid}/certificates`);
+    router.replace(certificateComplianceHref);
   }
 
   async function onConfirm() {
@@ -384,49 +476,113 @@ export default function CertificateIngestionReviewScreen() {
     }
 
     if (!values.certificateTypeId) {
-      setLocalError("Selecciona un certificate type.");
+      setLocalError("Select a document type.");
+      return;
+    }
+    if (certificateTypesLoading) {
+      setLocalError("Document types are still loading. Try again in a moment.");
+      return;
+    }
+    if (certificateTypesError) {
+      setLocalError("Document types could not be loaded.");
+      return;
+    }
+    if (!selectedType) {
+      setLocalError("Wait until the selected document type is resolved.");
       return;
     }
     if (values.issueDate.trim() && !isIsoDateOnly(values.issueDate)) {
-      setLocalError("Issue date invalido. Usa formato YYYY-MM-DD.");
+      setLocalError("Issue date is invalid. Use YYYY-MM-DD.");
       return;
     }
     if (values.expiryDate.trim() && !isIsoDateOnly(values.expiryDate)) {
-      setLocalError("Expiry date invalido. Usa formato YYYY-MM-DD.");
+      setLocalError("Expiry date is invalid. Use YYYY-MM-DD.");
+      return;
+    }
+    if (parentSelectionRequired && parentCertificatesLoading) {
+      setLocalError("Parent certificates are still loading. Try again in a moment.");
+      return;
+    }
+    if (parentSelectionRequired && parentCertificatesError) {
+      setLocalError("Parent certificates could not be loaded for this vessel.");
+      return;
+    }
+    if (parentConfigurationMissing) {
+      setLocalError(
+        "Parent document type is not configured for this document type.",
+      );
+      return;
+    }
+    if (parentSelectionRequired && matchingParentOptions.length === 0) {
+      const parentUnavailableMessage = hasIneligibleParentCandidates
+        ? "A matching principal certificate exists, but it is not eligible yet. It must be submitted or approved, and valid or expiring soon, before confirming this child document."
+        : "Create or confirm the principal certificate before confirming this child document.";
+      setLocalError(parentUnavailableMessage);
+      return;
+    }
+    if (parentSelectionRequired && !values.parentCertificateId) {
+      setLocalError("Select the parent certificate for this child document.");
+      return;
+    }
+    if (hasRequirementTypeMismatch) {
+      setRequirementMismatchModalVisible(true);
       return;
     }
 
+    await confirmReviewedCandidate(false);
+  }
+
+  async function confirmReviewedCandidate(acknowledgeRequirementMismatch: boolean) {
     try {
+      const input = toConfirmCertificateIngestionInput({
+        ...values,
+        certificateTypeId: values.certificateTypeId as string,
+      });
       const result = await submit(
-        toConfirmCertificateIngestionInput({
-          ...values,
-          certificateTypeId: values.certificateTypeId,
-        }),
+        acknowledgeRequirementMismatch
+          ? { ...input, acknowledgeRequirementMismatch: true }
+          : input,
       );
       show(
-        "Certificate record created in submitted state. Approve it when the metadata is ready.",
+        isReplacementCorrection
+          ? "Replacement evidence confirmed. The document is resubmitted for review."
+          : "Document record created in submitted state. Approve it when the metadata is ready.",
         "success",
       );
       router.replace(
         `/projects/${pid}/vessels/${aid}/certificates/${result.certificate.id}`,
       );
-    } catch {
-      show("Failed to confirm certificate candidate", "error");
+    } catch (error) {
+      show(
+        certificateActionErrorMessage(
+          error,
+          "Failed to confirm document candidate",
+        ),
+        "error",
+      );
     }
+  }
+
+  async function onConfirmRequirementMismatch() {
+    setRequirementMismatchModalVisible(false);
+    await confirmReviewedCandidate(true);
   }
 
   async function onCancelIngestion() {
     if (!canCancelUpload) {
-      show("Your role cannot cancel certificate uploads.", "error");
+      show("Your role cannot cancel document uploads.", "error");
       return;
     }
 
     try {
       await cancelIngestion();
       show("Upload cancelled", "success");
-      router.replace(`/projects/${pid}/certificates`);
-    } catch {
-      show("Failed to cancel upload", "error");
+      router.replace(certificateComplianceHref);
+    } catch (error) {
+      show(
+        certificateActionErrorMessage(error, "Failed to cancel upload"),
+        "error",
+      );
     }
   }
 
@@ -441,26 +597,29 @@ export default function CertificateIngestionReviewScreen() {
     );
   }
 
+  const requirementMismatchMessage = `This will not satisfy the original requirement. You are about to create a document record for ${selectedType?.name ?? "the selected document type"} instead of ${ingestion.certificateName ?? "the original requirement"}. The original requirement will remain pending until the correct document is uploaded or confirmed.`;
+
   return (
-    <ScrollView
-      contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
-      showsVerticalScrollIndicator={false}
-    >
-      <View className="gap-4">
-        <RegistryWorkspaceHeader
-          title="Review extracted certificate"
-          eyebrow="Certificate review lane"
-          subtitle={`Confirm the candidate from ${ingestion.fileName}. This review creates the structured certificate record in submitted state.`}
-          actions={
-            <>
-              <RegistryHeaderActionButton
-                variant="soft"
-                iconName="chevron-back-outline"
-                iconSide="left"
-                onPress={goBack}
-              >
-                Certificate compliance
-              </RegistryHeaderActionButton>
+    <>
+      <ScrollView
+        contentContainerClassName="gap-5 p-4 web:p-6 pb-10"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="gap-4">
+          <RegistryWorkspaceHeader
+            title="Review extracted document"
+            eyebrow="Certificate review lane"
+            subtitle={`Confirm the candidate from ${ingestion.fileName}. This review creates the structured document record in submitted state.`}
+            actions={
+              <>
+                <RegistryHeaderActionButton
+                  variant="soft"
+                  iconName="chevron-back-outline"
+                  iconSide="left"
+                  onPress={goBack}
+                >
+                  Certificate compliance
+                </RegistryHeaderActionButton>
 
               {ingestion.url ? (
                 <RegistryHeaderActionButton
@@ -498,9 +657,7 @@ export default function CertificateIngestionReviewScreen() {
                   size="pillSm"
                   className="rounded-full"
                   onPress={onConfirm}
-                  disabled={
-                    !values.certificateTypeId || confirming || workflowLoading
-                  }
+                  disabled={confirmDisabled}
                   loading={confirming}
                   rightIcon={
                     <Ionicons
@@ -524,7 +681,7 @@ export default function CertificateIngestionReviewScreen() {
         <View className="min-w-0 flex-[1.4] gap-5">
           <RegistryWorkspaceSection
             title="Extraction snapshot"
-            subtitle="Inspect the candidate, warnings, and source document before confirming anything into the certificate lane."
+            subtitle="Inspect the candidate, warnings, and source document before confirming anything into the document compliance lane."
           >
             <View className="gap-5">
               {ingestion.sourceKind === "REQUIREMENT" ? (
@@ -541,11 +698,11 @@ export default function CertificateIngestionReviewScreen() {
                           : ""}
                       </Text>
                       <Text className="text-[12px] leading-[18px] text-muted">
-                        This candidate can satisfy the active vessel certificate requirement after review.
+                        This candidate can satisfy the active vessel document requirement after review.
                       </Text>
                     </View>
 
-                    <RegistryTablePill label="REQUIREMENT DOCUMENT" tone="accent" />
+                    <RegistryTablePill label="Requirement document" tone="accent" />
                   </View>
                 </View>
               ) : null}
@@ -632,7 +789,7 @@ export default function CertificateIngestionReviewScreen() {
                 <CandidateFactTile
                   label="Number"
                   value={ingestion.candidateNumber ?? "Not detected"}
-                  helper="Certificate number candidate"
+                  helper="Document number candidate"
                   tone="accent"
                 />
                 <CandidateFactTile
@@ -654,18 +811,24 @@ export default function CertificateIngestionReviewScreen() {
                 <CandidateFactTile
                   label="Expiry date"
                   value={
-                    ingestion.candidateExpiryDate
+                    selectedType && !selectedType.requiresExpiry
+                      ? "No expiry required"
+                      : ingestion.candidateExpiryDate
                       ? ingestion.candidateExpiryDate.slice(0, 10)
                       : "Not detected"
                   }
-                  helper="Expiry date candidate"
+                  helper={
+                    selectedType && !selectedType.requiresExpiry
+                      ? "Selected document type does not require expiry"
+                      : "Expiry date candidate"
+                  }
                   tone="neutral"
                 />
               </View>
 
               {!hasStructuredCandidate ? (
                 <Text className="text-[12px] leading-[18px] text-warning">
-                  This document uploaded correctly, but ARXIS could not confidently prefill the main certificate metadata. Complete the structured record manually below.
+                  This document uploaded correctly, but ARXIS could not confidently prefill the main document metadata. Complete the structured record manually below.
                 </Text>
               ) : null}
             </View>
@@ -673,8 +836,20 @@ export default function CertificateIngestionReviewScreen() {
 
           <RegistryWorkspaceSection
             title="Confirm structured record"
-            subtitle="Choose the final certificate type and correct any metadata before the submitted record is created."
+            subtitle="Choose the final document type and correct any metadata before the submitted record is created."
           >
+            {hasRequirementTypeMismatch ? (
+              <View className="mb-4 rounded-[20px] border border-warning/35 bg-warning/12 p-4">
+                <Text className="text-[12px] font-semibold text-warning">
+                  This will not satisfy the original requirement.
+                </Text>
+                <Text className="mt-1 text-[12px] leading-[18px] text-muted">
+                  You are creating a document record for{" "}
+                  {selectedType?.name ?? "the selected document type"} instead
+                  of {ingestion.certificateName ?? "the original requirement"}.
+                </Text>
+              </View>
+            ) : null}
             <CertificateFormCard
               fixedAssetId={aid}
               currentVessel={currentVessel}
@@ -685,6 +860,8 @@ export default function CertificateIngestionReviewScreen() {
               certificateTypes={certificateTypes}
               certificateTypesLoading={certificateTypesLoading}
               certificateTypesError={certificateTypesError}
+              parentCertificateOptions={parentCertificateOptions}
+              parentCertificatesLoading={parentCertificatesLoading}
               values={values}
               onChange={(patch: Partial<CertificateFormValues>) => {
                 setLocalError(null);
@@ -692,22 +869,27 @@ export default function CertificateIngestionReviewScreen() {
               }}
               localError={localError}
               apiError={confirmError}
-            disabled={!canConfirmIngestion || confirming}
-            showFilesNextHint={false}
-          />
-          {!canConfirmIngestion ? (
-            <Text className="mt-3 text-[12px] leading-5 text-muted">
-              This candidate is read-only for your role. Backend policy also
-              blocks direct confirmation requests.
-            </Text>
-          ) : null}
-        </RegistryWorkspaceSection>
+              disabled={!canConfirmIngestion || confirming}
+              showFilesNextHint={false}
+            />
+            {parentCertificatesError ? (
+              <Text className="mt-3 text-[12px] leading-5 text-destructive">
+                Parent certificates could not be loaded for this vessel.
+              </Text>
+            ) : null}
+            {!canConfirmIngestion ? (
+              <Text className="mt-3 text-[12px] leading-5 text-muted">
+                This candidate is read-only for your role. Backend policy also
+                blocks direct confirmation requests.
+              </Text>
+            ) : null}
+          </RegistryWorkspaceSection>
         </View>
 
         <View className="w-full min-w-0 gap-5 xl:w-[400px] xl:flex-none">
           <RegistryWorkspaceSection
             title="Review flow"
-            subtitle="This step keeps the certificate lane aligned with real compliance work instead of turning uploads directly into records."
+            subtitle="This step keeps the document compliance lane aligned with real work instead of turning uploads directly into records."
           >
             <View className="gap-1">
               <ReviewStep
@@ -719,8 +901,8 @@ export default function CertificateIngestionReviewScreen() {
               />
               <ReviewStep
                 badge="02"
-                title="Confirm the structured certificate type"
-                description="Choose the real registry type if the intake came in as a supporting document."
+                title="Confirm the structured document type"
+                description="Choose the real document type if the intake came in as a supporting document."
                 tone="info"
                 showConnector
               />
@@ -737,6 +919,17 @@ export default function CertificateIngestionReviewScreen() {
         </View>
       </View>
     </ScrollView>
+      <ConfirmModal
+        visible={requirementMismatchModalVisible}
+        title="Create a different document record?"
+        message={requirementMismatchMessage}
+        confirmLabel="Create other document record"
+        cancelLabel="Review document type"
+        loading={confirming}
+        onConfirm={onConfirmRequirementMismatch}
+        onCancel={() => setRequirementMismatchModalVisible(false)}
+      />
+    </>
   );
 }
 
